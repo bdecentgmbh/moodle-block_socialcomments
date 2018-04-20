@@ -1,4 +1,4 @@
-# Navigation Tracking Moodle Plugin
+# Social Comments Moodle Plugin
 
 ## Description
 The Social Comments block plugin for Moodle makes learning more engaging by adding the following features (among others):
