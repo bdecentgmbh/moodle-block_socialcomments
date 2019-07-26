@@ -241,7 +241,11 @@ class comment extends basepost {
         $event->trigger();
     }
 
-
+    /**
+     * Create or update this post.
+     *
+     * @return \block_socialcomments\local\comment
+     */
     public function save() {
         global $DB, $USER;
 

@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Socialcomments block external API.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,6 +27,13 @@ global $CFG;
 
 require_once("$CFG->libdir/externallib.php");
 
+/**
+ * Socialcomments block external API.
+ *
+ * @package   block_socialcomments
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_socialcomments_external extends external_api {
 
     /**
@@ -52,8 +61,10 @@ class block_socialcomments_external extends external_api {
     /**
      * Save a comment.
      *
-     * @param int $contextid the id of the context, when creating a new comment.
+     * @param int $contextid The id of the context, when creating a new comment.
      * @param string $content
+     * @param int $groupid
+     * @param int $id
      * @return array of results
      */
     public static function save_comment($contextid, $content, $groupid, $id) {
@@ -351,8 +362,7 @@ class block_socialcomments_external extends external_api {
      * Save a comment.
      *
      * @param int $contextid
-     * @param int $userid
-     * @param string $content
+     * @param int $pagenumber
      * @return array of results
      */
     public static function get_commentspage($contextid, $pagenumber) {
@@ -423,8 +433,10 @@ class block_socialcomments_external extends external_api {
     /**
      * Save a reply.
      *
-     * @param int $contextid
-     * @param string $content
+     * @param int $contextid ID of the context.
+     * @param string $content Content of the reply.
+     * @param int $commentid
+     * @param int $id
      * @return array of results
      */
     public static function save_reply($contextid, $content, $commentid, $id) {
@@ -489,12 +501,10 @@ class block_socialcomments_external extends external_api {
     }
 
     /**
-     * Delete a comment.
+     * Delete a reply.
      *
-     * @param int $contextid
-     * @param int $userid, note that userid is the user running the script NOT author of comment.
-     * @param int $commentid
-     * @return array
+     * @param int $replyid ID of the reply.
+     * @return array of results
      */
     public static function delete_reply($replyid) {
 
@@ -556,9 +566,9 @@ class block_socialcomments_external extends external_api {
     /**
      * Get options for the activity select form element.
      *
-     * @param int $courseid
-     * @param int $sectionid
-     * @return array
+     * @param int $sectionid ID of the section.
+     * @param int $courseid ID of the course.
+     * @return array of results
      */
     public static function get_activity_options($sectionid, $courseid) {
 

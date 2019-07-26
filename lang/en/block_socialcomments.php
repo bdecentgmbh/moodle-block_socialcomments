@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ *  Strings for component 'block_socialcomments', language 'en'.
  *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning

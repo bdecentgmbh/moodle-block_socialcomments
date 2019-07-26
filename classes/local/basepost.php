@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains class block_socialcomments\local\basepost.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,6 +28,9 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Abstract base class for comments and replies.
+ *
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class basepost {
 

@@ -182,8 +182,8 @@ class block_socialcomments_renderer extends plugin_renderer_base {
             );
         }
 
-        // Render two additional forms. One for editing a comment/Reply. And one for postin a reply.
-        // Both where wrapped into a hidden container.
+        // Render two additional forms, one for editing a comment/reply and one for posting a reply.
+        // Both are wrapped into a hidden container.
         $editform = $this->render_post_form(
             'ccomment-edit-textarea', 'ccomment-edit-action-cancel', 'ccomment-edit-action-save', 'save'
         );
@@ -397,7 +397,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Render the wohl content area of the block, which means:
+     * Render the whole content area of the block, which means:
      * - render the posting form
      * - render the comments content (= commentsinfo, subscribe and commentpages)
      *
@@ -406,7 +406,6 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      * @return string
      */
     public function render_block_content($commentshelper, $contentdata) {
-
         $html = html_writer::start_tag('div', array('id' => 'ccomment-form-content'));
         $html .= $this->render_form_content($commentshelper, $contentdata);
         $html .= html_writer::end_tag('div');
