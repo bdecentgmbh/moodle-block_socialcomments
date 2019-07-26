@@ -40,8 +40,21 @@ class reply extends basepost {
      * @param int $strictness ignore or force comment exists in database.
      */
     public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
+        global $DB;
 
-        $this->tablename = 'block_scomments_replies';
+        if ($fetch && !empty($attrs['id'])) {
+
+            if ($dbattrs = $DB->get_record('block_scomments_replies', array('id' => $attrs['id']), '*', $strictness)) {
+
+                // Load new content, if available.
+                if (isset($attrs['content'])) {
+                    $dbattrs->content = $attrs['content'];
+                }
+
+                $attrs = (array) $dbattrs;
+            }
+        }
+
         parent::__construct($attrs, $fetch, $strictness);
     }
 
@@ -77,6 +90,14 @@ class reply extends basepost {
         return has_capability('block/socialcomments:deletereplies', $context);
     }
 
+    /**
+     * Delete this reply.
+     */
+    public function delete() {
+        global $DB;
+        $DB->delete_records('block_scomments_replies', array('id' => $this->id));
+    }
+
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\reply_created::create(
@@ -91,4 +112,25 @@ class reply extends basepost {
         $event->trigger();
     }
 
+    /**
+     * Create or update this post.
+     *
+     * @return \block_socialcomments\local\reply
+     */
+    public function save() {
+        global $DB, $USER;
+
+        $this->timemodified = time();
+
+        if ($this->id > 0) {
+            $DB->update_record('block_scomments_replies', $this);
+        } else {
+            $this->userid = $USER->id;
+            $this->timecreated = $this->timemodified;
+            $this->id = $DB->insert_record('block_scomments_replies', $this);
+
+            $this->fire_event_created();
+        }
+        return $this;
+    }
 }

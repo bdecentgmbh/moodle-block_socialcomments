@@ -45,8 +45,21 @@ class comment extends basepost {
      * @param int $strictness ignore or force comment exists in database.
      */
     public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
+        global $DB;
 
-        $this->tablename = 'block_scomments_comments';
+        if ($fetch && !empty($attrs['id'])) {
+
+            if ($dbattrs = $DB->get_record('block_scomments_comments', array('id' => $attrs['id']), '*', $strictness)) {
+
+                // Load new content, if available.
+                if (isset($attrs['content'])) {
+                    $dbattrs->content = $attrs['content'];
+                }
+
+                $attrs = (array) $dbattrs;
+            }
+        }
+
         parent::__construct($attrs, $fetch, $strictness);
     }
 
@@ -227,6 +240,7 @@ class comment extends basepost {
 
 
     public function save() {
+        global $DB, $USER;
 
         // Course id is needed for proper cleanup, when course is deleted.
         if ($this->contextid > 0) {
@@ -236,9 +250,18 @@ class comment extends basepost {
             $this->courseid = SITEID;
         }
 
-        parent::save();
+
+        $this->timemodified = time();
+
+        if ($this->id > 0) {
+            $DB->update_record('block_scomments_comments', $this);
+        } else {
+            $this->userid = $USER->id;
+            $this->timecreated = $this->timemodified;
+            $this->id = $DB->insert_record('block_scomments_comments', $this);
+
+            $this->fire_event_created();
+        }
+        return $this;
     }
-
-
-
 }
