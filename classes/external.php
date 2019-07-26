@@ -245,9 +245,9 @@ class block_socialcomments_external extends external_api {
         $checked = $commentshelper->set_pinned($context->id, $USER->id, $checked, $commentid);
 
         if ($commentid == 0) {
-            $tooltip = ($checked)? get_string('unpinpage', 'block_socialcomments') : get_string('pinpage', 'block_socialcomments') ;
+            $tooltip = ($checked) ? get_string('unpinpage', 'block_socialcomments') : get_string('pinpage', 'block_socialcomments');
         } else {
-            $tooltip = ($checked)? get_string('unpin', 'block_socialcomments') : get_string('pin', 'block_socialcomments') ;
+            $tooltip = ($checked) ? get_string('unpin', 'block_socialcomments') : get_string('pin', 'block_socialcomments');
         }
 
         $results = array(
@@ -574,8 +574,8 @@ class block_socialcomments_external extends external_api {
 
         $warnings = array();
         $arrayparams = array(
-                'sectionid' => $sectionid,
-                'courseid' => $courseid
+            'sectionid' => $sectionid,
+            'courseid' => $courseid
         );
 
         $params = self::validate_parameters(self::get_activity_options_parameters(), $arrayparams);
