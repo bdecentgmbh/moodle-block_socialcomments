@@ -173,8 +173,6 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                 'id' => 'ccomment-pinned-0',
             );
 
-            //$cb = $this->render_slider_checkbox('pagepinned', 1, $pagepinned, $label, $params);
-
             $cb = html_writer::checkbox('pagepinned', 1, !empty($pagepinned), '#', $params);
             $tooltip = (!empty($pagepinned))
                     ? get_string('unpinpage', 'block_socialcomments')
