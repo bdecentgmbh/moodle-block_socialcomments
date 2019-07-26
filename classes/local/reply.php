@@ -44,7 +44,7 @@ class reply extends basepost {
 
         if ($fetch && !empty($attrs['id'])) {
 
-            if ($dbattrs = $DB->get_record('block_scomments_replies', array('id' => $attrs['id']), '*', $strictness)) {
+            if ($dbattrs = $DB->get_record('block_socialcomments_replies', array('id' => $attrs['id']), '*', $strictness)) {
 
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
@@ -66,7 +66,7 @@ class reply extends basepost {
     public function get_context() {
         global $DB;
 
-        $comment = $DB->get_record('block_scomments_comments', array('id' => $this->commentid), '*', MUST_EXIST);
+        $comment = $DB->get_record('block_socialcomments_cmmnts', array('id' => $this->commentid), '*', MUST_EXIST);
         $context = \context::instance_by_id($comment->contextid, MUST_EXIST);
 
         return $context;
@@ -95,7 +95,7 @@ class reply extends basepost {
      */
     public function delete() {
         global $DB;
-        $DB->delete_records('block_scomments_replies', array('id' => $this->id));
+        $DB->delete_records('block_socialcomments_replies', array('id' => $this->id));
     }
 
     public function fire_event_created() {
@@ -123,11 +123,11 @@ class reply extends basepost {
         $this->timemodified = time();
 
         if ($this->id > 0) {
-            $DB->update_record('block_scomments_replies', $this);
+            $DB->update_record('block_socialcomments_replies', $this);
         } else {
             $this->userid = $USER->id;
             $this->timecreated = $this->timemodified;
-            $this->id = $DB->insert_record('block_scomments_replies', $this);
+            $this->id = $DB->insert_record('block_socialcomments_replies', $this);
 
             $this->fire_event_created();
         }

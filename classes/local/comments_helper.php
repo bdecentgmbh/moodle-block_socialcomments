@@ -71,7 +71,7 @@ class comments_helper {
         );
 
         $formdata = new \stdClass();
-        $formdata->pagepinned = $DB->record_exists('block_scomments_pins', $params);
+        $formdata->pagepinned = $DB->record_exists('block_socialcomments_pins', $params);
 
         return $formdata;
     }
@@ -89,7 +89,7 @@ class comments_helper {
         $params['contextid'] = $this->context->id;
 
         $sql = "SELECT COUNT(id)
-                 FROM {block_scomments_comments}
+                 FROM {block_socialcomments_cmmnts}
                  WHERE contextid = :contextid {$andingroups}";
 
         return $DB->count_records_sql($sql, $params);
@@ -129,7 +129,7 @@ class comments_helper {
             'userid' => $this->user->id
         );
 
-        $commentsdata->subscribed = $DB->count_records('block_scomments_subscripts', $countparams);
+        $commentsdata->subscribed = $DB->count_records('block_socialcomments_subscrs', $countparams);
         $commentsdata->count = $this->get_commentscount();
         $commentsdata->minpage = 0;
         $commentsdata->maxpage = 0;
@@ -151,9 +151,9 @@ class comments_helper {
 
         $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, p.itemtype as pinned,
                 bc.userid, $userfields, $userpicturefields
-                FROM {block_scomments_comments} bc
+                FROM {block_socialcomments_cmmnts} bc
                 JOIN {user} u ON bc.userid = u.id
-                LEFT JOIN {block_scomments_pins} p ON p.itemid = bc.id AND p.itemtype = :itemtype AND p.userid = :userid
+                LEFT JOIN {block_socialcomments_pins} p ON p.itemid = bc.id AND p.itemtype = :itemtype AND p.userid = :userid
                 WHERE bc.contextid = :contextid {$andingroups} ORDER by bc.timecreated ASC ";
 
         // Check page range.
@@ -199,7 +199,7 @@ class comments_helper {
         list($instr, $params) = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED);
 
         $sql = "SELECT commentid, count(*)
-                FROM {block_scomments_replies}
+                FROM {block_socialcomments_replies}
                 WHERE commentid {$instr}
                 GROUP BY commentid";
 
@@ -216,7 +216,7 @@ class comments_helper {
 
         $sql = "SELECT r.id as postid, r.content, r.timecreated, r.userid,
                 $userfields, $userpicturefields
-                FROM {block_scomments_replies} r
+                FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id
                 WHERE r.commentid = ?
                 ORDER by r.timecreated ASC";
@@ -301,18 +301,18 @@ class comments_helper {
         }
 
         if (!$checked) {
-            $DB->delete_records('block_scomments_pins', $params);
+            $DB->delete_records('block_socialcomments_pins', $params);
             return false;
         }
 
         // Item already pinned.
-        if ($exists = $DB->get_record('block_scomments_pins', $params)) {
+        if ($exists = $DB->get_record('block_socialcomments_pins', $params)) {
             return true;
         }
 
         $pin = (object) $params;
         $pin->timecreated = time();
-        $DB->insert_record('block_scomments_pins', $pin);
+        $DB->insert_record('block_socialcomments_pins', $pin);
 
         return true;
     }
@@ -335,12 +335,12 @@ class comments_helper {
         );
 
         if (!$checked) {
-            $DB->delete_records('block_scomments_subscripts', $params);
+            $DB->delete_records('block_socialcomments_subscrs', $params);
             return false;
         }
 
         // Already subscribed?
-        if ($exists = $DB->get_record('block_scomments_subscripts', $params)) {
+        if ($exists = $DB->get_record('block_socialcomments_subscrs', $params)) {
             return true;
         }
 
@@ -350,7 +350,7 @@ class comments_helper {
         $subscript->timemodified = $subscript->timecreated;
         // Next cronjob will send changes starting from this time.
         $subscript->timelastsent = $subscript->timecreated;
-        $DB->insert_record('block_scomments_subscripts', $subscript);
+        $DB->insert_record('block_socialcomments_subscrs', $subscript);
 
         return true;
     }
@@ -362,7 +362,7 @@ class comments_helper {
         $courseid = $eventdata['objectid'];
 
         $sql = "SELECT bc.id
-                FROM {block_scomments_comments} bc
+                FROM {block_socialcomments_cmmnts} bc
                 WHERE courseid = ? ";
 
         $commentids = $DB->get_records_sql($sql, array($courseid));
@@ -374,7 +374,7 @@ class comments_helper {
         }
 
         // Delete subscriptions.
-        $DB->delete_records('block_scomments_subscripts', array('courseid' => $courseid));
+        $DB->delete_records('block_socialcomments_subscrs', array('courseid' => $courseid));
     }
 
     public static function user_deleted(\core\event\user_deleted $event) {
@@ -383,8 +383,8 @@ class comments_helper {
         $eventdata = $event->get_data();
         $userid = $eventdata['objectid'];
 
-        $DB->delete_records('block_scomments_subscripts', array('userid' => $userid));
-        $DB->delete_records('block_scomments_pins', array('userid' => $userid));
+        $DB->delete_records('block_socialcomments_subscrs', array('userid' => $userid));
+        $DB->delete_records('block_socialcomments_pins', array('userid' => $userid));
     }
 
     public static function get_digest_type_menu() {

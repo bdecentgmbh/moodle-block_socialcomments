@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/socialcomments/db" VERSION="20170603" COMMENT="XMLDB file for Moodle blocks/socialcomments"
+<XMLDB PATH="blocks/socialcomments/db" VERSION="20190425" COMMENT="XMLDB file for Moodle blocks/socialcomments"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="block_scomments_comments" COMMENT="All the comments for that appears in a specific page">
+    <TABLE NAME="block_socialcomments_cmmnts" COMMENT="All the comments for that appears in a specific page">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -28,7 +28,7 @@
         <INDEX NAME="uid-ctxid-timecreated" UNIQUE="false" FIELDS="userid, contextid, timecreated"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="block_scomments_subscripts" COMMENT="Note the subscription state and the last time a digest was sucessfully sent">
+    <TABLE NAME="block_socialcomments_subscrs" COMMENT="Note the subscription state and the last time a digest was sucessfully sent">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -47,7 +47,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="block_scomments_pins" COMMENT="Activities, courses, resources and comments may be pinned.">
+    <TABLE NAME="block_socialcomments_pins" COMMENT="Activities, courses, resources and comments may be pinned.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="itemtype" TYPE="int" LENGTH="5" NOTNULL="true" SEQUENCE="false" COMMENT="Pin a page (i. e. a activity, course or resource) or a single comment."/>
@@ -62,7 +62,7 @@
         <INDEX NAME="iid-itype-uid" UNIQUE="false" FIELDS="itemid, itemtype, userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="block_scomments_replies" COMMENT="Replies of comments">
+    <TABLE NAME="block_socialcomments_replies" COMMENT="Replies of comments">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="commentid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

@@ -91,10 +91,10 @@ class digest {
         // Get new replies.
         $sql = "SELECT r.id as postid, r.commentid, r.content, r.timecreated, r.userid,
                 $authorfields, $authorpicturefields, bc.contextid as postcontextid
-                FROM {block_scomments_replies} r
+                FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id
-                JOIN {block_scomments_comments} bc ON bc.id = r.commentid
-                JOIN {block_scomments_subscripts} sub ON sub.contextid = bc.contextid AND r.timemodified >= sub.timelastsent
+                JOIN {block_socialcomments_cmmnts} bc ON bc.id = r.commentid
+                JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid AND r.timemodified >= sub.timelastsent
                 WHERE sub.userid = ? ";
 
         $orderby = 'ORDER BY r.timecreated DESC';
@@ -118,9 +118,9 @@ class digest {
         $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, bc.userid,
                 u.id, $authorfields, $authorpicturefields, bc.contextid as postcontextid,
                 bc.groupid, sub.courseid
-                FROM {block_scomments_comments} bc
+                FROM {block_socialcomments_cmmnts} bc
                 JOIN {user} u ON bc.userid = u.id
-                JOIN {block_scomments_subscripts} sub ON sub.contextid = bc.contextid ";
+                JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid ";
 
         $params = array('userid' => $user->id);
 
@@ -257,7 +257,7 @@ class digest {
 
                     foreach ($contextids as $contextid => $time) {
                         $params = array('userid' => $user->id, 'contextid' => $contextid);
-                        $DB->set_field('block_scomments_subscripts', 'timelastsent', $time, $params);
+                        $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
                     }
                 }
             }
@@ -282,7 +282,7 @@ class digest {
 
                     foreach ($this->timelastsent[$courseid] as $contextid => $time) {
                         $params = array('userid' => $user->id, 'contextid' => $contextid);
-                        $DB->set_field('block_scomments_subscripts', 'timelastsent', $time, $params);
+                        $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
                     }
                 }
             }
@@ -312,7 +312,7 @@ class digest {
         // Get the users, that have subscriptions
         // (ordered by timelastent ASC to process the long waiting users first.
         $sql = "SELECT s.userid, MIN(s.timelastsent) as mintime
-                FROM {block_scomments_subscripts} s
+                FROM {block_socialcomments_subscrs} s
                 GROUP BY s.userid
                 ORDER BY mintime ASC ";
 

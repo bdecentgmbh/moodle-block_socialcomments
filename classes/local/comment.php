@@ -49,7 +49,7 @@ class comment extends basepost {
 
         if ($fetch && !empty($attrs['id'])) {
 
-            if ($dbattrs = $DB->get_record('block_scomments_comments', array('id' => $attrs['id']), '*', $strictness)) {
+            if ($dbattrs = $DB->get_record('block_socialcomments_cmmnts', array('id' => $attrs['id']), '*', $strictness)) {
 
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
@@ -219,9 +219,12 @@ class comment extends basepost {
     public function delete() {
         global $DB;
 
-        $DB->delete_records('block_scomments_comments', array('id' => $this->id));
-        $DB->delete_records('block_scomments_replies', array('commentid' => $this->id));
-        $DB->delete_records('block_scomments_pins', array('itemid' => $this->id, 'itemtype' => comments_helper::PINNED_COMMENT));
+        $DB->delete_records('block_socialcomments_cmmnts', array('id' => $this->id));
+        $DB->delete_records('block_socialcomments_replies', array('commentid' => $this->id));
+        $DB->delete_records('block_socialcomments_pins', array(
+            'itemid' => $this->id,
+            'itemtype' => comments_helper::PINNED_COMMENT)
+        );
     }
 
     public function fire_event_created() {
@@ -254,11 +257,11 @@ class comment extends basepost {
         $this->timemodified = time();
 
         if ($this->id > 0) {
-            $DB->update_record('block_scomments_comments', $this);
+            $DB->update_record('block_socialcomments_cmmnts', $this);
         } else {
             $this->userid = $USER->id;
             $this->timecreated = $this->timemodified;
-            $this->id = $DB->insert_record('block_scomments_comments', $this);
+            $this->id = $DB->insert_record('block_socialcomments_cmmnts', $this);
 
             $this->fire_event_created();
         }
