@@ -28,8 +28,8 @@ $tasks = array(
     array(
         'classname' => 'block_socialcomments\task\process_digest_cron',
         'blocking' => 0,
-        'minute' => '0',
-        'hour' => '0',
+        'minute' => 'R',
+        'hour' => 'R',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'
