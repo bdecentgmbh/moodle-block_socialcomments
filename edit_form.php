@@ -19,6 +19,8 @@
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die;
+
 class block_socialcomments_edit_form extends block_edit_form {
 
     protected function specific_definition($mform) {
