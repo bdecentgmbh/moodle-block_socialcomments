@@ -7,20 +7,20 @@
 .block_socialcomments .ccomment-form-pagepinned-wrap,
 .block_socialcomments .ccomment-comments-subscribed-wrap,
 .block_socialcomments .ccomment-post-pinned-wrap {
-    float:right;
+    float: right;
 }
 
 .block_socialcomments .ccomment-comments-count {
-    float:left;
+    float: left;
 }
 
 /* Comments form */
 .block_socialcomments .ccomment-form-top {
-    margin-bottom : 10px;
+    margin-bottom: 10px;
 }
 
 .block_socialcomments .fullwidth {
-    width : 95%;
+    width: 95%;
 }
 
 .block_socialcomments .ccomment-form-action-buttons {
@@ -39,18 +39,17 @@
 }
 
 .block_socialcomments .ccomment-highlight {
-    background: #F5A500;
-    color:white;
+    background: #f5a500;
+    color: white;
 }
 
 /* Comments */
 .block_socialcomments .ccomment-post-wrap {
     list-style: none;
-    margin-left:0px;
+    margin-left: 0;
 }
 
 .block_socialcomments .ccomment-post {
-
     background: #fff;
     padding: 5px;
     margin-top: 10px;
@@ -67,7 +66,7 @@
 
 .block_socialcomments .ccomment-post-userpicture .userpicture,
 .block.block_socialcomments .content .ccomment-post-userpicture .userpicture {
-    width : 35px;
+    width: 35px;
     height: 35px;
     float: left;
     margin-right: 6px;
@@ -93,7 +92,7 @@
 }
 
 .block_socialcomments .ccomment-pagingbar-curpagelink {
-    border:1px solid #ccc;
+    border: 1px solid #ccc;
     background: #fff;
 }
 
@@ -108,7 +107,7 @@
     border-left: 7px solid transparent;
     border-right: 7px solid transparent;
     border-bottom: 7px solid #ccc;
-    border-bottom-color: rgba(0,0,0,.2);
+    border-bottom-color: rgba(0, 0, 0, .2);
     position: absolute;
     top: -7px;
     right: 9px;
@@ -126,14 +125,14 @@
 }
 
 .jsenabled .block_socialcomments .ccomment-post-header .moodle-actionmenu[data-enhance] .toggle-display.textmenu .caret {
-    display: none
+    display: none;
 }
 
 .block_socialcomments .ccomment-post-header .moodle-actionmenu.show[data-enhanced] .menu a {
     outline: none;
     text-decoration: none;
     padding: 2px 1em 2px 1em;
-    text-align: center
+    text-align: center;
 }
 
 /* Style checkbox as a togge switch */
@@ -149,8 +148,8 @@
 }
 
 .block_socialcomments .cc-switch-label {
-    text-align:center;
-    color: #666666;
+    text-align: center;
+    color: #666;
 }
 
 .block_socialcomments .cc-switch .slider {
@@ -160,7 +159,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #CB2322;
+    background-color: #cb2322;
     -webkit-transition: .4s;
     transition: .4s;
     border-radius: 22px;
@@ -181,7 +180,7 @@
 }
 
 .block_socialcomments .cc-switch input:checked + .slider {
-    background-color: #89B833;
+    background-color: #89b833;
 }
 
 .block_socialcomments .cc-switch input:checked + .slider:before {
@@ -206,11 +205,11 @@
 
 .block_socialcomments .cc-switch .labelno {
     right: 5px;
-    left : 25px;
+    left: 25px;
 }
 
 .block_socialcomments .cc-switch input + .slider .labelyes {
-    display: none
+    display: none;
 }
 
 .block_socialcomments .cc-switch input:checked + .slider .labelyes {
@@ -218,59 +217,59 @@
 }
 
 .block_socialcomments .cc-switch input:checked + .slider .labelno {
-    display: none
+    display: none;
 }
 
 /* Comments reply link and pin */
 .block_socialcomments .comments-post-footer a,
 .block_socialcomments .comments-post-footer a:visited {
-    color: #666666;
+    color: #666;
 }
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
 .block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label,
 .block_socialcomments .ccomment-post-pinned-wrap input[type="checkbox"] + label,
 .block_socialcomments .ccomment-form-pagepinned-wrap input[type="checkbox"] + label {
-    display:block;
+    display: block;
     width: 22px;
     height: 17px;
-    padding:0;
+    padding: 0;
     color: transparent;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
-.block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label{
+.block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label {
     background-image: url([[pix:block_socialcomments|commentpinned]]);
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap input + label,
-.block_socialcomments .ccomment-form-pagepinned-wrap input + label{
+.block_socialcomments .ccomment-form-pagepinned-wrap input + label {
     background-image: url([[pix:block_socialcomments|commentunpinned]]);
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap input,
 .block_socialcomments .ccomment-form-pagepinned-wrap input {
-    display:none;
+    display: none;
 }
 
 /* Replies */
 .block_socialcomments .ccomment-reply-list {
-    list-style:none;
+    list-style: none;
     margin: 0 0 15px 15px;
 }
 
 .block_socialcomments .ccomment-reply-wrap {
-    display:block;
-    position:relative;
+    display: block;
+    position: relative;
     margin-top: 10px;
-    background: #ffffff;
+    background: #fff;
     padding: 5px;
     border: 1px solid #ccc;
 }
 
 /* Style speech bubble */
 #ccomment-replyform .form-control {
-    position:relative;
-    display:block;
+    position: relative;
+    display: block;
     margin-top: 10px;
 }
 
@@ -281,7 +280,7 @@
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 8px solid #ccc;
-    position:absolute;
+    position: absolute;
     left: 13px;
     top: -8px;
 }
@@ -293,7 +292,7 @@
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 9px solid #fff;
-    position:absolute;
+    position: absolute;
     left: 13px;
     top: -7px;
 }
@@ -308,34 +307,38 @@
     position: relative;
 }
 
-.block_socialcomments .cctooltip:hover { text-decoration:none; }
+.block_socialcomments .cctooltip:hover {
+    text-decoration: none;
+}
 .block_socialcomments .cctooltip > span {
-    z-index:10;display:none; padding:1px 3px;
-    line-height:16px;
-    border-radius:4px;
-    position:absolute;
-    top:-26px;
+    z-index: 10;
+    display: none;
+    padding: 1px 3px;
+    line-height: 16px;
+    border-radius: 4px;
+    position: absolute;
+    top: -26px;
     font-size: 0.8em;
-    background:#BED6E3;
-    white-space:nowrap;
+    background: #bed6e3;
+    white-space: nowrap;
 }
 .block_socialcomments .cctooltip:hover > span {
-    display:block;
+    display: block;
 }
 
 .block_socialcomments .ccomment-form-navlink-wrap {
-    float:left;
+    float: left;
     margin-top: 10px;
 }
 
 .block_socialcomments .ccomments-courseselect .jumpmenu div,
 .block_socialcomments .ccomments-courseselect .jumpmenu,
 .block_socialcomments .ccomments-courseselect form {
-    display :inline;
+    display: inline;
 }
 
 .block_socialcomments .ccomments-courseselect select {
-    margin: 0px;
+    margin: 0;
 }
 
 .block_socialcomments .ccomments-courseselect span {
@@ -349,26 +352,26 @@
 
 .block_socialcomments .ccomments-no-pins .ccomment-form-pagepinned-wrap,
 .block_socialcomments .ccomments-no-pins .ccomment-post-pinned-wrap {
-    display:none;
+    display: none;
 }
 
 .block_socialcomments .ccomments-pin-tooltip {
-    position:absolute;
+    position: absolute;
     margin-top: -45px;
     margin-left: -10px;
-    background: #CAD8B1;
-    border-radius:4px;
+    background: #cad8b1;
+    border-radius: 4px;
     padding: 0 2px;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap div.ccomments-pin-tooltip,
 .block_socialcomments .ccomment-form-pagepinned-wrap div.ccomments-pin-tooltip {
-    display:none;
+    display: none;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap:hover div.ccomments-pin-tooltip,
 .block_socialcomments .ccomment-form-pagepinned-wrap:hover div.ccomments-pin-tooltip {
-    display:block;
+    display: block;
 }
 
 
