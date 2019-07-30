@@ -382,7 +382,6 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
 
-
         // Create courses and users.
         $student = $generator->create_user();
         $studentcontext = context_user::instance($student->id);

@@ -257,7 +257,6 @@ class comment extends basepost {
             $this->courseid = SITEID;
         }
 
-
         $this->timemodified = time();
 
         if ($this->id > 0) {
