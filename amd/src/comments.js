@@ -23,17 +23,17 @@
  * @since      3.1
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, ajax, notification, corestr) {
+define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, ajax, notification, corestr) {
 
     var LASTPAGE = -1;
 
-    var params = null;      // ...contextid, subscribed, commentscount.
+    var params = null; // ...contextid, subscribed, commentscount.
 
-    var editcommentid = 0;  // Current edited comment.
+    var editcommentid = 0; // Current edited comment.
     var replycommentid = 0; // Id of comment user is currently replying.
-    var replyid = 0;        // Current edited reply;
-    var menunumber = -1;    // Current opened menu.
-    var pagenumber = 0;     // Current loaded page.
+    var replyid = 0; // Current edited reply;
+    var menunumber = -1; // Current opened menu.
+    var pagenumber = 0; // Current loaded page.
 
     var $formtextarea = null;
     var $formactionpost = null;
@@ -49,8 +49,8 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
     /**
      * Check post content and do an alert when empty.
      *
-     * @param String content.
-     * @returns Boolean true when empty.
+     * @param {string} content - Content of the post.
+     * @returns {boolean} - Result is true when the post content is empty.
      */
     function alertPostEmpty(content) {
 
@@ -58,7 +58,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
             corestr.get_strings([
                 {'key': 'error'},
                 {'key': 'pleaseinputtext', component: 'block_socialcomments'}
-            ]).done(function (s) {
+            ]).done(function(s) {
                 notification.alert(s[0], s[1]);
             }
             ).fail(notification.exception);
@@ -68,6 +68,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         return false;
     }
 
+    /**
+     * Move form.
+     */
     function moveForms() {
         $('#ccomment-editform-wrap').append($('#ccomment-editform'));
         resetEditComment();
@@ -79,7 +82,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
     /**
      * Get HTML of a page with pagenumber 0..maxpage via AJAX.
      *
-     * @param int pagenumber
+     * @param {int} newpagenumber Number of the page.
      */
     function loadCommentsPage(newpagenumber) {
 
@@ -92,7 +95,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                     contextid: params.contextid,
                     pagenumber: newpagenumber
                 },
-                done: function (response) {
+                done: function(response) {
                     pagenumber = response.pagenumber;
                     $('#ccomment-commentspage-wrap').html(response.commentspage);
                 },
@@ -106,7 +109,6 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
      *
      * @param {Object} $textarea
      * @param {int} commentid
-     * @returns {bool}
      */
     function saveComment($textarea, commentid) {
 
@@ -124,7 +126,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                         groupid: groupid,
                         id: commentid
                     },
-                    done: function (response) {
+                    done: function(response) {
                         // Update display.
                         $('.ccomment-comments-count').html(response.count);
                         $('#ccomment-comments-content-top').removeClass('hidden');
@@ -155,9 +157,8 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
     /**
      * Save a reply, create when replyid == 0 or update otherwise.
      *
-     * @param {Object} $textarea
-     * @param {int} commentid
-     * @returns {bool}
+     * @param {Object} $textarea jQuery object of textarea.
+     * @param {int} replyid ID of the reply.
      */
     function saveReply($textarea, replyid) {
 
@@ -174,7 +175,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                         commentid: replycommentid,
                         id: replyid
                     },
-                    done: function () {
+                    done: function() {
                         // Update display.
                         $textarea.val('');
                         // Load the Page the where the comment is visible.
@@ -196,14 +197,14 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         // Before delete DOM Elements move forms to safe place.
         moveForms();
 
-        corestr.get_string('commentdeleted', 'block_socialcomments').done(function (s) {
+        corestr.get_string('commentdeleted', 'block_socialcomments').done(function(s) {
             $('#ccomment-comment-listitem-' + response.deletedcommentid).addClass('ccomment-highlight');
-            $('#ccomment-comment-listitem-' + response.deletedcommentid).html(s).fadeOut(2000, function () {
+            $('#ccomment-comment-listitem-' + response.deletedcommentid).html(s).fadeOut(2000, function() {
                 loadCommentsPage(pagenumber);
             });
         });
 
-        corestr.get_string('commentscount', 'block_socialcomments', response.count).done(function (s) {
+        corestr.get_string('commentscount', 'block_socialcomments', response.count).done(function(s) {
             $('.ccomment-comments-count').html(s);
         });
 
@@ -216,7 +217,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
     /**
      * Delete a comment in the database.
      *
-     * @param {Object} href jQuery object of ancor.
+     * @param {Object} $href jQuery object of ancor.
      */
     function onCommentDeleteClicked($href) {
 
@@ -242,9 +243,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         // Before delete DOM Elements move forms to safe place.
         moveForms();
 
-        corestr.get_string('replydeleted', 'block_socialcomments').done(function (s) {
+        corestr.get_string('replydeleted', 'block_socialcomments').done(function(s) {
             $('#ccomment-reply-' + response.deletedreplyid).addClass('ccomment-highlight');
-            $('#ccomment-reply-' + response.deletedreplyid).html(s).fadeOut(2000, function () {
+            $('#ccomment-reply-' + response.deletedreplyid).html(s).fadeOut(2000, function() {
                 loadCommentsPage(pagenumber);
             });
         });
@@ -253,7 +254,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
     /**
      * Delete a reply in the database.
      *
-     * @param {Object} href jQuery object of ancor.
+     * @param {Object} $href jQuery object of ancor.
      */
     function onReplyDeleteClicked($href) {
 
@@ -284,7 +285,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                     checked: $checkbox.prop('checked'),
                     commentid: Number($checkbox.attr('id').split('-')[2])
                 },
-                done: function (response) {
+                done: function(response) {
                     $checkbox.prop('checked', response.checked);
                     // Set correct tooltip.
                     var $tooltipdiv = $checkbox.parent().find('.ccomments-pin-tooltip');
@@ -309,7 +310,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                     contextid: params.contextid,
                     checked: $checkbox.prop('checked')
                 },
-                done: function (response) {
+                done: function(response) {
                     params.subscribed = response.checked;
                     $checkbox.prop('checked').prop('checked', params.subscribed);
                 },
@@ -472,16 +473,16 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         $formtextarea = $('#ccomment-form-textarea');
         $formactionpost = $('#ccomment-form-action-post');
 
-        $formactionpost.click(function () {
+        $formactionpost.click(function() {
             saveComment($formtextarea, 0);
             highlightActionButton($formactionpost, $formtextarea.val());
         });
 
-        $formtextarea.keyup(function () {
+        $formtextarea.keyup(function() {
             highlightActionButton($formactionpost, $formtextarea.val());
         });
 
-        $('#ccomment-form-action-cancel').click(function () {
+        $('#ccomment-form-action-cancel').click(function() {
             $formtextarea.val('');
             $formactionpost.removeClass('ccomment-highlight-button');
         });
@@ -490,7 +491,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         $editactionsave = $('#ccomment-edit-action-save');
 
         // Edit comment.
-        $editactionsave.click(function () {
+        $editactionsave.click(function() {
 
             editcommentid = $edittextarea.attr('data-commentid');
 
@@ -501,30 +502,30 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         });
 
         // Cancel editing comment.
-        $('#ccomment-edit-action-cancel').click(function () {
+        $('#ccomment-edit-action-cancel').click(function() {
             if (editcommentid > 0) {
                 cancelEditComment();
                 resetEditComment();
             }
         });
 
-        $edittextarea.keyup(function () {
+        $edittextarea.keyup(function() {
             highlightActionButton($editactionsave, $edittextarea.val());
         });
 
         // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-post-action-delete-"]', 'click', function (e) {
+        $commentscontent.delegate('a[id^="ccomment-post-action-delete-"]', 'click', function(e) {
             e.preventDefault();
             onCommentDeleteClicked($(this));
         });
 
-        $commentscontent.delegate('a[id^="ccomment-post-action-edit-"]', 'click', function (e) {
+        $commentscontent.delegate('a[id^="ccomment-post-action-edit-"]', 'click', function(e) {
             e.preventDefault();
             startEditComment($(this));
         });
 
         // Reply-Link.
-        $commentscontent.delegate('a[id^="ccomment-reply-"]', 'click', function (e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-"]', 'click', function(e) {
             e.preventDefault();
             startCreateReply($(this));
         });
@@ -538,35 +539,35 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
         $replytextarea = $('#ccomment-reply-textarea');
         $replyactionsave = $('#ccomment-reply-action-save');
 
-        $replyactionsave.click(function () {
+        $replyactionsave.click(function() {
             saveReply($replytextarea, replyid);
             highlightActionButton($replyactionsave, $replytextarea.val());
         });
 
         // Cancel editing reply.
-        $('#ccomment-reply-action-cancel').click(function () {
+        $('#ccomment-reply-action-cancel').click(function() {
             cancelReplyComment();
             resetReplyComment();
         });
 
-        $replytextarea.keyup(function () {
+        $replytextarea.keyup(function() {
             highlightActionButton($replyactionsave, $replytextarea.val());
         });
 
         // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-reply-action-delete-"]', 'click', function (e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-action-delete-"]', 'click', function(e) {
             e.preventDefault();
             onReplyDeleteClicked($(this));
         });
 
-        $commentscontent.delegate('a[id^="ccomment-reply-action-edit-"]', 'click', function (e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-action-edit-"]', 'click', function(e) {
             e.preventDefault();
             startEditReply($(this));
         });
     }
 
     return {
-        init: function (initparams) {
+        init: function(initparams) {
 
             // Params.
             params = initparams;
@@ -581,25 +582,25 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
             initReplyForms();
 
             // Pin page or comment.
-            $('.block_socialcomments').delegate('input[id^="ccomment-pinned-"]', 'click', function () {
+            $('.block_socialcomments').delegate('input[id^="ccomment-pinned-"]', 'click', function() {
                 onPinnedClicked($(this));
             });
             // Subscribe.
-            $('#ccomment-comments-subscribed').click(function () {
+            $('#ccomment-comments-subscribed').click(function() {
                 onSubscribeClicked($(this));
             });
             // Open menu.
-            $commentscontent.delegate('a[id^="action-menu-toggle-"]', 'click', function (e) {
+            $commentscontent.delegate('a[id^="action-menu-toggle-"]', 'click', function(e) {
                 e.preventDefault();
                 showMenu($(this));
             });
             // Pagination.
-            $commentscontent.delegate('a[id^="ccomment-pagelink-"]', 'click', function (e) {
+            $commentscontent.delegate('a[id^="ccomment-pagelink-"]', 'click', function(e) {
                 e.preventDefault();
                 onPagingClicked($(this));
             });
             // Hide menu.
-            $(window).click(function () {
+            $(window).click(function() {
                 hideMenu();
             });
 
