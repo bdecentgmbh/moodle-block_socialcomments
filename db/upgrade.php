@@ -57,7 +57,7 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
         }
 
         // Socialcomments savepoint reached.
-        upgrade_plugin_savepoint(true, 2019042501, 'block', 'socialcomments');
+        upgrade_plugin_savepoint(true, 2019072601, 'block', 'socialcomments');
     }
     return true;
 }
