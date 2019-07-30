@@ -55,6 +55,9 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
         if ($dbman->table_exists($table)) {
             $dbman->rename_table($table, 'block_socialcomments_replies');
         }
+
+        // Socialcomments savepoint reached.
+        upgrade_plugin_savepoint(true, 2019042501, 'block', 'socialcomments');
     }
     return true;
 }
