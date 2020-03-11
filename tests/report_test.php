@@ -28,6 +28,12 @@ use \block_socialcomments\local\comments_helper;
 global $CFG;
 require_once($CFG->libdir . '/externallib.php');
 
+/**
+ * Unit tests for blocks\socialcomments\local\comments_helper.php
+ *
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_socialcomments_report_testcase extends advanced_testcase {
 
     /**

@@ -23,10 +23,15 @@
  * @since      3.1
  */
 
-define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
+define(['jquery', 'core/ajax', 'core/notification'], function($, ajax, notification) {
 
     var params = null; // ...contextid, subscribed, commentscount.
-
+    /**
+     * Load options for the selected topic.
+     *
+     * @method loadOptions
+     * @param {Object} $selecttopic ID of the selected topic.
+     */
     function loadOptions($selecttopic) {
 
         var topicindex = $selecttopic.val();
@@ -38,7 +43,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     sectionid: Number(topicindex),
                     courseid: params.courseid
                 },
-                done: function (response) {
+                done: function(response) {
                     $('#id_activityid').html(response.options);
                 },
                 fail: notification.exception
@@ -46,6 +51,12 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         ], false);
     }
 
+    /**
+     * Action triggered on activity selection.
+     *
+     * @method onActivitySelected
+     * @param {Object} $selecttopic ID of the selected topic.
+     */
     function onActivitySelected($selecttopic) {
 
         var index = $selecttopic.val();
@@ -56,16 +67,16 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
     }
 
     return {
-        init: function (initparams) {
+        init: function(initparams) {
 
             // Params.
             params = initparams;
 
-            $('#id_sectionid').change(function () {
+            $('#id_sectionid').change(function() {
                 loadOptions($(this));
             });
 
-            $('#id_activityid').change(function () {
+            $('#id_activityid').change(function() {
                 onActivitySelected($(this));
             });
         }

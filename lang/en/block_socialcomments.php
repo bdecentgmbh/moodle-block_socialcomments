@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ *  Strings for component 'block_socialcomments', language 'en'.
  *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
@@ -41,7 +42,7 @@ $string['socialcomments:pinitems'] = 'Pin items';
 $string['socialcomments:postcomments'] = 'Post comments';
 $string['socialcomments:subscribe'] = 'Subscribe to comments block';
 $string['socialcomments:view'] = 'View comments';
-$string['socialcomments:viewreport'] = 'View Report';
+$string['socialcomments:viewreport'] = 'View report';
 $string['socialcommentsreport'] = 'Social comments report';
 $string['digestsubject'] = 'Digest of social comments';
 $string['digestpercourse'] = 'Digest per course';
@@ -60,8 +61,8 @@ $string['hactivity'] = 'Activity / Resource';
 $string['hauthor'] = 'Author';
 $string['hcommentscount'] = 'No of comments';
 $string['hcomment'] = 'Comment';
-$string['hdate'] = 'Date and Time';
-$string['htopicname'] = 'Topic Name';
+$string['hdate'] = 'Date and time';
+$string['htopicname'] = 'Topic name';
 $string['limitreplies'] = 'Limit replies count';
 $string['limitrepliesdesc'] = 'Limit replies count per comment shown in comments list.';
 $string['messageprovider:digest'] = 'Notification of new social comments';
@@ -69,7 +70,7 @@ $string['newsfeed'] = 'News Feed';
 $string['nonewcommentssince'] = 'There are no new posts since {$a}';
 $string['nopinnedcomments'] = 'There are no pinned comments for course: {$a}';
 $string['pin'] = 'pin';
-$string['pinboard'] = 'Pin Board';
+$string['pinboard'] = 'Pin board';
 $string['pincommenttooltip'] = 'pin/unpin comment';
 $string['pinpage'] = 'pin page';
 $string['pleaseinputtext'] = 'Please input some text to post a comment';
@@ -77,18 +78,44 @@ $string['pluginname'] = 'Social Comments';
 $string['post'] = 'Post';
 $string['postcommentoncourse'] = 'Post a comment on this course...';
 $string['postcommentonmod'] = 'Post a comment on this module...';
+$string['privacy:commentspath'] = 'Comments';
+$string['privacy:metadata:block_socialcomments_cmmnts'] = 'Details about each comment that appears in a specific page.';
+$string['privacy:metadata:block_socialcomments_cmmnts:contextid'] = '';
+$string['privacy:metadata:block_socialcomments_cmmnts:content'] = 'The content of this comment.';
+$string['privacy:metadata:block_socialcomments_cmmnts:userid'] = 'The ID of the user for this comment.';
+$string['privacy:metadata:block_socialcomments_cmmnts:groupid'] = '';
+$string['privacy:metadata:block_socialcomments_cmmnts:courseid'] = 'The ID of the course for this comment.';
+$string['privacy:metadata:block_socialcomments_cmmnts:timemodified'] = 'The time that the comment was last modified.';
+$string['privacy:metadata:block_socialcomments_subscrs'] = 'Details about the subscription state and the last time a digest was sucessfully sent.';
+$string['privacy:metadata:block_socialcomments_subscrs:courseid'] = 'The ID of the course for this pin.';
+$string['privacy:metadata:block_socialcomments_subscrs:contextid'] = '';
+$string['privacy:metadata:block_socialcomments_subscrs:userid'] = 'The ID of the user for this subscription.';
+$string['privacy:metadata:block_socialcomments_subscrs:timelastsent'] = 'The last time a digest was sucessfully sent.';
+$string['privacy:metadata:block_socialcomments_subscrs:timemodified'] = 'The time that the subscription was last modified.';
+$string['privacy:metadata:block_socialcomments_pins'] = 'Activities, courses, resources or comments pinned by a user.';
+$string['privacy:metadata:block_socialcomments_pins:itemtype'] = 'Type of the pinned record (i. e. a activity, course or resource).';
+$string['privacy:metadata:block_socialcomments_pins:itemid'] = 'The ID of the pinned record.';
+$string['privacy:metadata:block_socialcomments_pins:userid'] = 'The ID of the user for this pin.';
+$string['privacy:metadata:block_socialcomments_replies'] = 'Details about each reply to a comment.';
+$string['privacy:metadata:block_socialcomments_replies:commentid'] = 'The ID of the comment record for this reply.';
+$string['privacy:metadata:block_socialcomments_replies:content'] = 'The content of this reply.';
+$string['privacy:metadata:block_socialcomments_replies:userid'] = 'The ID of the user for this reply.';
+$string['privacy:metadata:block_socialcomments_replies:timemodified'] = 'The time that the reply was last modified.';
+$string['privacy:pinspath'] = 'Pins';
+$string['privacy:repliespath'] = 'Replies';
+$string['privacy:subscriptionspath'] = 'Subscriptions';
 $string['processdigest'] = 'Process digests';
 $string['reply'] = 'Reply';
 $string['replydeleted'] = 'Your reply was deleted';
 $string['reportperpage'] = 'Items per page';
 $string['reportperpagedesc'] = 'Setup how many items the comments report lists per page';
-$string['reportspage'] = 'Comments Report';
+$string['reportspage'] = 'Comments report';
 $string['save'] = 'Save';
 $string['selectactivity'] = 'Select activity';
 $string['selecttopic'] = 'Select topic';
 $string['subscribed'] = 'Subscribed';
-$string['taballcomments'] = 'All Comments';
-$string['tabnewcomments'] = 'New Comments';
+$string['taballcomments'] = 'All comments';
+$string['tabnewcomments'] = 'New comments';
 $string['todate'] = 'to';
 $string['topic'] = 'Topic';
 $string['unpin'] = 'unpin';

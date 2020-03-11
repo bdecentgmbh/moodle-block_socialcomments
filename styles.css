@@ -1,29 +1,29 @@
 /* Links to more pages */
-.ccomment-form-navlink {
+.block_socialcomments .ccomment-form-navlink {
     margin-right: 10px;
 }
 
 /* Pins for comments and page */
-.ccomment-form-pagepinned-wrap,
-.ccomment-comments-subscribed-wrap,
-.ccomment-post-pinned-wrap {
-    float:right;
+.block_socialcomments .ccomment-form-pagepinned-wrap,
+.block_socialcomments .ccomment-comments-subscribed-wrap,
+.block_socialcomments .ccomment-post-pinned-wrap {
+    float: right;
 }
 
-.ccomment-comments-count {
-    float:left;
+.block_socialcomments .ccomment-comments-count {
+    float: left;
 }
 
 /* Comments form */
-.ccomment-form-top {
-    margin-bottom : 10px;
+.block_socialcomments .ccomment-form-top {
+    margin-bottom: 10px;
 }
 
-.fullwidth {
-    width : 95%;
+.block_socialcomments .fullwidth {
+    width: 95%;
 }
 
-.ccomment-form-action-buttons {
+.block_socialcomments .ccomment-form-action-buttons {
     text-align: right;
 }
 
@@ -38,19 +38,18 @@
     text-shadow: none;
 }
 
-.ccomment-highlight {
-    background: #F5A500;
-    color:white;
+.block_socialcomments .ccomment-highlight {
+    background: #f5a500;
+    color: white;
 }
 
 /* Comments */
-.ccomment-post-wrap {
+.block_socialcomments .ccomment-post-wrap {
     list-style: none;
-    margin-left:0px;
+    margin-left: 0;
 }
 
-.ccomment-post {
-    /*background: #eee;*/
+.block_socialcomments .ccomment-post {
     background: #fff;
     padding: 5px;
     margin-top: 10px;
@@ -65,55 +64,56 @@
     color: #999;
 }
 
-.ccomment-post-userpicture .userpicture,
-.block .content .ccomment-post-userpicture .userpicture {
-    width : 35px;
+.block_socialcomments .ccomment-post-userpicture .userpicture,
+.block.block_socialcomments .content .ccomment-post-userpicture .userpicture {
+    width: 35px;
     height: 35px;
     float: left;
     margin-right: 6px;
 }
 
-.ccomment-post-fullname {
+.block_socialcomments .ccomment-post-fullname {
     font-weight: bold;
 }
 
-.ccomment-post-timeposted {
+.block_socialcomments .ccomment-post-timeposted {
     color: #999;
 }
 
 /* paging bar */
-.ccomment-paging-bar {
+.block_socialcomments .ccomment-paging-bar {
     text-align: center;
 }
 
-.ccomment-pagingbar-pagelink, .ccomment-pagingbar-curpagelink {
+.block_socialcomments .ccomment-pagingbar-pagelink,
+.block_socialcomments .ccomment-pagingbar-curpagelink {
     margin: 5px 0;
     padding: 5px;
 }
 
-.ccomment-pagingbar-curpagelink {
-    border:1px solid #ccc;
+.block_socialcomments .ccomment-pagingbar-curpagelink {
+    border: 1px solid #ccc;
     background: #fff;
 }
 
 /* Action menu for comments and replies */
-.jsenabled .ccomment-post-header .moodle-actionmenu[data-enhance] {
+.jsenabled .block_socialcomments .ccomment-post-header .moodle-actionmenu[data-enhance] {
     float: right;
 }
 
-.jsenabled .ccomment-post-header .moodle-actionmenu.show .menu::before {
+.jsenabled .block_socialcomments .ccomment-post-header .moodle-actionmenu.show .menu::before {
     content: '';
     display: inline-block;
     border-left: 7px solid transparent;
     border-right: 7px solid transparent;
     border-bottom: 7px solid #ccc;
-    border-bottom-color: rgba(0,0,0,.2);
+    border-bottom-color: rgba(0, 0, 0, .2);
     position: absolute;
     top: -7px;
     right: 9px;
 }
 
-.jsenabled .ccomment-post-header .moodle-actionmenu.show .menu::after {
+.jsenabled .block_socialcomments .ccomment-post-header .moodle-actionmenu.show .menu::after {
     content: '';
     display: inline-block;
     border-left: 7px solid transparent;
@@ -124,49 +124,49 @@
     right: 9px;
 }
 
-.jsenabled .ccomment-post-header .moodle-actionmenu[data-enhance] .toggle-display.textmenu .caret {
-    display: none
+.jsenabled .block_socialcomments .ccomment-post-header .moodle-actionmenu[data-enhance] .toggle-display.textmenu .caret {
+    display: none;
 }
 
-.ccomment-post-header .moodle-actionmenu.show[data-enhanced] .menu a {
+.block_socialcomments .ccomment-post-header .moodle-actionmenu.show[data-enhanced] .menu a {
     outline: none;
     text-decoration: none;
     padding: 2px 1em 2px 1em;
-    text-align: center
+    text-align: center;
 }
 
 /* Style checkbox as a togge switch */
-.cc-switch {
+.block_socialcomments .cc-switch {
     position: relative;
     display: inline-block;
     width: 70px;
     height: 22px;
 }
 
-.cc-switch input {
+.block_socialcomments .cc-switch input {
     display: none;
 }
 
-.cc-switch-label {
-    text-align:center;
-    color: #666666;
+.block_socialcomments .cc-switch-label {
+    text-align: center;
+    color: #666;
 }
 
-.cc-switch .slider {
+.block_socialcomments .cc-switch .slider {
     position: absolute;
     cursor: pointer;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #CB2322;
+    background-color: #cb2322;
     -webkit-transition: .4s;
     transition: .4s;
     border-radius: 22px;
 }
 
 /* slider button */
-.cc-switch .slider:before {
+.block_socialcomments .cc-switch .slider:before {
     position: absolute;
     content: "";
     height: 18px;
@@ -179,17 +179,18 @@
     border-radius: 50%;
 }
 
-.cc-switch input:checked + .slider {
-    background-color: #89B833;
+.block_socialcomments .cc-switch input:checked + .slider {
+    background-color: #89b833;
 }
 
-.cc-switch input:checked + .slider:before {
+.block_socialcomments .cc-switch input:checked + .slider:before {
     -webkit-transform: translateX(48px);
     -ms-transform: translateX(48px);
     transform: translateX(48px);
 }
 
-.cc-switch .labelyes, .cc-switch .labelno {
+.block_socialcomments .cc-switch .labelyes,
+.block_socialcomments .cc-switch .labelno {
     position: absolute;
     height: 22px;
     line-height: 22px;
@@ -197,184 +198,188 @@
     text-align: center;
 }
 
-.cc-switch .labelyes {
+.block_socialcomments .cc-switch .labelyes {
     left: 5px;
     right: 25px;
 }
 
-.cc-switch .labelno {
+.block_socialcomments .cc-switch .labelno {
     right: 5px;
-    left : 25px;
+    left: 25px;
 }
 
-.cc-switch input + .slider .labelyes {
-    display: none
+.block_socialcomments .cc-switch input + .slider .labelyes {
+    display: none;
 }
 
-.cc-switch input:checked + .slider .labelyes {
+.block_socialcomments .cc-switch input:checked + .slider .labelyes {
     display: block;
 }
 
-.cc-switch input:checked + .slider .labelno {
-    display: none
+.block_socialcomments .cc-switch input:checked + .slider .labelno {
+    display: none;
 }
 
 /* Comments reply link and pin */
-.comments-post-footer a,
-.comments-post-footer a:visited {
-    color: #666666;
+.block_socialcomments .comments-post-footer a,
+.block_socialcomments .comments-post-footer a:visited {
+    color: #666;
 }
-.ccomment-post-pinned-wrap input:checked + label,
-.ccomment-form-pagepinned-wrap input:checked + label,
-.ccomment-post-pinned-wrap input[type="checkbox"] + label,
-.ccomment-form-pagepinned-wrap input[type="checkbox"] + label {
-    display:block;
+.block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
+.block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label,
+.block_socialcomments .ccomment-post-pinned-wrap input[type="checkbox"] + label,
+.block_socialcomments .ccomment-form-pagepinned-wrap input[type="checkbox"] + label {
+    display: block;
     width: 22px;
     height: 17px;
-    padding:0;
+    padding: 0;
     color: transparent;
 }
 
-.ccomment-post-pinned-wrap input:checked + label,
-.ccomment-form-pagepinned-wrap input:checked + label{
+.block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
+.block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label {
     background-image: url([[pix:block_socialcomments|commentpinned]]);
 }
 
-.ccomment-post-pinned-wrap input + label,
-.ccomment-form-pagepinned-wrap input + label{
+.block_socialcomments .ccomment-post-pinned-wrap input + label,
+.block_socialcomments .ccomment-form-pagepinned-wrap input + label {
     background-image: url([[pix:block_socialcomments|commentunpinned]]);
 }
 
-.ccomment-post-pinned-wrap input,
-.ccomment-form-pagepinned-wrap input {
-    display:none;
+.block_socialcomments .ccomment-post-pinned-wrap input,
+.block_socialcomments .ccomment-form-pagepinned-wrap input {
+    display: none;
 }
 
 /* Replies */
-.ccomment-reply-list {
-    list-style:none;
+.block_socialcomments .ccomment-reply-list {
+    list-style: none;
     margin: 0 0 15px 15px;
 }
 
-.ccomment-reply-wrap {
-    display:block;
-    position:relative;
+.block_socialcomments .ccomment-reply-wrap {
+    display: block;
+    position: relative;
     margin-top: 10px;
-    background: #ffffff;
+    background: #fff;
     padding: 5px;
     border: 1px solid #ccc;
 }
 
 /* Style speech bubble */
 #ccomment-replyform .form-control {
-    position:relative;
-    display:block;
+    position: relative;
+    display: block;
     margin-top: 10px;
 }
 
-.ccomment-reply-wrap::before,
+.block_socialcomments .ccomment-reply-wrap::before,
 #ccomment-replyform .form-control::before {
     content: '';
     display: inline-block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 8px solid #ccc;
-    position:absolute;
+    position: absolute;
     left: 13px;
     top: -8px;
 }
 
-.ccomment-reply-wrap::after,
+.block_socialcomments .ccomment-reply-wrap::after,
 #ccomment-replyform .form-control::after {
     content: '';
     display: inline-block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 9px solid #fff;
-    position:absolute;
+    position: absolute;
     left: 13px;
     top: -7px;
 }
 
 /* Exclude from speech bubble style, when editing */
-.ccomment-reply-wrap #ccomment-replyform .form-control {
+.block_socialcomments .ccomment-reply-wrap #ccomment-replyform .form-control {
     position: static;
 }
 
 /* Special tooltip */
-.cctooltip {
+.block_socialcomments .cctooltip {
     position: relative;
 }
 
-.cctooltip:hover {text-decoration:none;}
-.cctooltip > span {
-    z-index:10;display:none; padding:1px 3px;
-    line-height:16px;
-    border-radius:4px;
-    position:absolute;
-    top:-26px;
-    font-size: 0.8em;
-    background:#BED6E3;
-    white-space:nowrap;
+.block_socialcomments .cctooltip:hover {
+    text-decoration: none;
 }
-.cctooltip:hover > span {
-    display:block;
+.block_socialcomments .cctooltip > span {
+    z-index: 10;
+    display: none;
+    padding: 1px 3px;
+    line-height: 16px;
+    border-radius: 4px;
+    position: absolute;
+    top: -26px;
+    font-size: 0.8em;
+    background: #bed6e3;
+    white-space: nowrap;
+}
+.block_socialcomments .cctooltip:hover > span {
+    display: block;
 }
 
-.ccomment-form-navlink-wrap {
-    float:left;
+.block_socialcomments .ccomment-form-navlink-wrap {
+    float: left;
     margin-top: 10px;
 }
 
-.ccomments-courseselect .jumpmenu div,
-.ccomments-courseselect .jumpmenu,
-.ccomments-courseselect form {
-    display :inline;
+.block_socialcomments .ccomments-courseselect .jumpmenu div,
+.block_socialcomments .ccomments-courseselect .jumpmenu,
+.block_socialcomments .ccomments-courseselect form {
+    display: inline;
 }
 
-.ccomments-courseselect select {
-    margin: 0px;
+.block_socialcomments .ccomments-courseselect select {
+    margin: 0;
 }
 
-.ccomments-courseselect span {
+.block_socialcomments .ccomments-courseselect span {
     margin-right: 5px;
 }
 
-.ccomments-courseselect {
+.block_socialcomments .ccomments-courseselect {
     padding: 10px;
     background: #efefef;
 }
 
-.ccomments-no-pins .ccomment-form-pagepinned-wrap,
-.ccomments-no-pins .ccomment-post-pinned-wrap {
-    display:none;
+.block_socialcomments .ccomments-no-pins .ccomment-form-pagepinned-wrap,
+.block_socialcomments .ccomments-no-pins .ccomment-post-pinned-wrap {
+    display: none;
 }
 
-.ccomments-pin-tooltip {
-    position:absolute;
+.block_socialcomments .ccomments-pin-tooltip {
+    position: absolute;
     margin-top: -45px;
     margin-left: -10px;
-    background: #CAD8B1;
-    border-radius:4px;
+    background: #cad8b1;
+    border-radius: 4px;
     padding: 0 2px;
 }
 
-.ccomment-post-pinned-wrap div.ccomments-pin-tooltip,
-.ccomment-form-pagepinned-wrap div.ccomments-pin-tooltip {
-    display:none;
+.block_socialcomments .ccomment-post-pinned-wrap div.ccomments-pin-tooltip,
+.block_socialcomments .ccomment-form-pagepinned-wrap div.ccomments-pin-tooltip {
+    display: none;
 }
 
-.ccomment-post-pinned-wrap:hover div.ccomments-pin-tooltip,
-.ccomment-form-pagepinned-wrap:hover div.ccomments-pin-tooltip {
-    display:block;
+.block_socialcomments .ccomment-post-pinned-wrap:hover div.ccomments-pin-tooltip,
+.block_socialcomments .ccomment-form-pagepinned-wrap:hover div.ccomments-pin-tooltip {
+    display: block;
 }
 
 
-div#ccomment-form-content img.icon {
+.block_socialcomments div#ccomment-form-content img.icon {
     height: 30px;
     width: 35px;
 }
 
-div.ccomment-commentspage img.icon {
+.block_socialcomments div.ccomment-commentspage img.icon {
     width: auto;
 }

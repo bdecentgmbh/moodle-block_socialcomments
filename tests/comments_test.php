@@ -83,7 +83,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
         $this->assertFalse($result['error']);
 
-        $teacherscomment = $DB->get_record('block_scomments_comments', array('userid' => $teacher->id));
+        $teacherscomment = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $teacher->id));
         $this->assertNotFalse($teacherscomment);
 
         // Edit post. Ensure, that only content and timemodified may change - try to change group to 1.
@@ -94,17 +94,17 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
 
         // Check no additional comment is created.
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(1, $count);
 
-        $commenupdated = $DB->get_record('block_scomments_comments', array('userid' => $teacher->id));
+        $commenupdated = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $teacher->id));
         $this->assertEquals(0, $commenupdated->groupid);
         $this->assertEquals('Comment0-changed', $commenupdated->content);
 
         // Comment to group 1 should NOT work when course is not in group mode. Assert that we have still one comment.
         $params = array('contextid' => $coursecontext->id, 'content' => 'Comment1', 'groupid' => $group1->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(1, $count);
 
         // Switch to separate group mode and assert that we can now post for group1.
@@ -113,12 +113,12 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         $params = array('contextid' => $coursecontext->id, 'content' => 'Comment1', 'groupid' => $group1->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
 
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(2, $count);
 
         $params = array('contextid' => $coursecontext->id, 'content' => 'Comment2', 'groupid' => $group2->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(3, $count);
 
         $commentshelper = new \block_socialcomments\local\comments_helper($coursecontext);
@@ -130,7 +130,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         // Teacher can reply to comments.
         $params = array('contextid' => $coursecontext->id, 'content' => 'Reply1', 'commentid' => $teacherscomment->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_reply', $params);
-        $teachersreply1 = $DB->get_record('block_scomments_replies', array('userid' => $teacher->id));
+        $teachersreply1 = $DB->get_record('block_socialcomments_replies', array('userid' => $teacher->id));
         $this->assertEquals($teachersreply1->commentid, $teacherscomment->id);
 
         // Check visible Post for student1.
@@ -146,19 +146,19 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         // Check, whether student1 can post to group1.
         $params = array('contextid' => $coursecontext->id, 'content' => 'Comment1-Student1', 'groupid' => $group1->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(4, $count);
 
         // Student can reply to teachers comments.
         $params = array('contextid' => $coursecontext->id, 'content' => 'Reply2', 'commentid' => $teacherscomment->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_reply', $params);
-        $studentsreply1 = $DB->get_record('block_scomments_replies', array('userid' => $student1->id));
+        $studentsreply1 = $DB->get_record('block_socialcomments_replies', array('userid' => $student1->id));
         $this->assertEquals($studentsreply1->commentid, $teacherscomment->id);
 
         // Student1 should not be able to post to group2.
         $params = array('contextid' => $coursecontext->id, 'content' => 'Comment2-Student1', 'groupid' => $group2->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $count = $DB->count_records('block_scomments_comments');
+        $count = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(4, $count); // No additional post, should not be successfully posted.
         // Student 1 should not be able to delete or update teachers comments.
         $params = array(
@@ -170,20 +170,20 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
 
         // Try update.
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $commentupdated = $DB->get_record('block_scomments_comments', array('id' => $teacherscomment->id));
+        $commentupdated = $DB->get_record('block_socialcomments_cmmnts', array('id' => $teacherscomment->id));
         $this->assertEquals('Comment0-changed', $commentupdated->content);
 
         // Try delete.
         $params = array('id' => $teacherscomment->id);
         $result = external_api::call_external_function('block_socialcomments_delete_comment', $params);
-        $commentdeleted = $DB->get_record('block_scomments_comments', array('id' => $teacherscomment->id));
+        $commentdeleted = $DB->get_record('block_socialcomments_cmmnts', array('id' => $teacherscomment->id));
         $this->assertNotFalse($commentdeleted);
 
         // Try to delete own comment.
-        $student1comment = $DB->get_record('block_scomments_comments', array('userid' => $student1->id));
+        $student1comment = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $student1->id));
         $params = array('commentid' => $student1comment->id);
         $result = external_api::call_external_function('block_socialcomments_delete_comment', $params);
-        $commentdeleted = $DB->get_record('block_scomments_comments', array('id' => $student1comment->id));
+        $commentdeleted = $DB->get_record('block_socialcomments_cmmnts', array('id' => $student1comment->id));
         $this->assertFalse($commentdeleted);
 
         // Student 1 should not be able to delete or update teachers reply.
@@ -196,21 +196,21 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
 
         // Try update.
         $result = external_api::call_external_function('block_socialcomments_save_reply', $params);
-        $replyupdated = $DB->get_record('block_scomments_replies', array('id' => $teachersreply1->id));
+        $replyupdated = $DB->get_record('block_socialcomments_replies', array('id' => $teachersreply1->id));
         $this->assertEquals('Reply1', $replyupdated->content);
 
         // Try delete.
         $params = array('id' => $teachersreply1->id);
         $result = external_api::call_external_function('block_socialcomments_delete_reply', $params);
-        $replydeleted = $DB->get_record('block_scomments_replies', array('id' => $teachersreply1->id));
+        $replydeleted = $DB->get_record('block_socialcomments_replies', array('id' => $teachersreply1->id));
         $this->assertNotFalse($replydeleted);
 
         // Try to delete own reply.
-        $student1reply = $DB->get_record('block_scomments_replies', array('userid' => $student1->id));
+        $student1reply = $DB->get_record('block_socialcomments_replies', array('userid' => $student1->id));
         $params = array('replyid' => $student1reply->id);
         $result = external_api::call_external_function('block_socialcomments_delete_reply', $params);
 
-        $replydeleted = $DB->get_record('block_scomments_replies', array('id' => $student1reply->id));
+        $replydeleted = $DB->get_record('block_socialcomments_replies', array('id' => $student1reply->id));
         $this->assertFalse($replydeleted);
 
         // Teacher can delete own comment and all including replies.
@@ -220,10 +220,10 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
 
         $params = array('commentid' => $teacherscomment->id);
         $result = external_api::call_external_function('block_socialcomments_delete_comment', $params);
-        $commentdeleted = $DB->get_record('block_scomments_comments', array('id' => $teacherscomment->id));
+        $commentdeleted = $DB->get_record('block_socialcomments_cmmnts', array('id' => $teacherscomment->id));
         $this->assertFalse($commentdeleted);
 
-        $replies = $DB->get_records('block_scomments_replies', array('commentid' => $teacherscomment->id));
+        $replies = $DB->get_records('block_socialcomments_replies', array('commentid' => $teacherscomment->id));
         $this->assertCount(0, $replies);
     }
 
@@ -264,7 +264,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
             'itemtype' => comments_helper::PINNED_PAGE,
             'userid' => $teacher->id
         );
-        $pin = $DB->get_record('block_scomments_pins', $params);
+        $pin = $DB->get_record('block_socialcomments_pins', $params);
         $this->assertNotFalse($pin);
 
         // Delete pin to course context...
@@ -283,7 +283,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
             'itemtype' => comments_helper::PINNED_PAGE,
             'userid' => $teacher->id
         );
-        $pin = $DB->get_record('block_scomments_pins', $params);
+        $pin = $DB->get_record('block_socialcomments_pins', $params);
         $this->assertFalse($pin);
 
         // Create a comment for test of pinning comments and event comment_created.
@@ -293,7 +293,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
         $this->assertFalse($result['error']);
 
-        $teacherscomment = $DB->get_record('block_scomments_comments', array('userid' => $teacher->id));
+        $teacherscomment = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $teacher->id));
         $this->assertNotFalse($teacherscomment);
 
         $events = $sink->get_events();
@@ -322,7 +322,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
             'itemtype' => comments_helper::PINNED_COMMENT,
             'userid' => $teacher->id
         );
-        $pin = $DB->get_record('block_scomments_pins', $params);
+        $pin = $DB->get_record('block_socialcomments_pins', $params);
         $this->assertNotFalse($pin);
 
         // Subscribe to context...
@@ -339,7 +339,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
             'contextid' => $coursecontext->id,
             'userid' => $teacher->id
         );
-        $subscribed = $DB->get_record('block_scomments_subscripts', $params);
+        $subscribed = $DB->get_record('block_socialcomments_subscrs', $params);
         $this->assertNotFalse($subscribed);
 
         // Delete subscription...
@@ -356,7 +356,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
             'contextid' => $coursecontext->id,
             'userid' => $teacher->id
         );
-        $subscribed = $DB->get_record('block_scomments_subscripts', $params);
+        $subscribed = $DB->get_record('block_socialcomments_subscrs', $params);
         $this->assertFalse($subscribed);
 
         // Test event for reply.
@@ -365,7 +365,7 @@ class block_socialcomments_comments_testcase extends advanced_testcase {
         $params = array('contextid' => $coursecontext->id, 'content' => 'Reply1', 'commentid' => $teacherscomment->id, 'id' => 0);
         $result = external_api::call_external_function('block_socialcomments_save_reply', $params);
 
-        $teachersreply1 = $DB->get_record('block_scomments_replies', array('userid' => $teacher->id));
+        $teachersreply1 = $DB->get_record('block_socialcomments_replies', array('userid' => $teacher->id));
         $this->assertEquals($teachersreply1->commentid, $teacherscomment->id);
 
         $events = $sink->get_events();

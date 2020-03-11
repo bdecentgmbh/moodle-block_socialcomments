@@ -15,12 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Task to process digests for socialcomments block.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace block_socialcomments\task;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Task to process digests for socialcomments block.
+ *
+ * @package   block_socialcomments
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class process_digest_cron extends \core\task\scheduled_task {
 
     public function get_name() {

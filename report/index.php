@@ -149,7 +149,10 @@ foreach ($comments as $comment) {
     // Number of comments.
     $row[] = $comment->commentscount;
     // Date.
-    $row[] = userdate($comment->timecreated, get_string('strftimedatefullshort', 'langconfig').' '.get_string('strftimetime', 'langconfig'));
+    $row[] = userdate(
+            $comment->timecreated,
+            get_string('strftimedatefullshort', 'langconfig').' '.get_string('strftimetime', 'langconfig')
+        );
     // User.
     $author = fullname($comment);
     if (!$download) {

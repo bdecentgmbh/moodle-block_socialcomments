@@ -15,31 +15,61 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Handles displaying the socialcomments block.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-
+/**
+ * Socialcomments block definition class.
+ *
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_socialcomments extends block_base {
 
+    /**
+     * Initialise the block.
+     */
     public function init() {
         $this->title = get_string('pluginname', 'block_socialcomments');
     }
 
+    /**
+     * Locations where block can be displayed.
+     *
+     * @return array
+     */
     public function applicable_formats() {
         return array('course' => true, 'mod' => true);
     }
 
+    /**
+     * Forbid the block to be added multiple times to a single page.
+     *
+     * @return boolean
+     */
     public function instance_allow_multiple() {
         return false;
     }
 
+    /**
+     * Allow the block to have a configuration page.
+     *
+     * @return boolean
+     */
     public function has_config() {
         return true;
     }
 
+    /**
+     * Return the content of this block.
+     *
+     * @return stdClass the content
+     */
     public function get_content() {
         global $PAGE;
 
@@ -69,7 +99,11 @@ class block_socialcomments extends block_base {
         return $this->content;
     }
 
-
+    /**
+     * Return the attributes to set for this block.
+     *
+     * @return array An array of HTML attributes.
+     */
     public function html_attributes() {
         $attributes = parent::html_attributes();
 

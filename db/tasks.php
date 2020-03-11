@@ -15,16 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Task definition for block_socialcomments.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 $tasks = array(
     array(
         'classname' => 'block_socialcomments\task\process_digest_cron',
         'blocking' => 0,
-        'minute' => '0',
-        'hour' => '0',
+        'minute' => 'R',
+        'hour' => 'R',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*'

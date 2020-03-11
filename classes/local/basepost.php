@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains class block_socialcomments\local\basepost.
+ *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,10 +28,11 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Abstract base class for comments and replies.
+ *
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class basepost {
-
-    protected $tablename;
 
     /**
      * Create a object of this class.
@@ -39,20 +42,7 @@ abstract class basepost {
      * @param int $strictness ignore or force comment exists in database.
      */
     public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
-        global $DB, $USER;
-
-        if ($fetch && !empty($attrs['id'])) {
-
-            if ($dbattrs = $DB->get_record($this->tablename, array('id' => $attrs['id']), '*', $strictness)) {
-
-                // Load new content, if available.
-                if (isset($attrs['content'])) {
-                    $dbattrs->content = $attrs['content'];
-                }
-
-                $attrs = (array) $dbattrs;
-            }
-        }
+        global $USER;
 
         foreach ($attrs as $key => $value) {
             $this->$key = $value;
@@ -137,31 +127,11 @@ abstract class basepost {
     /**
      * Delete this post.
      */
-    public function delete() {
-        global $DB;
-        $DB->delete_records($this->tablename, array('id' => $this->id));
-    }
+    abstract public function delete();
 
     /**
      * Create or update this post.
-     *
-     * @return \block_socialcomments\local\postbase
      */
-    public function save() {
-        global $DB, $USER;
-
-        $this->timemodified = time();
-
-        if ($this->id > 0) {
-            $DB->update_record($this->tablename, $this);
-        } else {
-            $this->userid = $USER->id;
-            $this->timecreated = $this->timemodified;
-            $this->id = $DB->insert_record($this->tablename, $this);
-
-            $this->fire_event_created();
-        }
-        return $this;
-    }
+    abstract public function save();
 
 }

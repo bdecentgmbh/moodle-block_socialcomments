@@ -14,7 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/* * Generator for the block.
+/**
+ * Generator for the socialcomments block.
  *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
@@ -22,9 +23,18 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Generator class for the block.
+ *
+ * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_socialcomments_generator extends component_generator_base {
 
+    /** @var integer Number of created comments. */
     private $countcomment = 0;
+
+    /** @var integer Number of created replies. */
     private $countreplies = 0;
 
     public function create_comment($record = null) {
@@ -78,9 +88,9 @@ class block_socialcomments_generator extends component_generator_base {
         }
 
         $comment = (object) $record;
-        $id = $DB->insert_record('block_scomments_comments', $comment);
+        $id = $DB->insert_record('block_socialcomments_cmmnts', $comment);
 
-        return $DB->get_record('block_scomments_comments', array('id' => $id));
+        return $DB->get_record('block_socialcomments_cmmnts', array('id' => $id));
     }
 
     public function create_reply($record = null) {
@@ -113,9 +123,9 @@ class block_socialcomments_generator extends component_generator_base {
         }
 
         $comment = (object) $record;
-        $id = $DB->insert_record('block_scomments_replies', $comment);
+        $id = $DB->insert_record('block_socialcomments_replies', $comment);
 
-        return $DB->get_record('block_scomments_replies', array('id' => $id));
+        return $DB->get_record('block_socialcomments_replies', array('id' => $id));
     }
 
     public function create_subscription($record = null) {
@@ -147,9 +157,9 @@ class block_socialcomments_generator extends component_generator_base {
         }
 
         $subscription = (object) $record;
-        $id = $DB->insert_record('block_scomments_subscripts', $subscription);
+        $id = $DB->insert_record('block_socialcomments_subscrs', $subscription);
 
-        return $DB->get_record('block_scomments_subscripts', array('id' => $id));
+        return $DB->get_record('block_socialcomments_subscrs', array('id' => $id));
     }
 
 }
