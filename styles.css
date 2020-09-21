@@ -273,12 +273,6 @@
     margin-bottom: 1rem;
 }
 
-/*
-.form-control {
-    height: inherit !important;
-}
-*/
-
 /* Style speech bubble */
 #ccomment-replyform .form-control {
     position: relative;
