@@ -51,7 +51,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $textareaattrs['class'] = 'fullwidth';
 
         $html .= html_writer::start_tag('div', array('class' => 'ccomment-form-textarea-wrap'));
-        $html .= html_writer::start_tag('div', array('class' => 'form-control'));
+        $html .= html_writer::start_tag('div', array('class' => 'sc-block'));
         $html .= html_writer::tag('textarea', '', $textareaattrs);
         $html .= html_writer::end_tag('div');
 

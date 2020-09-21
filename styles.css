@@ -266,6 +266,19 @@
     border: 1px solid #ccc;
 }
 
+.sc-block {
+    min-height: 4rem;
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/*
+.form-control {
+    height: inherit !important;
+}
+*/
+
 /* Style speech bubble */
 #ccomment-replyform .form-control {
     position: relative;
