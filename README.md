@@ -18,8 +18,4 @@ Please be aware that the plugin was designed to match the [Lambda Theme](https:/
 
 ## Install
 
-How to install Moodle plugins is described here: https://docs.moodle.org/33/en/Installing_plugins#Installing_a_plugin 
-
-## Contribute
-
-We are currently looking for developers to help us maintain the plugin in the future! If you are interested please shoot a message to: bjoern@lefers.com 
+How to install Moodle plugins is described here: https://docs.moodle.org/en/Installing_plugins
