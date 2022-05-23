@@ -1,42 +1,52 @@
 /* Links to more pages */
 .block_socialcomments .ccomment-form-navlink {
-    margin-right: 10px;
+    margin-right: 2px;
 }
 
 /* Pins for comments and page */
 .block_socialcomments .ccomment-form-pagepinned-wrap,
-.block_socialcomments .ccomment-comments-subscribed-wrap,
 .block_socialcomments .ccomment-post-pinned-wrap {
     float: right;
+    position: relative;
+}
+
+.block_socialcomments .ccomment-comments-subscribed-wrap .cc-switch-label {
+	float: left;
+}
+
+.block_socialcomments .ccomment-comments-subscribed-wrap .cc-switch {
+	float: right;
 }
 
 .block_socialcomments .ccomment-comments-count {
-    float: left;
+    display: none;
+}
+
+.block_socialcomments .ccomment-form-textarea-wrap {
+	position: relative;
 }
 
 /* Comments form */
-.block_socialcomments .ccomment-form-top {
-    margin-bottom: 10px;
-}
-
 .block_socialcomments .fullwidth {
-    width: 95%;
+    width: 100%;
 }
 
 .block_socialcomments .ccomment-form-action-buttons {
     text-align: right;
+    position: absolute;
+    left: 2px;
+    bottom: 7px;
+    padding: 2px 4px;
+    background: #f2f2f2;
+    width: calc(100% - 4px);
+    border-radius: 0 0 2px 2px;
 }
 
-/* Form controls for comments and replies */
-.block_socialcomments .btn.ccomment-highlight-button {
-    background: red;
+.block_socialcomments #ccomment-form-action-cancel,
+.block_socialcomments #ccomment-form-action-post {
+	padding: 0 .75rem;
 }
 
-.block_socialcomments .btn {
-    background: #666;
-    color: #fff;
-    text-shadow: none;
-}
 
 .block_socialcomments .ccomment-highlight {
     background: #f5a500;
@@ -47,37 +57,60 @@
 .block_socialcomments .ccomment-post-wrap {
     list-style: none;
     margin-left: 0;
+    padding-left: 0;
+}
+
+.block_socialcomments .ccomment-form-top {
+	margin-bottom: 5px;
+	margin-top: -10px;
 }
 
 .block_socialcomments .ccomment-post {
-    background: #fff;
+    background: #f0f1f2;
     padding: 5px;
     margin-top: 10px;
-    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+}
+
+.block_socialcomments .ccomment-reply-wrap:hover,
+.block_socialcomments .ccomment-post:hover {
+    box-shadow: 2px 2px 4px 0px #ccc;
+}
+
+
+.block_socialcomments .ccomment-post-content {
+    line-height: 1.3;
 }
 
 /* Content of a comment or reply */
+/*
 #ccomment-comments-content-top {
     margin: 10px 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #dee2e6;
     padding-top: 10px;
-    color: #999;
+}
+*/
+
+.block_socialcomments .ccomment-post-header > div {
+    float: left;
 }
 
 .block_socialcomments .ccomment-post-userpicture .userpicture,
 .block.block_socialcomments .content .ccomment-post-userpicture .userpicture {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     float: left;
-    margin-right: 6px;
+    margin-right: 4px;
 }
 
 .block_socialcomments .ccomment-post-fullname {
     font-weight: bold;
-}
-
-.block_socialcomments .ccomment-post-timeposted {
-    color: #999;
+    text-overflow: ellipsis;
+    display: block;
+    width: calc(100% - 70px);
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 1.1;
 }
 
 /* paging bar */
@@ -87,13 +120,19 @@
 
 .block_socialcomments .ccomment-pagingbar-pagelink,
 .block_socialcomments .ccomment-pagingbar-curpagelink {
-    margin: 5px 0;
-    padding: 5px;
+    margin: 2px 0;
+    padding: 2px 5px;
+}
+
+.block_socialcomments .ccomment-pagingbar-pagelink:hover,
+.block_socialcomments .ccomment-pagingbar-curpagelink:hover {
+    text-decoration: none;
+    color: #fff;
+    background: #000;
 }
 
 .block_socialcomments .ccomment-pagingbar-curpagelink {
-    border: 1px solid #ccc;
-    background: #fff;
+    background: #dee2e6;
 }
 
 /* Action menu for comments and replies */
@@ -147,10 +186,6 @@
     display: none;
 }
 
-.block_socialcomments .cc-switch-label {
-    text-align: center;
-    color: #666;
-}
 
 .block_socialcomments .cc-switch .slider {
     position: absolute;
@@ -159,7 +194,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #cb2322;
+    background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
     border-radius: 22px;
@@ -234,6 +269,7 @@
     height: 17px;
     padding: 0;
     color: transparent;
+    margin-bottom: 0;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
@@ -254,16 +290,24 @@
 /* Replies */
 .block_socialcomments .ccomment-reply-list {
     list-style: none;
-    margin: 0 0 15px 15px;
+    margin: 0 0 5px 0;
+    padding-left: 1rem;
 }
 
 .block_socialcomments .ccomment-reply-wrap {
     display: block;
     position: relative;
-    margin-top: 10px;
-    background: #fff;
+    margin-top: 8px;
+    background: #f0f1f2;
     padding: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #f0f1f2;
+    border-radius: 0.5rem;
+}
+
+.sc-block {
+    min-height: 4rem;
+    display: block;
+    width: 100%;
 }
 
 /* Style speech bubble */
@@ -277,24 +321,13 @@
 #ccomment-replyform .form-control::before {
     content: '';
     display: inline-block;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 8px solid #ccc;
+    border-top: 12px solid transparent;
+    border-left: 12px solid transparent;
+    border-right: 12px solid #f0f1f2;
+    border-bottom: 12px solid transparent;
     position: absolute;
-    left: 13px;
-    top: -8px;
-}
-
-.block_socialcomments .ccomment-reply-wrap::after,
-#ccomment-replyform .form-control::after {
-    content: '';
-    display: inline-block;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 9px solid #fff;
-    position: absolute;
-    left: 13px;
-    top: -7px;
+    left: -25px;
+    top: 12px;
 }
 
 /* Exclude from speech bubble style, when editing */
@@ -328,7 +361,6 @@
 
 .block_socialcomments .ccomment-form-navlink-wrap {
     float: left;
-    margin-top: 10px;
 }
 
 .block_socialcomments .ccomments-courseselect .jumpmenu div,
@@ -356,12 +388,17 @@
 }
 
 .block_socialcomments .ccomments-pin-tooltip {
-    position: absolute;
-    margin-top: -45px;
-    margin-left: -10px;
-    background: #cad8b1;
+    z-index: 10;
+    display: none;
+    padding: 1px 3px;
+    line-height: 16px;
     border-radius: 4px;
-    padding: 0 2px;
+    position: absolute;
+    top: -26px;
+    right: -12px;
+    font-size: 0.8em;
+    background: #bed6e3;
+    white-space: nowrap;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap div.ccomments-pin-tooltip,
@@ -376,10 +413,107 @@
 
 
 .block_socialcomments div#ccomment-form-content img.icon {
-    height: 30px;
-    width: 35px;
+    height: 25px;
+    width: 25px;
+    margin-right: 5px;
 }
 
 .block_socialcomments div.ccomment-commentspage img.icon {
     width: auto;
+}
+
+/* Comments report */
+.path-blocks-socialcomments .ccomment-post-wrap {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.path-blocks-socialcomments .ccomment-post {
+    background: #f0f1f2;
+    padding: 15px;
+    margin-top: 30px;
+    border-radius: 0.5rem;
+}
+
+
+.path-blocks-socialcomments .ccomment-post-header > div {
+    float: left;
+}
+
+.path-blocks-socialcomments .ccomment-post-header .ccomment-post-userpicture {
+    width: 50px;
+}
+
+.path-blocks-socialcomments .ccomment-post-header .ccomment-post-timeposted,
+.path-blocks-socialcomments .ccomment-post-header .ccomment-post-fullname {
+    width: calc(100% - 50px);
+}
+
+.path-blocks-socialcomments .ccomment-post-header .ccomment-post-fullname {
+    font-weight: bold;
+}
+
+.path-blocks-socialcomments .ccomment-post-content {
+    margin-left: 50px;
+}
+
+.path-blocks-socialcomments .ccomment-reply-list {
+    list-style: none;
+    margin-left: 2rem;
+}
+
+.path-blocks-socialcomments .ccomment-reply-wrap {
+    background: #f0f1f2;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 0.5rem;
+    position: relative;
+}
+
+.path-blocks-socialcomments-pinboard h2 {
+    float: left;
+}
+
+.path-blocks-socialcomments-pinboard h3 {
+    clear: both;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+}
+
+.path-blocks-socialcomments .ccomments-courseselect {
+    float: right; 
+    margin-bottom: 1rem;
+}
+
+.path-blocks-socialcomments .ccomments-courseselect .jumpmenu div,
+.path-blocks-socialcomments .ccomments-courseselect .jumpmenu,
+.path-blocks-socialcomments .ccomments-courseselect form {
+    display: inline;
+}
+
+.path-blocks-socialcomments-pinboard .activity a {
+    margin-top: 2rem;
+    padding: 15px;
+    border: 1px solid black;
+    border-radius: 0.5rem;
+    width: 100%;
+    display: block;
+}
+
+.path-blocks-socialcomments-pinboard .activity a img {
+    margin-right: 1rem;
+}
+
+
+.path-blocks-socialcomments-pinboard .ccomment-reply-wrap::before {
+    content: '';
+    display: inline-block;
+    border-top: 12px solid transparent;
+    border-left: 12px solid transparent;
+    border-right: 12px solid #f0f1f2;
+    border-bottom: 12px solid transparent;
+    position: absolute;
+    left: -24px;
+    top: 12px;
 }
