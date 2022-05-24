@@ -15,7 +15,7 @@
 }
 
 .block_socialcomments .ccomment-comments-subscribed-wrap .cc-switch {
-	float: right;
+    float: right;
 }
 
 .block_socialcomments .ccomment-comments-count {
@@ -23,7 +23,7 @@
 }
 
 .block_socialcomments .ccomment-form-textarea-wrap {
-	position: relative;
+    position: relative;
 }
 
 /* Comments form */
@@ -38,7 +38,7 @@
 
 .block_socialcomments #ccomment-form-action-cancel,
 .block_socialcomments #ccomment-form-action-post {
-	padding: 0 .75rem;
+    padding: 0 .75rem;
 }
 
 
@@ -55,8 +55,8 @@
 }
 
 .block_socialcomments .ccomment-form-top {
-	margin-bottom: 5px;
-	margin-top: -10px;
+    margin-bottom: 5px;
+    margin-top: -10px;
 }
 
 .block_socialcomments .ccomment-post {
@@ -68,9 +68,8 @@
 
 .block_socialcomments .ccomment-reply-wrap:hover,
 .block_socialcomments .ccomment-post:hover {
-    box-shadow: 2px 2px 4px 0px #ccc;
+    box-shadow: 2px 2px 4px 0 #ccc;
 }
-
 
 .block_socialcomments .ccomment-post-content {
     line-height: 1.3;
