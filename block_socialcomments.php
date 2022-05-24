@@ -18,14 +18,16 @@
  * Handles displaying the socialcomments block.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
  * Socialcomments block definition class.
  *
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments extends block_base {

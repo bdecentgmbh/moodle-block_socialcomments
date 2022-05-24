@@ -18,7 +18,8 @@
  * Contains class block_socialcomments\local\reply.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -18,14 +18,16 @@
  * Version details
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022052400;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2016112900;        // Requires this Moodle version.
-$plugin->component = 'block_socialcomments'; // Full name of the plugin (used for diagnostics).
+$plugin->version   = 2022052400;        
+$plugin->requires  = 2022041900; // Requires 4.0
+$plugin->component = 'block_socialcomments';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '3.3';
+$plugin->supported = [40, 40];
+$plugin->release = '1.2';
