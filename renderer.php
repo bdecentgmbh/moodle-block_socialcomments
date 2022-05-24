@@ -51,7 +51,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         // Print posting textarea.
         $textareaattrs = array(
             'name' => $idtextarea,
-            'rows' => 2,
+            'rows' => 4,
             'id' => $idtextarea,
             'placeholder' => $placeholder,
             'data-commentid' => 0,
@@ -68,12 +68,12 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $buttons .= html_writer::tag(
                 'button',
                 get_string('cancel'),
-                array('id' => $idcancel, 'class' => 'btn')
+                array('id' => $idcancel, 'class' => 'btn btn-link')
             );
         $buttons .= html_writer::tag(
                 'button',
                 get_string($straction, 'block_socialcomments'),
-                array('id' => $idaction, 'class' => 'btn')
+                array('id' => $idaction, 'class' => 'btn btn-primary')
             );
 
         $html .= html_writer::div($buttons, 'ccomment-form-action-buttons');
@@ -353,7 +353,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                 $post->timecreated,
                 get_string('strftimedatefullshort', 'langconfig') . ' ' . get_string('strftimetime', 'langconfig')
             );
-        $h .= html_writer::div($ud, 'ccomment-post-timeposted');
+        $h .= html_writer::div($ud, 'ccomment-post-timeposted small text-muted');
 
         $p = html_writer::div($h, 'ccomment-post-header clearfix');
 
