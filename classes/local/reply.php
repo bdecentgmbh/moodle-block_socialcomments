@@ -24,14 +24,33 @@
 
 namespace block_socialcomments\local;
 
-defined('MOODLE_INTERNAL') || die;
-
+/**
+ * Class for reply
+ */
 class reply extends basepost {
-
+    /**
+     * @var $id
+     */
     public $id = 0;
+
+    /**
+     * @var $commentid
+     */
     public $commentid = 0;
+
+    /**
+     * @var $content
+     */
     public $content = '';
+
+    /**
+     * @var $format
+     */
     public $format = 0;
+
+    /**
+     * @var $userid
+     */
     public $userid = 0;
 
     /**
@@ -67,7 +86,6 @@ class reply extends basepost {
      */
     public function get_context() {
         global $DB;
-
         $comment = $DB->get_record('block_socialcomments_cmmnts', array('id' => $this->commentid), '*', MUST_EXIST);
         $context = \context::instance_by_id($comment->contextid, MUST_EXIST);
 
@@ -100,6 +118,10 @@ class reply extends basepost {
         $DB->delete_records('block_socialcomments_replies', array('id' => $this->id));
     }
 
+    /**
+     * Reply event created.
+     * @return void
+     */
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\reply_created::create(

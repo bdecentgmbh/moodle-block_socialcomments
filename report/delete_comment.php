@@ -40,7 +40,7 @@ $context = context_helper::instance_by_id($comment->contextid);
 
 if (!comment::can_delete($comment->userid, $context)) {
     // Can not delete frontpage or don't have permission to delete the course.
-    print_error('cannotdeletecourse');
+    throw new moodle_exception('cannotdeletecourse');
 }
 
 $PAGE->set_url('/blocks/socialcomments/delete_comment.php', array('id' => $id));

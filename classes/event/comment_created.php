@@ -24,7 +24,6 @@
 
 namespace block_socialcomments\event;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * block_socialcomments comment created event.

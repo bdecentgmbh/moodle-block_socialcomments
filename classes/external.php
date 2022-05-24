@@ -21,11 +21,21 @@
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace block_socialcomments;
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-
 require_once("$CFG->libdir/externallib.php");
+use external_api;
+use external_function_parameters;
+use external_value;
+use external_multiple_structure;
+use external_single_structure;
+use external_warnings;
+use external_description;
+use context_user;
+use context_course;
+use context_module;
+use moodle_exception;
 
 /**
  * Socialcomments block external API.
@@ -34,7 +44,7 @@ require_once("$CFG->libdir/externallib.php");
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_socialcomments_external extends external_api {
+class external extends external_api {
 
     /**
      * Returns description of method parameters.
@@ -90,7 +100,12 @@ class block_socialcomments_external extends external_api {
         self::validate_context($context);
 
         if (!$comment->can_save($id, $comment->userid, $context, $groupid)) {
-            print_error('missingcapability');
+            $results = array(
+                'count' => '',
+                'id' => 0,
+                'warnings' => $warnings
+            );
+            return $results;
         }
 
         $commentshelper = new \block_socialcomments\local\comments_helper($context);
@@ -158,12 +173,10 @@ class block_socialcomments_external extends external_api {
         $params = self::validate_parameters(self::delete_comment_parameters(), $arrayparams);
 
         $comment = new \block_socialcomments\local\comment(array('id' => $params['commentid']), true, MUST_EXIST);
-
         $context = $comment->get_context();
         self::validate_context($context);
-
         if (!$comment->can_delete($comment->userid, $context)) {
-            print_error('missingcapability');
+            throw new moodle_exception('missingcapability');
         }
         $comment->delete();
 
@@ -354,6 +367,7 @@ class block_socialcomments_external extends external_api {
             array(
             'contextid' => new external_value(PARAM_INT, 'id of context'),
             'pagenumber' => new external_value(PARAM_INT, 'number of page, (-1) to get the last page'),
+            'hidepins' => new external_value(PARAM_INT, 'Hide pin status')
             )
         );
     }
@@ -363,15 +377,17 @@ class block_socialcomments_external extends external_api {
      *
      * @param int $contextid
      * @param int $pagenumber
+     * @param int $hidepins
      * @return array of results
      */
-    public static function get_commentspage($contextid, $pagenumber) {
+    public static function get_commentspage($contextid, $pagenumber, $hidepins) {
         global $PAGE;
 
         $warnings = array();
         $arrayparams = array(
             'contextid' => $contextid,
             'pagenumber' => $pagenumber,
+            'hidepins' => $hidepins
         );
         $params = self::validate_parameters(self::get_commentspage_parameters(), $arrayparams);
 
@@ -381,7 +397,8 @@ class block_socialcomments_external extends external_api {
         require_capability('block/socialcomments:view', $context);
 
         $renderer = $PAGE->get_renderer('block_socialcomments');
-        $commentshelper = new \block_socialcomments\local\comments_helper($context);
+        $config['hidepins'] = $hidepins;
+        $commentshelper = new \block_socialcomments\local\comments_helper($context, $config);
 
         $contentdata = new \stdClass();
         $contentdata->comments = $commentshelper->get_comments($pagenumber);
@@ -461,7 +478,7 @@ class block_socialcomments_external extends external_api {
         self::validate_context($context);
 
         if (!$reply->can_save($id, $reply->userid, $context)) {
-            print_error('missingcapability');
+            throw new moodle_exception('missingcapability');
         }
         $reply->save();
 
@@ -521,7 +538,7 @@ class block_socialcomments_external extends external_api {
         self::validate_context($context);
 
         if (!$reply->can_delete($reply->userid, $context)) {
-            print_error('missingcapability');
+            throw new moodle_exception('missingcapability');
         }
 
         $reply->delete();
@@ -584,7 +601,7 @@ class block_socialcomments_external extends external_api {
         self::validate_context($context);
 
         if (!has_capability('block/socialcomments:viewreport', $context)) {
-            print_error('missingcapability');
+            throw new moodle_exception('missingcapability');
         }
 
         $reporthelper = \block_socialcomments\local\report_helper::get_instance();

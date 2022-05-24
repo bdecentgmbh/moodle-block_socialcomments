@@ -23,7 +23,6 @@
  */
 namespace block_socialcomments\task;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Task to process digests for socialcomments block.
@@ -34,10 +33,16 @@ defined('MOODLE_INTERNAL') || die();
  */
 class process_digest_cron extends \core\task\scheduled_task {
 
+    /**
+     * Get the name.
+     */
     public function get_name() {
         return get_string('processdigest', 'block_socialcomments');
     }
 
+    /**
+     * Run the cron.
+     */
     public function execute() {
         \block_socialcomments\local\digest::cron();
     }

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Filterform for report page.
+ * Contains class block_socialcomments\local\reportfilter_form.
  *
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
@@ -32,8 +32,14 @@ global $CFG;
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 
+/**
+ * Filterform for report page.
+ */
 class reportfilter_form extends \moodleform {
 
+    /**
+     * Form define base function.
+     */
     public function definition() {
         global $PAGE;
 
@@ -76,6 +82,11 @@ class reportfilter_form extends \moodleform {
         $PAGE->requires->js_call_amd('block_socialcomments/report', 'init', array($args));
     }
 
+    /**
+     * Get the request form data
+     *
+     * @return object
+     */
     public function get_request_data() {
 
         $filterdata = new \stdClass();
@@ -115,6 +126,11 @@ class reportfilter_form extends \moodleform {
         return $filterdata;
     }
 
+    /**
+     * Get url params.
+     * @param object $data
+     * @return array
+     */
     public function get_url_params($data) {
 
         $params = array();

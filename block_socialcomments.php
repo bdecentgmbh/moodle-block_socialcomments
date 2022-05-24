@@ -21,7 +21,6 @@
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Socialcomments block definition class.
@@ -71,12 +70,10 @@ class block_socialcomments extends block_base {
      * @return stdClass the content
      */
     public function get_content() {
-        global $PAGE;
-
         if ($this->content !== null) {
             return $this->content;
         }
-
+        $config = get_config('block_socialcomments');
         $this->content = new stdClass();
         $this->content->footer = '';
         $this->content->text = '';
@@ -84,17 +81,17 @@ class block_socialcomments extends block_base {
             return $this->content;
         }
 
-        if (!has_capability('block/socialcomments:view', $PAGE->context)) {
+        if (!has_capability('block/socialcomments:view', $this->page->context)) {
             return $this->content;
         }
-
-        $commentshelper = new \block_socialcomments\local\comments_helper($PAGE->context);
+        $configdata = (array) $this->config;
+        $commentshelper = new \block_socialcomments\local\comments_helper($this->page->context, $configdata);
         $contentdata = $commentshelper->get_content_data();
 
-        $renderer = $PAGE->get_renderer('block_socialcomments');
+        $renderer = $this->page->get_renderer('block_socialcomments');
 
         $this->content = new stdClass();
-        $this->content->text = $renderer->render_block_content($commentshelper, $contentdata);
+        $this->content->text = $renderer->render_block_content($commentshelper, $contentdata, $this->config);
         $this->content->footer = '';
         return $this->content;
     }

@@ -21,8 +21,6 @@
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die;
-
 use block_socialcomments\local\comment;
 use block_socialcomments\local\reply;
 
@@ -35,6 +33,15 @@ use block_socialcomments\local\reply;
  */
 class block_socialcomments_renderer extends plugin_renderer_base {
 
+    /**
+     * Renderer the post form.
+     * @param string $idtextarea
+     * @param string $idcancel
+     * @param string $idaction
+     * @param string $straction
+     * @param string $placeholder
+     * @param string $groupselector
+     */
     protected function render_post_form($idtextarea, $idcancel, $idaction, $straction, $placeholder = '', $groupselector = '') {
 
         $html = '';
@@ -51,7 +58,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $textareaattrs['class'] = 'fullwidth';
 
         $html .= html_writer::start_tag('div', array('class' => 'ccomment-form-textarea-wrap'));
-        $html .= html_writer::start_tag('div', array('class' => 'form-control'));
+        $html .= html_writer::start_tag('div', array('class' => ''));
         $html .= html_writer::tag('textarea', '', $textareaattrs);
         $html .= html_writer::end_tag('div');
 
@@ -76,6 +83,14 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Render the slider checkbox.
+     * @param string $name
+     * @param string $value
+     * @param string $checked
+     * @param string $label
+     * @param array $attributes
+     */
     protected function render_slider_checkbox($name, $value, $checked, $label, $attributes) {
 
         $attributes = (array) $attributes;
@@ -107,6 +122,10 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * Render the group selector.
+     * @param array $groups
+     */
     protected function render_group_selector($groups) {
 
         if (count($groups) == 0) {
@@ -345,7 +364,8 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
     /**
      * Render the list of replies.
-     *
+     * @param object $context
+     * @param int $commentid
      * @param array $replies
      * @return string
      */
@@ -466,9 +486,10 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      *
      * @param object $commentshelper
      * @param object $contentdata
+     * @param object $config
      * @return string
      */
-    public function render_block_content($commentshelper, $contentdata) {
+    public function render_block_content($commentshelper, $contentdata, $config) {
         $html = html_writer::start_tag('div', array('id' => 'ccomment-form-content'));
         $html .= $this->render_form_content($commentshelper, $contentdata);
         $html .= html_writer::end_tag('div');
@@ -482,6 +503,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $args['contextid'] = $commentshelper->get_context()->id;
         $args['subscribed'] = $contentdata->comments->subscribed;
         $args['commentscount'] = $contentdata->comments->count;
+        $args['hidepins'] = isset($config->hidepins) ? $config->hidepins : 0;
 
         $this->page->requires->js_call_amd('block_socialcomments/comments', 'init', array($args));
 
@@ -518,6 +540,11 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return html_writer::div($link, 'activity');
     }
 
+    /**
+     * Renderer the activity comments.
+     * @param object $course
+     * @param array $newcomments
+     */
     protected function render_new_activity_comments($course, $newcomments) {
         global $CFG;
 
@@ -591,6 +618,11 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renderer the comments overivew block
+     * @param object $course
+     * @param array $commentsdata
+     */
     protected function render_comments_overview($course, $commentsdata) {
 
         // Render activity comments.
@@ -632,8 +664,8 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
     /**
      * Render the content of the new comments tab.
-     *
-     * @param array $newcomments
+     * @param object $course
+     * @param array $newcommentsdata
      * @param int $timesince
      * @return string
      */
@@ -648,6 +680,11 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return $this->render_comments_overview($course, $newcommentsdata);
     }
 
+    /**
+     * Renderer the pinboard
+     * @param object $course
+     * @param array $pinnedcommentsdata
+     */
     public function render_pinboard($course, $pinnedcommentsdata) {
         global $COURSE;
 
@@ -688,12 +725,16 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * Renderer the digest block.
+     * @param object $course
+     * @param array $newcommentsdata
+     * @return string
+     */
     public function render_digest($course, $newcommentsdata) {
 
         $html = html_writer::tag('h2', $course->fullname, array('class' => 'ccomment-digest-courseheader'));
         $html .= $this->render_comments_overview($course, $newcommentsdata);
-
         return $html;
     }
-
 }

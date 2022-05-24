@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Comment definition.
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -22,19 +23,57 @@
 
 namespace block_socialcomments\local;
 
-defined('MOODLE_INTERNAL') || die;
-
+/**
+ * Define comment class.
+ */
 class comment extends basepost {
-
+    /**
+     * @var $id
+     */
     public $id = 0;
+
+    /**
+     * @var $contextid
+     */
     public $contextid = 0;
+
+    /**
+     * @var $component
+     */
     public $component = 'block_socialcomments';
+
+    /**
+     * @var $commentarea
+     */
     public $commentarea = 'page_comments';
+
+    /**
+     * @var $itemid
+     */
     public $itemid = 0;
+
+    /**
+     * @var $content
+     */
     public $content = '';
+    /**
+     * @var $format
+     */
     public $format = 0;
+
+    /**
+     * @var $userid
+     */
     public $userid = 0;
+
+    /**
+     * @var $courseid
+     */
     public $courseid = 0;
+
+    /**
+     * @var $groupid
+     */
     public $groupid = 0;
 
     /**
@@ -77,7 +116,9 @@ class comment extends basepost {
     /**
      * Get the group mode of module or course.
      *
-     * @global object $COURSE
+     * @param \context $context
+     * @param object $course
+     * @param object $cm
      * @return int one of the groupmode constants NOGROUPS, SEPARATEGROUPS, VISIBLEGROUPS
      */
     public static function get_group_mode($context, $course, $cm) {
@@ -94,6 +135,7 @@ class comment extends basepost {
 
     /**
      * Get all the groups this user might see or post for.
+     * @param \context $context
      */
     public static function get_accessible_groups($context) {
         global $USER;
@@ -118,6 +160,7 @@ class comment extends basepost {
      * Check, whether the visiiblity on the context is restricted by group.
      *
      * @param \context $context
+     * @param object $user
      * @return boolean|array false when no restriction, array of groupids when restricted.
      */
     public static function is_restricted_to_groupids($context, $user = null) {
@@ -175,6 +218,7 @@ class comment extends basepost {
      * @return boolean true if user can create a comment.
      */
     public static function can_create($context, $groups = null, $posttogroupid = -1) {
+        global $USER;
 
         if (!has_capability('block/socialcomments:postcomments', $context)) {
             return false;
@@ -205,7 +249,6 @@ class comment extends basepost {
      */
     public static function can_delete($authorid, $context) {
         global $USER;
-
         if (($USER->id == $authorid) && (has_capability('block/socialcomments:deleteowncomments', $context))) {
             return true;
         }
@@ -227,6 +270,9 @@ class comment extends basepost {
         );
     }
 
+    /**
+     * Comment create event generate.
+     */
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\comment_created::create(

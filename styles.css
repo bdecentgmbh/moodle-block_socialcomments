@@ -26,6 +26,9 @@
 .block_socialcomments .ccomment-form-action-buttons {
     text-align: right;
 }
+.block_socialcomments .ccomment-form-action-buttons button {
+    margin: 0 2px;
+}
 
 /* Form controls for comments and replies */
 .block_socialcomments .btn.ccomment-highlight-button {
@@ -46,6 +49,7 @@
 /* Comments */
 .block_socialcomments .ccomment-post-wrap {
     list-style: none;
+    padding: 0;
     margin-left: 0;
 }
 
@@ -225,15 +229,17 @@
 .block_socialcomments .comments-post-footer a:visited {
     color: #666;
 }
+
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
 .block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label,
 .block_socialcomments .ccomment-post-pinned-wrap input[type="checkbox"] + label,
 .block_socialcomments .ccomment-form-pagepinned-wrap input[type="checkbox"] + label {
-    display: block;
     width: 22px;
     height: 17px;
-    padding: 0;
     color: transparent;
+    padding: 0;
+    margin-left: auto;
+    display: block;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
@@ -355,23 +361,24 @@
     display: none;
 }
 
-.block_socialcomments .ccomments-pin-tooltip {
-    position: absolute;
-    margin-top: -45px;
-    margin-left: -10px;
-    background: #cad8b1;
-    border-radius: 4px;
-    padding: 0 2px;
-}
-
 .block_socialcomments .ccomment-post-pinned-wrap div.ccomments-pin-tooltip,
 .block_socialcomments .ccomment-form-pagepinned-wrap div.ccomments-pin-tooltip {
+    font-size: 14px;
+    color: #0f6cbf;
+    background-color: #bed6e3;
     display: none;
+    padding: 0 5px;
+    margin-top: 0;
+    border-radius: 5px;
+    position: absolute;
+    left: auto;
+    right: 10px;
+    z-index: 1;
 }
 
 .block_socialcomments .ccomment-post-pinned-wrap:hover div.ccomments-pin-tooltip,
 .block_socialcomments .ccomment-form-pagepinned-wrap:hover div.ccomments-pin-tooltip {
-    display: block;
+    display: inline-block;
 }
 
 

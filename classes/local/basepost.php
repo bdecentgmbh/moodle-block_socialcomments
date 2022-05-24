@@ -24,7 +24,6 @@
 
 namespace block_socialcomments\local;
 
-defined('MOODLE_INTERNAL') || die;
 
 /**
  * Abstract base class for comments and replies.
@@ -64,6 +63,8 @@ abstract class basepost {
      * Checks, whether this user can create a post.
      *
      * @param \context $context
+     * @param array $groups the user can access.
+     * @param int $posttogroupid if set check whether the user can post to this group.
      * @return boolean
      */
     public static function can_create($context, $groups = null, $posttogroupid = -1) {
@@ -95,9 +96,11 @@ abstract class basepost {
      * @param int $id id of comment (0 for new comment).
      * @param int $authorid id of user, who has created the comment.
      * @param \context $context we rely on this context, so be sure to set comments context!
+     * @param int $groupid
      * @return boolean
      */
     public static function can_save($id, $authorid, $context, $groupid = -1) {
+        global $USER;
         if ($id == 0) {
             return static::can_create($context, null, $groupid);
         } else {

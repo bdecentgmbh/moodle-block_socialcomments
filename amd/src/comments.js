@@ -17,10 +17,8 @@
  * Javascript controller for the socialcomments block.
  *
  * @module     block_socialcomments/comments
- * @package    block_socialcomments
- * @copyright  2017 Andreas Wagner.
+ * @copyright 2021, bdecent gmbh bdecent.de
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since      3.1
  */
 
 define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, ajax, notification, corestr) {
@@ -93,7 +91,8 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                 methodname: 'block_socialcomments_get_commentspage',
                 args: {
                     contextid: params.contextid,
-                    pagenumber: newpagenumber
+                    pagenumber: newpagenumber,
+                    hidepins: params.hidepins
                 },
                 done: function(response) {
                     pagenumber = response.pagenumber;

@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains class block_socialcomments\local\report_helper.
  * @package   block_socialcomments
  * @copyright 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,16 +25,31 @@ namespace block_socialcomments\local;
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot."/blocks/socialcomments/lib.php");
+
+/**
+ * Class for report_helper
+ */
 class report_helper {
 
+    /**
+     * @var $visiblemodinfo
+     */
     private $visiblemodinfo;
+
+    /**
+     * @var $sqlgrouprestriction
+     */
     private $sqlgrouprestriction = array();
+
+    /**
+     * @var $grouprestriction
+     */
     private $grouprestriction = array();
 
     /**
      * Get an instance of an object of this class. Create as a singleton.
      *
-     * @staticvar report_helper $reporthelper
      * @param boolean $forcenewinstance true, when a new instance should be created.
      * @return report_helper
      */
@@ -122,6 +138,11 @@ class report_helper {
         return $this->visiblemodinfo;
     }
 
+    /**
+     * Get group restrict sql.
+     * @param context $context
+     * @return string
+     */
     protected function get_group_restriction_sql($context) {
 
         if (!isset($this->sqlgrouprestriction[$context->id])) {
@@ -136,8 +157,8 @@ class report_helper {
      * Each subselect would retrieve only a few item, but there might be as many
      * subselects, as commented contexts in course.
      *
-     * @param object $args, data needed for the sql
-     * @param object $filterdata, data from the filter form
+     * @param object $args data needed for the sql
+     * @param object $filterdata data from the filter form
      * @return string SQL for one subselect.
      */
     private function get_module_comments_sql($args, $filterdata) {
@@ -207,7 +228,7 @@ class report_helper {
      *
      * So we reduce the number of unions as far as possible.
      *
-     * @param object $filterdata, data from the filterform.
+     * @param object $filterdata data from the filterform.
      * @param \flexible_table $table
      * @param int $perpage
      * @param boolean $download
@@ -216,7 +237,7 @@ class report_helper {
     public function get_course_comments($filterdata, $table = null, $perpage = 0, $download = false) {
         global $DB, $COURSE;
 
-        $usernamefields = get_all_user_name_fields(true, 'u');
+        $usernamefields = block_socialcomments_get_all_user_name_fields();
 
         // Get visible contexts.
         $modinfo = $this->get_visible_modinfo();
@@ -382,6 +403,11 @@ class report_helper {
         return $modnames;
     }
 
+    /**
+     * Get options.
+     * @param int $sectionid
+     * @return string
+     */
     public function get_options($sectionid) {
 
         $choices = array(0 => get_string('selectactivity', 'block_socialcomments'));
@@ -432,6 +458,11 @@ class report_helper {
         return $this->grouprestriction[$context->id];
     }
 
+    /**
+     * Whether check the user add replies.
+     * @param array $comments
+     * @param array $repliesgroupedbycomments
+     */
     private function check_visiblity_and_add_replies($comments, $repliesgroupedbycomments) {
 
         // Group comments by contextid and add replies.
@@ -476,8 +507,8 @@ class report_helper {
 
         $coursecontext = \context_course::instance($courseid);
 
-        $authorfields = get_all_user_name_fields(true, 'u');
-        $authorpicturefields = \user_picture::fields('u');
+        $authorfields = block_socialcomments_get_all_user_name_fields();
+        $authorpicturefields = block_socialcomments_get_userpicture_fields();
 
         // Get new replies.
         $sql = "SELECT r.id as postid, r.commentid, r.content, r.timecreated, r.userid,
@@ -556,8 +587,8 @@ class report_helper {
     /**
      * Get all the comments in the course, that are pinned and are visible for this user.
      *
-     * @param type $courseid
-     * @return type
+     * @param int $courseid
+     * @return array
      */
     public function get_course_comments_pinned($courseid) {
         global $DB, $USER;
@@ -565,8 +596,8 @@ class report_helper {
         // Get all contexts of this course, this user has pinned.
         $coursecontext = \context_course::instance($courseid);
 
-        $authorfields = get_all_user_name_fields(true, 'u');
-        $authorpicturefields = \user_picture::fields('u');
+        $authorfields = block_socialcomments_get_all_user_name_fields();
+        $authorpicturefields = block_socialcomments_get_userpicture_fields();
 
         // Get pinned page comments.
         $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, bc.userid,
