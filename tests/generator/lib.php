@@ -18,15 +18,16 @@
  * Generator for the socialcomments block.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Generator class for the block.
  *
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments_generator extends component_generator_base {
@@ -37,6 +38,10 @@ class block_socialcomments_generator extends component_generator_base {
     /** @var integer Number of created replies. */
     private $countreplies = 0;
 
+    /**
+     * Create comment
+     * @param array $record
+     */
     public function create_comment($record = null) {
         global $DB, $USER;
 
@@ -93,6 +98,10 @@ class block_socialcomments_generator extends component_generator_base {
         return $DB->get_record('block_socialcomments_cmmnts', array('id' => $id));
     }
 
+    /**
+     * Create reply
+     * @param array $record
+     */
     public function create_reply($record = null) {
         global $DB, $USER;
 
@@ -128,6 +137,10 @@ class block_socialcomments_generator extends component_generator_base {
         return $DB->get_record('block_socialcomments_replies', array('id' => $id));
     }
 
+    /**
+     * Create subscription
+     * @param array $record
+     */
     public function create_subscription($record = null) {
         global $DB, $USER;
 

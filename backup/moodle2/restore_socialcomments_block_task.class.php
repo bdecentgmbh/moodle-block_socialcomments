@@ -59,7 +59,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      *
      * @return array
      */
-    static public function define_decode_contents() {
+    public static function define_decode_contents() {
         return array();
     }
 
@@ -69,7 +69,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      *
      * @return array
      */
-    static public function define_decode_rules() {
+    public static function define_decode_rules() {
         return array();
     }
 

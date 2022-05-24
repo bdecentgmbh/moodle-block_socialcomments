@@ -18,7 +18,8 @@
  * Report page for the socialcomments block.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once(__DIR__ . '/../../../config.php');
@@ -40,7 +41,7 @@ $context = context_helper::instance_by_id($comment->contextid);
 
 if (!comment::can_delete($comment->userid, $context)) {
     // Can not delete frontpage or don't have permission to delete the course.
-    print_error('cannotdeletecourse');
+    throw new moodle_exception('cannotdeletecourse');
 }
 
 $PAGE->set_url('/blocks/socialcomments/delete_comment.php', array('id' => $id));

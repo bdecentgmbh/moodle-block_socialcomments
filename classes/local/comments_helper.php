@@ -15,8 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains class block_socialcomments\local\comments_helper.
+ *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -24,28 +27,75 @@ namespace block_socialcomments\local;
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot."/blocks/socialcomments/lib.php");
+
+/**
+ * Class for comments helper.
+ */
 class comments_helper {
 
+    /**
+     * @var int
+     */
     const PINNED_PAGE = 10;
+
+    /**
+     * @var int
+     */
     const PINNED_COMMENT = 20;
+
+    /**
+     * @var int
+     */
     const LASTPAGE = -1;
 
+    /**
+     * @var int
+     */
     const DIGEST_SITE = 1;
+
+    /**
+     * @var int
+     */
     const DIGEST_COURSE = 2;
 
+    /**
+     * @var $context
+     */
     protected $context = null;
+
+    /**
+     * @var $course
+     */
     protected $course = null;
+
+    /**
+     * @var $cm
+     */
     protected $cm = null;
+
+    /**
+     * @var $user
+     */
     protected $user = null;
+
+    /**
+     * @var $groupmode
+     */
     protected $groupmode = null;
+
+    /**
+     * @var $groupsql
+     */
     protected $groupsql;
 
     /**
      * Create an object of the helper for a context.
      *
      * @param context $pagecontext course or modul context.
+     * @param array $config
      */
-    public function __construct($pagecontext) {
+    public function __construct($pagecontext, $config = []) {
         global $USER;
 
         list($context, $course, $cm) = get_context_info_array($pagecontext->id);
@@ -54,6 +104,7 @@ class comments_helper {
         $this->course = $course;
         $this->cm = $cm;
         $this->user = $USER;
+        $this->config = $config;
     }
 
     /**
@@ -98,7 +149,6 @@ class comments_helper {
     /**
      * Create a SQL snippet to restric visibility of comments to groups.
      *
-     * @param context $context
      * @return array SQL-Snippet and params.
      */
     protected function get_groups_restriction_sql() {
@@ -114,7 +164,7 @@ class comments_helper {
     /**
      * Get all comments for this context.
      *
-     * @param int page page starting from 0 for normal pages, -1 for the last page.
+     * @param int $page page starting from 0 for normal pages, -1 for the last page.
      */
     public function get_comments($page) {
         global $DB;
@@ -146,9 +196,8 @@ class comments_helper {
         $params['itemtype'] = self::PINNED_COMMENT;
         $params['userid'] = $this->user->id;
 
-        $userfields = get_all_user_name_fields(true, 'u');
-        $userpicturefields = \user_picture::fields('u');
-
+        $userfields = block_socialcomments_get_all_user_name_fields();
+        $userpicturefields = block_socialcomments_get_userpicture_fields();
         $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, p.itemtype as pinned,
                 bc.userid, $userfields, $userpicturefields
                 FROM {block_socialcomments_cmmnts} bc
@@ -211,9 +260,8 @@ class comments_helper {
 
         $limitreplies = get_config('block_socialcomments', 'limitreplies');
 
-        $userfields = get_all_user_name_fields(true, 'u');
-        $userpicturefields = \user_picture::fields('u');
-
+        $userfields = block_socialcomments_get_all_user_name_fields();
+        $userpicturefields = block_socialcomments_get_userpicture_fields();
         $sql = "SELECT r.id as postid, r.content, r.timecreated, r.userid,
                 $userfields, $userpicturefields
                 FROM {block_socialcomments_replies} r
@@ -256,7 +304,11 @@ class comments_helper {
      * @return boolean true, when pinning is supported
      */
     public function can_pin() {
-        return has_capability('block/socialcomments:pinitems', $this->context);
+        if (isset($this->config['hidepins'])) {
+            return has_capability('block/socialcomments:pinitems', $this->context) && !$this->config['hidepins'];
+        } else {
+            return has_capability('block/socialcomments:pinitems', $this->context);
+        }
     }
 
     /**
@@ -268,10 +320,18 @@ class comments_helper {
         return has_capability('block/socialcomments:subscribe', $this->context);
     }
 
+    /**
+     * Get context.
+     * @return context context.
+     */
     public function get_context() {
         return $this->context;
     }
 
+    /**
+     * Get user.
+     * @return object userobject.
+     */
     public function get_user() {
         return $this->user;
     }
@@ -355,6 +415,11 @@ class comments_helper {
         return true;
     }
 
+    /**
+     * Delete the comments when deleted the course.
+     * @param course_deleted $event
+     * @return void
+     */
     public static function course_deleted(\core\event\course_deleted $event) {
         global $DB;
 
@@ -377,6 +442,11 @@ class comments_helper {
         $DB->delete_records('block_socialcomments_subscrs', array('courseid' => $courseid));
     }
 
+    /**
+     * Delete the user subscribe and pins data.
+     * @param user_deleted $event
+     * @return void
+     */
     public static function user_deleted(\core\event\user_deleted $event) {
         global $DB;
 
@@ -387,6 +457,10 @@ class comments_helper {
         $DB->delete_records('block_socialcomments_pins', array('userid' => $userid));
     }
 
+    /**
+     * Get digestmenu types.
+     * @return array menus.
+     */
     public static function get_digest_type_menu() {
 
         $choices = array(

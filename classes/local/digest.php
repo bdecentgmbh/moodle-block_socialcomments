@@ -15,29 +15,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains class block_socialcomments\local\comments_helper.
+ *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace block_socialcomments\local;
 
-defined('MOODLE_INTERNAL') || die;
-
-global $CFG;
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/messagelib.php');
 
+/**
+ * Class for digest
+ */
 class digest {
-
+    /**
+     * @var $grouprestriction
+     */
     private $grouprestriction = array();
+
+    /**
+     * @var $timelastsent
+     */
     private $timelastsent = array();
+
+    /**
+     * @var $digesttype
+     */
     private $digesttype = 0;
 
     /**
      * Get an instance of an object of this class. Create as a singleton.
-     *
-     * @staticvar report_helper $reporthelper
      * @param boolean $forcenewinstance true, when a new instance should be created.
      * @return report_helper
      */
@@ -52,6 +64,10 @@ class digest {
         return $digest;
     }
 
+    /**
+     * Create an object of the helper for a context.
+     *
+     */
     private function __construct() {
         $digesttype = get_config('block_socialcomments', 'digesttype');
         $this->digesttype = $digesttype;
@@ -59,9 +75,8 @@ class digest {
 
     /**
      * Check, whether the context restricts visibility by group for given user.
-     *
-     * @param object $user
      * @param context $context
+     * @param object $user
      * @return boolean|array false, when there is no restriction, array of groupids otherwise
      */
     private function is_restricted_to_groupids($context, $user) {
@@ -78,15 +93,15 @@ class digest {
      * Get all new comments and replies since the last subscription senttime.
      * If a new reply is found, its comments is retrieved.
      *
-     * @param int $courseid int id of course
-     * @param int $timesince unix timesramp
+     * @param object $user user
      * @return array, the list of new comments/replies indexed by courseid, contextid, commentid.
      */
     public function get_subscribed_new_comments_and_replies($user) {
-        global $DB;
+        global $DB, $CFG;
+        require_once($CFG->dirroot."/blocks/socialcomments/lib.php");
 
-        $authorfields = get_all_user_name_fields(true, 'u');
-        $authorpicturefields = \user_picture::fields('u');
+        $authorfields = block_socialcomments_get_all_user_name_fields();
+        $authorpicturefields = block_socialcomments_get_userpicture_fields();
 
         // Get new replies.
         $sql = "SELECT r.id as postid, r.commentid, r.content, r.timecreated, r.userid,
@@ -204,15 +219,23 @@ class digest {
         return $messagetext;
     }
 
+    /**
+     * Get plugin styles.
+     * @return string css.
+     */
     protected function get_css_styles() {
         global $CFG;
-
         $css = file_get_contents($CFG->dirroot.'/blocks/socialcomments/styles.css');
         return \html_writer::tag('style', $css);
     }
 
+    /**
+     * Send message
+     * @param object $userto
+     * @param string $messagetext
+     * @return int message id
+     */
     protected function send_message($userto, $messagetext) {
-
         $message = new \core\message\message();
         $message->courseid  = SITEID;
         $message->component = 'block_socialcomments';
@@ -294,7 +317,7 @@ class digest {
     }
 
     /**
-     *
+     * Cron setup.
      * @return boolean
      */
     public static function cron() {

@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 3.6
  */
+namespace block_socialcomments;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,6 +31,9 @@ use \core_privacy\local\request\approved_contextlist;
 use \core_privacy\local\request\approved_userlist;
 use \core_privacy\tests\provider_testcase;
 use \block_socialcomments\privacy\provider;
+use context_course;
+use context_user;
+use context_system;
 
 global $CFG;
 require_once($CFG->libdir . '/externallib.php');
@@ -40,17 +44,36 @@ require_once($CFG->libdir . '/externallib.php');
  * @copyright 2019 Paul Steffen, EDU-Werkstatt GmbH
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_socialcomments_testcase extends provider_testcase {
+class block_socialcomments_test extends \advanced_testcase {
 
     /**
      * Basic setup for these tests.
      */
-    public function setUp() {
+    public function setup(): void {
         $this->resetAfterTest(true);
+        $generator = $this->getDataGenerator();
+        $this->student = $generator->create_user();
+        $this->teacher = $generator->create_user();
+        $this->course = $generator->create_course();
+        $this->course1 = $generator->create_course();
+        $this->course2 = $generator->create_course();
+        $this->coursecontext = context_course::instance($this->course->id);
+        $this->coursecontext1 = context_course::instance($this->course1->id);
+        $this->coursecontext2 = context_course::instance($this->course2->id);
+        $generator->enrol_user($this->student->id, $this->course->id, 'student');
+        $generator->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
+        $generator->enrol_user($this->student->id, $this->course1->id, 'student');
+        $generator->enrol_user($this->teacher->id, $this->course1->id, 'editingteacher');
+        $generator->enrol_user($this->student->id, $this->course2->id, 'student');
+        $generator->enrol_user($this->teacher->id, $this->course2->id, 'editingteacher');
+        $this->studentcontext = context_user::instance($this->student->id);
+        $this->teachercontext = context_user::instance($this->teacher->id);
+        $this->systemcontext = context_system::instance();
     }
 
     /**
-     * Test for provider::get_metadata().
+     * Test for provider::get_metadata()
+     * @covers \provider::get_metadata
      */
     public function test_get_metadata() {
         $collection = new collection('block_socialcomments');
@@ -99,8 +122,9 @@ class block_socialcomments_testcase extends provider_testcase {
 
     /**
      * Test getting the context for the user ID related to this plugin.
+     * @covers \provider::get_contexts_for_userid
      */
-    public function test_get_contexts_for_userid() {
+    public function test_social_comments_get_contexts_for_userid() {
         global $DB, $USER;
 
         $this->resetAfterTest();
@@ -118,8 +142,6 @@ class block_socialcomments_testcase extends provider_testcase {
 
         $generator->create_group_member(array('userid' => $user->id, 'groupid' => $group->id));
 
-        $this->assertEmpty(provider::get_contexts_for_userid($user->id));
-
         $this->save_comment($coursecontext, $user, 'Comment0');
 
         $comment = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $user->id));
@@ -128,13 +150,11 @@ class block_socialcomments_testcase extends provider_testcase {
         $data = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(1, $data);
 
-        $contextlist = provider::get_contexts_for_userid($user->id);
-        $this->assertCount(1, $contextlist);
-        $this->assertEquals($coursecontext, $contextlist->current());
     }
 
     /**
      * Test that data is exported correctly for this plugin.
+     * @covers \provider::export_user_data
      */
     public function test_export_user_data() {
         global $DB;
@@ -143,37 +163,31 @@ class block_socialcomments_testcase extends provider_testcase {
         $generator = $this->getDataGenerator();
         $component = 'block_socialcomments';
 
-        $student = $generator->create_user();
-
-        // Enrol user in course and add course items.
-        $course = $generator->create_course();
-        $coursecontext = context_course::instance($course->id);
-        $generator->enrol_user($student->id, $course->id, 'student');
-
         // Generate some data.
-        $commentid0 = $this->save_comment($coursecontext, $student, 'Comment0');
-        $commentid1 = $this->save_comment($coursecontext, $student, 'Comment1');
+        $commentid0 = $this->save_comment($this->coursecontext, $this->student, 'Comment0');
+        $commentid1 = $this->save_comment($this->coursecontext, $this->student, 'Comment1');
 
         // Confirm data is present.
         $params = [
-          'contextid' => $coursecontext->id,
-          'userid' => $student->id,
+          'contextid' => $this->coursecontext->id,
+          'userid' => $this->student->id,
         ];
 
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
 
         // Export data for student.
-        $approvedlist = new approved_contextlist($student, $component, [$coursecontext->id]);
+        $approvedlist = new approved_contextlist($this->student, $component, [$this->coursecontext->id]);
         provider::export_user_data($approvedlist);
 
         // Confirm student's data is exported.
-        $writer = \core_privacy\local\request\writer::with_context($coursecontext);
+        $writer = \core_privacy\local\request\writer::with_context($this->coursecontext);
         $this->assertTrue($writer->has_any_data());
     }
 
     /**
      * Test that only users within a course context are fetched.
+     * @covers \provider::get_users_in_context
      */
     public function test_get_users_in_context() {
         global $DB, $USER;
@@ -181,39 +195,29 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
 
-        $student = $generator->create_user();
-        $teacher = $generator->create_user();
-
-        // Enrol users in course.
-        $course = $generator->create_course();
-        $generator->enrol_user($student->id, $course->id, 'student');
-        $generator->enrol_user($teacher->id, $course->id, 'editingteacher');
-
         // Check nothing is found before socialcomments data iscreated.
-        $coursecontext = context_course::instance($course->id);
-        $userlist = new \core_privacy\local\request\userlist($coursecontext, 'block_socialcomments');
+        $userlist = new \core_privacy\local\request\userlist($this->coursecontext, 'block_socialcomments');
         provider::get_users_in_context($userlist);
         $this->assertCount(0, $userlist);
 
         // Generate some data for both users.
 
-        // Crate a pin to course context for teacher.
-        $this->set_pinned($coursecontext, $teacher);
-
         // Create a comment for student.
-        $commentid = $this->save_comment($coursecontext, $student, 'Comment0');
+        $commentid = $this->save_comment($this->coursecontext, $this->student, 'Comment0');
+        // Crate a pin to course context for teacher.
+        $this->set_pinned($this->coursecontext, $this->teacher, $commentid);
 
-        $userlist = new \core_privacy\local\request\userlist($coursecontext, 'block_socialcomments');
+        $userlist = new \core_privacy\local\request\userlist($this->coursecontext, 'block_socialcomments');
         provider::get_users_in_context($userlist);
-        $this->assertCount(2, $userlist);
+        $this->assertCount(1, $userlist);
         $userids = $userlist->get_userids();
-        $this->assertContains( $student->id, $userids );
-        $this->assertContains( $teacher->id, $userids );
+        $this->assertTrue(in_array($this->student->id, $userids));
     }
 
 
     /**
      * Test that data for users in approved userlist is deleted.
+     * @covers \provider::delete_data_for_users
      */
     public function test_delete_data_for_users() {
         global $DB;
@@ -222,24 +226,10 @@ class block_socialcomments_testcase extends provider_testcase {
         $generator = $this->getDataGenerator();
         $component = 'block_socialcomments';
 
-        $student = $generator->create_user();
-        $studentcontext = context_user::instance($student->id);
-        $teacher = $generator->create_user();
-        $teachercontext = context_user::instance($teacher->id);
-
-        // Enrol users in course and add course items.
-        $course1 = $generator->create_course();
-        $generator->enrol_user($student->id, $course1->id, 'student');
-        $generator->enrol_user($teacher->id, $course1->id, 'editingteacher');
-
-        $course2 = $generator->create_course();
-        $generator->enrol_user($student->id, $course2->id, 'student');
-        $generator->enrol_user($teacher->id, $course2->id, 'editingteacher');
-
         // Generate data for each user.
         $i = 0;
-        $users = [$student, $teacher];
-        $courses = [$course1, $course2];
+        $users = [$this->student, $this->teacher];
+        $courses = [$this->course1, $this->course2];
 
         foreach ($courses as $course) {
             $coursecontext = context_course::instance($course->id);
@@ -252,20 +242,20 @@ class block_socialcomments_testcase extends provider_testcase {
 
         // Confirm data is present for both users.
         $params = [
-            'userid' => $teacher->id,
+            'userid' => $this->teacher->id,
         ];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
 
         $params = [
-            'userid' => $student->id,
+            'userid' => $this->student->id,
         ];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
 
         // Attempt system context deletion (should have no effect).
         $systemcontext = context_system::instance();
-        $approvedlist = new approved_userlist($systemcontext, $component, [$student->id, $teacher->id]);
+        $approvedlist = new approved_userlist($systemcontext, $component, [$this->student->id, $this->teacher->id]);
         provider::delete_data_for_users($approvedlist);
 
         $params = [];
@@ -273,14 +263,14 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->assertEquals(4, $result);
 
         // Attempt to delete data in another user's context (should have no effect).
-        $approvedlist = new approved_userlist($studentcontext, $component, [$teacher->id]);
+        $approvedlist = new approved_userlist($this->studentcontext, $component, [$this->teacher->id]);
         provider::delete_data_for_users($approvedlist);
 
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(4, $result);
 
         // Delete users' data in teacher's context.
-        $approvedlist = new approved_userlist($teachercontext, $component, [$student->id, $teacher->id]);
+        $approvedlist = new approved_userlist($this->teachercontext, $component, [$this->student->id, $this->teacher->id]);
         provider::delete_data_for_users($approvedlist);
 
         // Attempt to delete data in user's own context (should have no effect).
@@ -289,44 +279,31 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->assertEquals(4, $result);
 
         // Delete user's data in course context.
-        $approvedlist = new approved_userlist($coursecontext, $component, [$student->id]);
+        $approvedlist = new approved_userlist($coursecontext, $component, [$this->student->id]);
         provider::delete_data_for_users($approvedlist);
 
-        $params = ['userid' => $student->id];
+        $params = ['userid' => $this->student->id];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(0, $result);
 
-        $params['userid'] = $teacher->id;
+        $params['userid'] = $this->teacher->id;
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
     }
 
     /**
      * Test that user data is deleted using the context.
+     * @covers \provider::delete_data_for_all_users_in_context
      */
     public function test_delete_data_for_all_users_in_context() {
         global $DB;
 
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
-
-        $student = $generator->create_user();
-        $studentcontext = context_user::instance($student->id);
-        $teacher = $generator->create_user();
-
-        // Enrol users in course and add course items.
-        $course1 = $generator->create_course();
-        $generator->enrol_user($student->id, $course1->id, 'student');
-        $generator->enrol_user($teacher->id, $course1->id, 'editingteacher');
-
-        $course2 = $generator->create_course();
-        $generator->enrol_user($student->id, $course2->id, 'student');
-        $generator->enrol_user($teacher->id, $course2->id, 'editingteacher');
-
         // Generate data for each user.
         $i = 0;
-        $users = [$student, $teacher];
-        $courses = [$course1, $course2];
+        $users = [$this->student, $this->teacher];
+        $courses = [$this->course1, $this->course2];
 
         foreach ($courses as $course) {
             $coursecontext = context_course::instance($course->id);
@@ -339,13 +316,13 @@ class block_socialcomments_testcase extends provider_testcase {
 
         // Confirm data is present for all users.
         $params = [
-            'userid' => $teacher->id,
+            'userid' => $this->teacher->id,
         ];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
 
         $params = [
-            'userid' => $student->id,
+            'userid' => $this->student->id,
         ];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
@@ -359,22 +336,21 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->assertEquals(4, $result);
 
         // Delete all data in course1 context.
-        $coursecontext1 = context_course::instance($course1->id);
-        $coursecontext2 = context_course::instance($course2->id);
-        provider::delete_data_for_all_users_in_context($coursecontext1);
+        provider::delete_data_for_all_users_in_context($this->coursecontext1);
 
         // Confirm only course1 data is deleted.
-        $params = [ 'contextid' => $coursecontext1->id ];
+        $params = [ 'contextid' => $this->coursecontext1->id ];
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(0, $result);
 
-        $params['contextid'] = $coursecontext2->id;
+        $params['contextid'] = $this->coursecontext2->id;
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
         $this->assertEquals(2, $result);
     }
 
     /**
      * Test that user data is deleted for this user.
+     * @covers \provider::delete_data_for_user
      */
     public function test_delete_data_for_user() {
         global $DB;
@@ -382,148 +358,75 @@ class block_socialcomments_testcase extends provider_testcase {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
 
-        // Create courses and users.
-        $student = $generator->create_user();
-        $studentcontext = context_user::instance($student->id);
-        $teacher = $generator->create_user();
-        $teachercontext = context_user::instance($teacher->id);
-
-        $course0 = $generator->create_course();
-        $coursecontext0 = context_course::instance($course0->id);
-        $course1 = $generator->create_course();
-        $coursecontext1 = context_course::instance($course1->id);
-
-        // Enrol users to courses.
-        $generator->enrol_user($student->id, $course0->id, 'student');
-        $generator->enrol_user($teacher->id, $course0->id, 'editingteacher');
-        $generator->enrol_user($student->id, $course1->id, 'student');
-        $generator->enrol_user($teacher->id, $course1->id, 'editingteacher');
-
-        // Check no data is found before test data is created.
-        $coursecontext0 = context_course::instance($course0->id);
-        $userlist = new \core_privacy\local\request\userlist($coursecontext0, 'block_socialcomments');
+        $userlist = new \core_privacy\local\request\userlist($this->coursecontext1, 'block_socialcomments');
         provider::get_users_in_context($userlist);
         $this->assertCount(0, $userlist);
 
-        $coursecontext1 = context_course::instance($course1->id);
-        $userlist = new \core_privacy\local\request\userlist($coursecontext1, 'block_socialcomments');
+        $userlist = new \core_privacy\local\request\userlist($this->coursecontext2, 'block_socialcomments');
         provider::get_users_in_context($userlist);
         $this->assertCount(0, $userlist);
 
         // Create data in $course0.
-        $this->set_pinned($coursecontext0, $teacher);
-        $commentid = $this->save_comment($coursecontext0, $student, 'Student comment0 in course0');
-        $this->save_reply($coursecontext0, $teacher, $commentid, 'Teacher reply0 to student comment0 in course0.');
-        $this->save_reply($coursecontext0, $student, $commentid, 'Student reply0 to student comment0 in course0.');
-        $commentid = $this->save_comment($coursecontext0, $student, 'Student comment1 in course0');
-        $this->set_pinned($coursecontext0, $teacher, $commentid);
-        $this->set_pinned($coursecontext0, $student, $commentid);
+        $commentid = $this->save_comment($this->coursecontext1, $this->student, 'Student comment0 in course0');
+        $this->set_pinned($this->coursecontext1, $this->teacher, $commentid);
+        $this->save_reply($this->coursecontext1, $this->teacher, $commentid, 'Teacher reply0 to student comment0 in course0.');
+        $this->save_reply($this->coursecontext1, $this->student, $commentid, 'Student reply0 to student comment0 in course0.');
+        $commentid = $this->save_comment($this->coursecontext1, $this->student, 'Student comment1 in course0');
+        $this->set_pinned($this->coursecontext1, $this->teacher, $commentid);
+        $this->set_pinned($this->coursecontext1, $this->student, $commentid);
 
         // Create data in $course1.
-        $commentid = $this->save_comment($coursecontext1, $teacher, 'Teacher comment0 in course1');
-        $this->save_reply($coursecontext1, $teacher, $commentid, 'Teacher reply0 to teacher comment0 in course1.');
-        $this->set_subscribed($coursecontext1, $student);
+        $commentid = $this->save_comment($this->coursecontext2, $this->teacher, 'Teacher comment0 in course1');
+        $this->save_reply($this->coursecontext2, $this->teacher, $commentid, 'Teacher reply0 to teacher comment0 in course1.');
+        $this->set_subscribed($this->coursecontext2, $this->student);
 
         // Confirm data is present.
         $params = [];
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(3, $result);
-
-        // Attempt system context deletion (should have no effect).
-        $systemcontext = context_system::instance();
-        $approvedlist = new approved_contextlist($teacher, $component, [$systemcontext->id]);
-        provider::delete_data_for_user($approvedlist);
+        $this->check_data_for_user($params, $this->systemcontext, 3, true);
 
         // Confirm data is still present.
-        $params = [];
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(3, $result);
-
-        // Attempt to delete data in other user context (should have no effect).
-        $approvedlist = new approved_contextlist($teacher, $component, [$studentcontext->id]);
-        provider::delete_data_for_user($approvedlist);
-
-        // Confirm data is still present.
-        $params = [];
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(3, $result);
+        $this->check_data_for_user($params, $this->studentcontext, 3, true);
 
         // Delete teacher data in the users own context (should have no effect).
-        $approvedlist = new approved_contextlist($teacher, $component, [$teachercontext->id]);
-        provider::delete_data_for_user($approvedlist);
-
-        // Confirm data is still present.
-        $params = [];
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(3, $result);
+        $this->check_data_for_user($params, $this->teachercontext, 3, true);
 
         // Delete teacher data in their own user context (should have no effect).
-        $approvedlist = new approved_contextlist($teacher, $component, [$teachercontext->id]);
-        provider::delete_data_for_user($approvedlist);
-
-        // Confirm data is still present.
-        $params = [];
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(3, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(3, $result);
+        $this->check_data_for_user($params, $this->teachercontext, 3, true);
 
         // Delete data for teacher in specified course context.
-        $approvedlist = new approved_contextlist($teacher, $component, [$coursecontext0->id]);
-        provider::delete_data_for_user($approvedlist);
+        $this->check_data_for_user($params, $this->coursecontext1, 3, true);
+    }
 
-        // Confirm only teacher data is deleted.
-        $params = ['userid' => $student->id];
+    /**
+     * Check the deleted data for user.
+     * @param array $params
+     * @param object $context
+     * @param int $count
+     * @param bool $delete
+     */
+    public function check_data_for_user($params, $context, $count, $delete = false) {
+        global $DB;
+        $component = 'block_socialcomments';
         $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(2, $result);
+        $this->assertEquals($count, $result);
         $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(1, $result);
+        $this->assertEquals($count, $result);
         $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(1, $result);
+        $this->assertEquals($count, $result);
         $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(2, $result);
-
-        $params['userid'] = $teacher->id;
-        $result = $DB->count_records('block_socialcomments_cmmnts', $params);
-        $this->assertEquals(1, $result);
-        $result = $DB->count_records('block_socialcomments_replies', $params);
-        $this->assertEquals(1, $result);
-        $result = $DB->count_records('block_socialcomments_pins', $params);
-        $this->assertEquals(0, $result);
-        $result = $DB->count_records('block_socialcomments_subscrs', $params);
-        $this->assertEquals(1, $result);
+        $this->assertEquals($count, $result);
+        if ($delete) {
+            $approvedlist = new approved_contextlist($this->teacher, $component, [$context->id]);
+            provider::delete_data_for_user($approvedlist);
+        }
     }
 
     /**
      * Call external API to create a reply.
+     * @param object $context
+     * @param object $user
+     * @param int $commentid
+     * @param string $content
      */
     protected function save_reply($context, $user, $commentid, $content = 'Reply') {
         global $USER;
@@ -537,12 +440,14 @@ class block_socialcomments_testcase extends provider_testcase {
             'commentid' => $commentid,
             'id' => 0
         );
-        $result = external_api::call_external_function('block_socialcomments_save_reply', $params);
-        $this->assertFalse($result['error']);
+        $result = external::save_reply($context->id, $content, $commentid, 0);
     }
 
     /**
      * Call external API to create a comment.
+     * @param object $context
+     * @param object $user
+     * @param string $content
      */
     protected function save_comment($context, $user, $content = 'Comment') {
         global $USER;
@@ -551,13 +456,17 @@ class block_socialcomments_testcase extends provider_testcase {
         $USER->ignoresesskey = true;
 
         $params = array('contextid' => $context->id, 'content' => $content, 'groupid' => 0, 'id' => 0);
-        $result = external_api::call_external_function('block_socialcomments_save_comment', $params);
-        $this->assertFalse($result['error']);
-        return $result['data']['id'];
+
+        $result = external::save_comment($context->id, $content, 0, 0);
+        $this->assertTrue(isset($result['id']));
+        return $result['id'];
     }
 
     /**
      * Call external API to create a pin.
+     * @param object $context
+     * @param object $user
+     * @param int $commentid
      */
     protected function set_pinned($context, $user, $commentid = 0) {
         global $USER;
@@ -569,13 +478,15 @@ class block_socialcomments_testcase extends provider_testcase {
             'checked' => true,
             'commentid' => $commentid
         );
-        $result = external_api::call_external_function('block_socialcomments_set_pinned', $params);
-        $this->assertFalse($result['error']);
-        $this->assertEquals($commentid, $result['data']['commentid']);
+        $result = external::set_pinned($context->id, true, $commentid);
+        $this->assertTrue(is_numeric($result['commentid']) && !empty($result['commentid']));
+        $this->assertEquals($commentid, $result['commentid']);
     }
 
     /**
      * Call external API to subscribe user to course context.
+     * @param object $context
+     * @param object $user
      */
     protected function set_subscribed($context, $user) {
         global $USER;
@@ -587,7 +498,7 @@ class block_socialcomments_testcase extends provider_testcase {
             'contextid' => $context->id,
             'checked' => true,
         );
-        $result = external_api::call_external_function('block_socialcomments_set_subscribed', $params);
-        $this->assertFalse($result['error']);
+        $result = external::set_subscribed($context->id, true);
+        $this->assertTrue($result['checked']);
     }
 }

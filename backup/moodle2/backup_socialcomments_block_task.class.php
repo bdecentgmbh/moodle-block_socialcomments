@@ -70,7 +70,7 @@ class backup_socialcomments_block_task extends backup_block_task {
      * @param string $content
      * @return string
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         return $content; // No special encoding of links required.
     }
 }

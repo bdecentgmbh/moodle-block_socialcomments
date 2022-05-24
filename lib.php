@@ -18,10 +18,10 @@
  * Library file for block socialcomments.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die;
 
 /**
  * This function extends the navigation with the report items.
@@ -47,4 +47,24 @@ function block_socialcomments_extend_navigation_course($navigation, $course, $co
         $reportnode->add(get_string('pinboard', 'block_socialcomments'), $url,
             navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
+}
+
+/**
+ * Get user name fields
+ */
+function block_socialcomments_get_all_user_name_fields() {
+    $userfieldsapi = \core_user\fields::for_name();
+    $userfields = array_values($userfieldsapi->get_sql('u')->mappings);
+    $userfields = implode(",", $userfields);
+    return $userfields;
+}
+
+/**
+ * Get the user picture fields.
+ */
+function block_socialcomments_get_userpicture_fields() {
+    $userfieldsapi = \core_user\fields::for_name()->with_userpic()->including(...([]));
+    $userpicturefields = array_values($userfieldsapi->get_sql('u')->mappings);
+    $userpicturefields = implode(",", $userpicturefields);
+    return $userpicturefields;
 }

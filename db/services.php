@@ -18,14 +18,15 @@
  * Socialcomments external functions and service definitions.
  *
  * @package   block_socialcomments
- * @copyright 2017 Andreas Wagner, Synergy Learning
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $functions = array(
     'block_socialcomments_save_comment' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'save_comment',
         'description' => 'Create or update a comment',
         'capabilities' => 'block/socialcomments:postcomment',
@@ -33,7 +34,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_delete_comment' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'delete_comment',
         'description' => 'Delete a comment',
         'capabilities' => 'block/socialcomments:deleteowncomments, block/socialcomments:deletecomments',
@@ -41,7 +42,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_set_pinned' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'set_pinned',
         'description' => 'Pin a item',
         'capabilities' => 'block/socialcomments:pinitems',
@@ -49,7 +50,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_set_subscribed' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'set_subscribed',
         'description' => 'Subscribe for a context',
         'capabilities' => 'block/socialcomments:subscribe',
@@ -57,7 +58,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_get_commentspage' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'get_commentspage',
         'description' => 'Get a content page with comments',
         'capabilities' => 'block/socialcomments:view',
@@ -65,7 +66,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_save_reply' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'save_reply',
         'description' => 'Create or update a reply',
         'capabilities' => 'block/socialcomments:postcomment',
@@ -73,7 +74,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_delete_reply' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'delete_reply',
         'description' => 'Delete a reply',
         'capabilities' => 'block/socialcomments:deleteownreplies, block/socialcomments:deletereplies',
@@ -81,7 +82,7 @@ $functions = array(
         'ajax' => true
     ),
     'block_socialcomments_get_activity_options' => array(
-        'classname' => 'block_socialcomments_external',
+        'classname' => 'block_socialcomments\external',
         'methodname' => 'get_activity_options',
         'description' => 'Get options for activity select',
         'capabilities' => 'block/socialcomments:viewreport',
