@@ -76,7 +76,7 @@
  $string['pinpage'] = 'página de fixações';
  $string['pleaseinputtext'] = 'Coloque algum texto para postar um comentário';
  $string['pluginname'] = 'Comentários Sociais';
- $string['post'] = 'Post';
+ $string['post'] = 'Postar';
  $string['postcommentoncourse'] = 'Poste um comentário neste curso...';
  $string['postcommentonmod'] = 'Poste um comentário neste módulo...';
  $string['privacy:commentspath'] = 'Comentários';
