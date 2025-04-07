@@ -138,7 +138,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
             $group = reset($groups);
             return html_writer::empty_tag('input', ['type' => 'hidden', 'value' => $group->id, 'id' => 'ccomments-groupid']);
         }
-       
+
         $choices = [];
         foreach ($groups as $group) {
             $choices[$group->id] = $group->name;
