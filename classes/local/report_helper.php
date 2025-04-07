@@ -41,12 +41,12 @@ class report_helper {
     /**
      * @var $sqlgrouprestriction
      */
-    private $sqlgrouprestriction = array();
+    private $sqlgrouprestriction = [];
 
     /**
      * @var $grouprestriction
      */
-    private $grouprestriction = array();
+    private $grouprestriction = [];
 
     /**
      * Get an instance of an object of this class. Create as a singleton.
@@ -81,9 +81,9 @@ class report_helper {
         $course = course_get_format($COURSE)->get_course();
         $modinfo = get_fast_modinfo($course);
 
-        $visiblesections = array();
-        $visiblemodules = array();
-        $visiblecontexts = array();
+        $visiblesections = [];
+        $visiblemodules = [];
+        $visiblecontexts = [];
 
         foreach ($modinfo->get_section_info_all() as $section => $thissection) {
 
@@ -100,7 +100,7 @@ class report_helper {
 
             $visiblesection = new \stdClass();
             $visiblesection->name = get_section_name($course, $section);
-            $visiblesection->modids = array();
+            $visiblesection->modids = [];
 
             if (!empty($modinfo->sections[$thissection->section])) {
 
@@ -178,9 +178,9 @@ class report_helper {
 
         $fromcount = "FROM {block_socialcomments_cmmnts} cc ";
 
-        $params = array();
+        $params = [];
 
-        $cond = array();
+        $cond = [];
         $cond[] = " cc.contextid = {$context->id} ";
 
         if (!empty($filterdata->content)) {
@@ -219,7 +219,7 @@ class report_helper {
 
         $sql = $select . $from . $where;
         $sqlcount = $selectcount . $fromcount . $where;
-        return array($sql, $sqlcount, $params);
+        return [$sql, $sqlcount, $params];
     }
 
     /**
@@ -245,7 +245,7 @@ class report_helper {
 
         // Get commentscount per context.
         if (!empty($filterdata->activityid)) {
-            $contextids = array($modinfo->modules[$filterdata->activityid]->contextid);
+            $contextids = [$modinfo->modules[$filterdata->activityid]->contextid];
         }
 
         if (empty($filterdata->activityid) && (!empty($filterdata->sectionid))) {
@@ -256,9 +256,9 @@ class report_helper {
             $contextids = array_keys($modinfo->contexts);
         }
 
-        $params = array();
-        $subselect = array();
-        $subselectcount = array();
+        $params = [];
+        $subselect = [];
+        $subselectcount = [];
 
         if (!empty($contextids)) {
 
@@ -287,14 +287,14 @@ class report_helper {
                         continue;
                     }
 
-                    $sqlvalues = (object) array(
+                    $sqlvalues = (object) [
                             'usernamefields' => $usernamefields,
                             'topicname' => $topicname,
                             'activity' => $module->name,
                             'activityid' => $modid,
                             'commentscount' => $countpercontext[$module->contextid]->count,
                             'context' => $modinfo->contexts[$module->contextid],
-                    );
+                    ];
 
                     list($subsql, $countsql, $subparam) = $this->get_module_comments_sql($sqlvalues, $filterdata);
 
@@ -308,16 +308,16 @@ class report_helper {
         if ((empty($filterdata->sectionid)) && empty($filterdata->activityid)) {
 
             $coursecontext = \context_course::instance($filterdata->courseid);
-            $commentscount = $DB->count_records('block_socialcomments_cmmnts', array('contextid' => $coursecontext->id));
+            $commentscount = $DB->count_records('block_socialcomments_cmmnts', ['contextid' => $coursecontext->id]);
 
-            $sqlvalues = (object) array(
+            $sqlvalues = (object) [
                     'usernamefields' => $usernamefields,
                     'topicname' => get_string('course'),
                     'activity' => '',
                     'activityid' => 0,
                     'commentscount' => $commentscount,
-                    'context' => $coursecontext
-            );
+                    'context' => $coursecontext,
+            ];
 
             list($subsql, $countsql, $subparam) = $this->get_module_comments_sql($sqlvalues, $filterdata);
 
@@ -328,14 +328,14 @@ class report_helper {
 
         $sql = implode(' UNION ALL ', $subselect);
         if (empty($sql)) {
-            return array();
+            return [];
         }
 
         // Page size of table.
         $sqlcount = implode(' UNION ALL ', $subselectcount);
         $total = $DB->count_records_sql("SELECT count(id) FROM ($sqlcount) as uc ", $params);
 
-        if (!$download and isset($table)) {
+        if (!$download && isset($table)) {
             $tableperpage = ($perpage == 0) ? $total : $perpage;
             $table->pagesize($tableperpage, $total);
             $limitfrom = $table->get_page_start();
@@ -362,7 +362,7 @@ class report_helper {
 
         $modinfo = $this->get_visible_modinfo();
 
-        $sectionmenu = array();
+        $sectionmenu = [];
         foreach ($modinfo->sections as $sectionid => $section) {
             $sectionmenu[$sectionid] = $section->name;
         }
@@ -383,18 +383,18 @@ class report_helper {
         if ($sectionid > 0) {
 
             if (!isset($modinfo->sections[$sectionid])) {
-                return array();
+                return [];
             }
 
             $modids = $modinfo->sections[$sectionid]->modids;
         } else {
             if (empty($modinfo->modules)) {
-                return array();
+                return [];
             }
             $modids = array_keys($modinfo->modules);
         }
 
-        $modnames = array();
+        $modnames = [];
         foreach ($modids as $modid) {
             if (isset($modinfo->modules[$modid])) {
                 $modnames[$modid] = $modinfo->modules[$modid]->name;
@@ -411,12 +411,12 @@ class report_helper {
      */
     public function get_options($sectionid) {
 
-        $choices = array(0 => get_string('selectactivity', 'block_socialcomments'));
+        $choices = [0 => get_string('selectactivity', 'block_socialcomments')];
         $choices += $this->get_visible_mods_menu($sectionid);
 
         $html = '';
         foreach ($choices as $value => $text) {
-            $html .= \html_writer::tag('option', $text, array('value' => $value));
+            $html .= \html_writer::tag('option', $text, ['value' => $value]);
         }
 
         return $html;
@@ -430,13 +430,13 @@ class report_helper {
      */
     public function get_tab_tree($courseid) {
 
-        $rows = array();
+        $rows = [];
 
-        $reporturl = new \moodle_url('/blocks/socialcomments/report/newsfeed.php', array('courseid' => $courseid));
+        $reporturl = new \moodle_url('/blocks/socialcomments/report/newsfeed.php', ['courseid' => $courseid]);
         $tablabel = get_string('tabnewcomments', 'block_socialcomments');
         $rows[] = new \tabobject('newsfeed', $reporturl, $tablabel, $tablabel);
 
-        $reporturl = new \moodle_url('/blocks/socialcomments/report/index.php', array('courseid' => $courseid));
+        $reporturl = new \moodle_url('/blocks/socialcomments/report/index.php', ['courseid' => $courseid]);
         $tablabel = get_string('taballcomments', 'block_socialcomments');
         $rows[] = new \tabobject('report', $reporturl, $tablabel, $tablabel);
 
@@ -467,24 +467,24 @@ class report_helper {
     private function check_visiblity_and_add_replies($comments, $repliesgroupedbycomments) {
 
         // Group comments by contextid and add replies.
-        $groupedcomments = array();
+        $groupedcomments = [];
 
         foreach ($comments as $comment) {
 
             $context = \context_helper::instance_by_id($comment->postcontextid);
             $restrictedtogroups = $this->is_restricted_to_groupids($context);
 
-            if (($restrictedtogroups) and ( !in_array($comment->groupid, $restrictedtogroups))) {
+            if (($restrictedtogroups) && ( !in_array($comment->groupid, $restrictedtogroups))) {
                 continue;
             }
 
             if (!isset($groupedcomments[$comment->postcontextid])) {
-                $groupedcomments[$comment->postcontextid] = array();
+                $groupedcomments[$comment->postcontextid] = [];
             }
 
             $commentdata = new \stdClass();
             $commentdata->comment = $comment;
-            $commentdata->replies = array();
+            $commentdata->replies = [];
 
             if (isset($repliesgroupedbycomments[$comment->postid])) {
                 $commentdata->replies = $repliesgroupedbycomments[$comment->postid];
@@ -519,8 +519,8 @@ class report_helper {
                 JOIN {block_socialcomments_cmmnts} bc ON bc.id = r.commentid
                 JOIN {context} ctx ON ctx.id = bc.contextid ";
 
-        $cond = array();
-        $params = array();
+        $cond = [];
+        $params = [];
 
         $cond[] = " r.timemodified >= :timesince ";
         $params['timesince'] = $timesince;
@@ -535,13 +535,13 @@ class report_helper {
 
         $replies = $DB->get_records_sql($sql . $where . $orderby, $params);
 
-        $neededcommentsid = array();
-        $repliesgroupedbycomments = array();
+        $neededcommentsid = [];
+        $repliesgroupedbycomments = [];
 
         foreach ($replies as $reply) {
 
             if (!isset($repliesgroupedbycomments[$reply->commentid])) {
-                $repliesgroupedbycomments[$reply->commentid] = array();
+                $repliesgroupedbycomments[$reply->commentid] = [];
             }
 
             $repliesgroupedbycomments[$reply->commentid][$reply->postid] = $reply;
@@ -555,8 +555,8 @@ class report_helper {
                 JOIN {user} u ON bc.userid = u.id
                 JOIN {context} ctx ON ctx.id = bc.contextid ";
 
-        $cond = array();
-        $params = array();
+        $cond = [];
+        $params = [];
 
         $cond[] = " bc.timemodified >= :timesince ";
         $params['timesince'] = $timesince;
@@ -579,7 +579,7 @@ class report_helper {
         $comments = $DB->get_records_sql($sql . $where . $orderby, $params);
 
         if (count($comments) == 0) {
-            return array();
+            return [];
         }
 
         return $this->check_visiblity_and_add_replies($comments, $repliesgroupedbycomments);
@@ -608,8 +608,8 @@ class report_helper {
                 JOIN {user} u ON bc.userid = u.id
                 JOIN {context} ctx ON ctx.id = bc.contextid ";
 
-        $cond = array();
-        $params = array();
+        $cond = [];
+        $params = [];
         $params['thisuserid'] = $USER->id;
 
         $params['itemtype'] = comments_helper::PINNED_PAGE;
@@ -637,7 +637,7 @@ class report_helper {
         $pinnedcomments = $pagepinnedcomments + $singlepinnedcomments;
 
         if (count($pinnedcomments) == 0) {
-            return array();
+            return [];
         }
 
         list($incommentid, $inparams) = $DB->get_in_or_equal(array_keys($pinnedcomments), SQL_PARAMS_NAMED);
@@ -652,11 +652,11 @@ class report_helper {
         $replies = $DB->get_records_sql($sql, $inparams);
 
         // Group by commentid.
-        $repliesgroupedbycomments = array();
+        $repliesgroupedbycomments = [];
         foreach ($replies as $reply) {
 
             if (!isset($repliesgroupedbycomments[$reply->commentid])) {
-                $repliesgroupedbycomments[$reply->commentid] = array();
+                $repliesgroupedbycomments[$reply->commentid] = [];
             }
 
             $repliesgroupedbycomments[$reply->commentid][$reply->postid] = $reply;

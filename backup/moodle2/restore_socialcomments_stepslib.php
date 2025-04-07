@@ -35,7 +35,7 @@ class restore_socialcomments_block_structure_step extends restore_structure_step
      * Define the structure for restoring a socialcomments block.
      */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
 
         $paths[] = new restore_path_element('comment', '/block/socialcomments/comment', true);
         $paths[] = new restore_path_element('reply', '/block/socialcomments/comment/replies/reply');

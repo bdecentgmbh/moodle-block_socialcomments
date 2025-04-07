@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification'], function($, ajax, notification) {
+define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
 
     var params = null; // ...contextid, subscribed, commentscount.
     /**
@@ -41,7 +41,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, ajax, notificat
                     sectionid: Number(topicindex),
                     courseid: params.courseid
                 },
-                done: function(response) {
+                done: function (response) {
                     $('#id_activityid').html(response.options);
                 },
                 fail: notification.exception
@@ -65,16 +65,16 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, ajax, notificat
     }
 
     return {
-        init: function(initparams) {
+        init: function (initparams) {
 
             // Params.
             params = initparams;
 
-            $('#id_sectionid').change(function() {
+            $('#id_sectionid').change(function () {
                 loadOptions($(this));
             });
 
-            $('#id_activityid').change(function() {
+            $('#id_activityid').change(function () {
                 onActivitySelected($(this));
             });
         }

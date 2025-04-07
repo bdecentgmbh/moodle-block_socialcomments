@@ -39,7 +39,7 @@ if ($ADMIN->fulltree) {
         new lang_string('reportperpagedesc', 'block_socialcomments'), 25, PARAM_INT));
 
     $url = new moodle_url('/admin/tool/task/scheduledtasks.php');
-    $link = html_writer::link($url, get_string('pluginname', 'tool_task'), array('target' => '_blank'));
+    $link = html_writer::link($url, get_string('pluginname', 'tool_task'), ['target' => '_blank']);
 
     $settings->add(new admin_setting_configtext('block_socialcomments/userspercron',
         new lang_string('userspercron', 'block_socialcomments'),

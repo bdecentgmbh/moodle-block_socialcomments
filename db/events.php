@@ -25,15 +25,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
-    array(
+$observers = [
+    [
         'eventname' => '\core\event\course_deleted',
         'callback' => '\block_socialcomments\local\comments_helper::course_deleted',
-        'internal' => true
-    ),
-    array(
+        'internal' => true,
+    ],
+    [
         'eventname' => '\core\event\user_deleted',
         'callback' => '\block_socialcomments\local\comments_helper::user_deleted',
-        'internal' => true
-    )
-);
+        'internal' => true,
+    ],
+];

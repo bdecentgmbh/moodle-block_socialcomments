@@ -26,17 +26,20 @@ namespace block_socialcomments;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\approved_userlist;
-use \core_privacy\tests\provider_testcase;
-use \block_socialcomments\privacy\provider;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\tests\provider_testcase;
+use block_socialcomments\privacy\provider;
 use context_course;
 use context_user;
 use context_system;
 
 global $CFG;
-require_once($CFG->libdir . '/externallib.php');
+
+if ($CFG->branch <= 401) {
+    require_once($CFG->libdir . '/externallib.php');
+}
 
 /**
  * Unit tests for blocks\socialcomments\classes\privacy\provider.php
@@ -44,7 +47,7 @@ require_once($CFG->libdir . '/externallib.php');
  * @copyright 2019 Paul Steffen, EDU-Werkstatt GmbH
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_socialcomments_test extends \advanced_testcase {
+final class block_socialcomments_test extends \advanced_testcase {
 
     /**
      * Basic setup for these tests.
@@ -75,7 +78,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test for provider::get_metadata()
      * @covers \provider::get_metadata
      */
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $collection = new collection('block_socialcomments');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
@@ -124,7 +127,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test getting the context for the user ID related to this plugin.
      * @covers \provider::get_contexts_for_userid
      */
-    public function test_social_comments_get_contexts_for_userid() {
+    public function test_social_comments_get_contexts_for_userid(): void {
         global $DB, $USER;
 
         $this->resetAfterTest();
@@ -134,17 +137,17 @@ class block_socialcomments_test extends \advanced_testcase {
         $course = $generator->create_course();
         $coursecontext = context_course::instance($course->id);
 
-        $record = array('courseid' => $course->id, 'name' => 'Group');
+        $record = ['courseid' => $course->id, 'name' => 'Group'];
         $group = $generator->create_group($record);
 
         $user = $generator->create_user();
         $generator->enrol_user($user->id, $course->id, 'student');
 
-        $generator->create_group_member(array('userid' => $user->id, 'groupid' => $group->id));
+        $generator->create_group_member(['userid' => $user->id, 'groupid' => $group->id]);
 
         $this->save_comment($coursecontext, $user, 'Comment0');
 
-        $comment = $DB->get_record('block_socialcomments_cmmnts', array('userid' => $user->id));
+        $comment = $DB->get_record('block_socialcomments_cmmnts', ['userid' => $user->id]);
         $this->assertNotFalse($comment);
 
         $data = $DB->count_records('block_socialcomments_cmmnts');
@@ -156,7 +159,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test that data is exported correctly for this plugin.
      * @covers \provider::export_user_data
      */
-    public function test_export_user_data() {
+    public function test_export_user_data(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -189,7 +192,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test that only users within a course context are fetched.
      * @covers \provider::get_users_in_context
      */
-    public function test_get_users_in_context() {
+    public function test_get_users_in_context(): void {
         global $DB, $USER;
 
         $this->resetAfterTest();
@@ -214,12 +217,11 @@ class block_socialcomments_test extends \advanced_testcase {
         $this->assertTrue(in_array($this->student->id, $userids));
     }
 
-
     /**
      * Test that data for users in approved userlist is deleted.
      * @covers \provider::delete_data_for_users
      */
-    public function test_delete_data_for_users() {
+    public function test_delete_data_for_users(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -295,7 +297,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test that user data is deleted using the context.
      * @covers \provider::delete_data_for_all_users_in_context
      */
-    public function test_delete_data_for_all_users_in_context() {
+    public function test_delete_data_for_all_users_in_context(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -352,7 +354,7 @@ class block_socialcomments_test extends \advanced_testcase {
      * Test that user data is deleted for this user.
      * @covers \provider::delete_data_for_user
      */
-    public function test_delete_data_for_user() {
+    public function test_delete_data_for_user(): void {
         global $DB;
         $component = 'block_socialcomments';
         $this->resetAfterTest();
@@ -434,12 +436,12 @@ class block_socialcomments_test extends \advanced_testcase {
         // Needed for calling the webservice without sesskey.
         $USER->ignoresesskey = true;
 
-        $params = array(
+        $params = [
             'contextid' => $context->id,
             'content' => $content,
             'commentid' => $commentid,
-            'id' => 0
-        );
+            'id' => 0,
+        ];
         $result = external::save_reply($context->id, $content, $commentid, 0);
     }
 
@@ -455,7 +457,7 @@ class block_socialcomments_test extends \advanced_testcase {
         // Needed for calling the webservice without sesskey.
         $USER->ignoresesskey = true;
 
-        $params = array('contextid' => $context->id, 'content' => $content, 'groupid' => 0, 'id' => 0);
+        $params = ['contextid' => $context->id, 'content' => $content, 'groupid' => 0, 'id' => 0];
 
         $result = external::save_comment($context->id, $content, 0, 0);
         $this->assertTrue(isset($result['id']));
@@ -473,11 +475,11 @@ class block_socialcomments_test extends \advanced_testcase {
         $this->setUser($user);
         // Needed for calling the webservice without sesskey.
         $USER->ignoresesskey = true;
-        $params = array(
+        $params = [
             'contextid' => $context->id,
             'checked' => true,
-            'commentid' => $commentid
-        );
+            'commentid' => $commentid,
+        ];
         $result = external::set_pinned($context->id, true, $commentid);
         $this->assertTrue(is_numeric($result['commentid']) && !empty($result['commentid']));
         $this->assertEquals($commentid, $result['commentid']);
@@ -494,10 +496,10 @@ class block_socialcomments_test extends \advanced_testcase {
         // Needed for calling the webservice without sesskey.
         $USER->ignoresesskey = true;
         // Subscribe to context...
-        $params = array(
+        $params = [
             'contextid' => $context->id,
             'checked' => true,
-        );
+        ];
         $result = external::set_subscribed($context->id, true);
         $this->assertTrue($result['checked']);
     }

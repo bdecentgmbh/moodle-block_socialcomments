@@ -31,10 +31,10 @@ use block_socialcomments\local\comment;
 $id = required_param('id', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 require_login($courseid);
-$comment = new comment(array('id' => $id), true, MUST_EXIST);
+$comment = new comment(['id' => $id], true, MUST_EXIST);
 
 $delete = optional_param('delete', '', PARAM_ALPHANUM);
 $context = context_helper::instance_by_id($comment->contextid);
@@ -44,11 +44,11 @@ if (!comment::can_delete($comment->userid, $context)) {
     throw new moodle_exception('cannotdeletecourse');
 }
 
-$PAGE->set_url('/blocks/socialcomments/delete_comment.php', array('id' => $id));
+$PAGE->set_url('/blocks/socialcomments/delete_comment.php', ['id' => $id]);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
 
-$redirecturl = new moodle_url('/blocks/socialcomments/report/index.php', array('courseid' => $course->id));
+$redirecturl = new moodle_url('/blocks/socialcomments/report/index.php', ['courseid' => $course->id]);
 
 // Check if we've got confirmation.
 if ($delete === md5($comment->timemodified)) {
@@ -59,11 +59,11 @@ if ($delete === md5($comment->timemodified)) {
     redirect($redirecturl, get_string('commentdeleted', 'block_socialcomments'));
 }
 
-$params = array(
+$params = [
     'id' => $comment->id,
     'courseid' => $course->id,
-    'delete' => md5($comment->timemodified)
-);
+    'delete' => md5($comment->timemodified),
+];
 
 $continueurl = new moodle_url('/blocks/socialcomments/report/delete_comment.php', $params);
 $continuebutton = new single_button($continueurl, get_string('delete'), 'post');
@@ -78,7 +78,7 @@ echo $OUTPUT->header();
 $message = get_string('deletecheck', 'block_socialcomments');
 
 $author = \core_user::get_user($comment->userid);
-$post = $renderer->render_post($author, $comment, array());
+$post = $renderer->render_post($author, $comment, []);
 
 $message .= html_writer::div($post, 'ccomment-post');
 

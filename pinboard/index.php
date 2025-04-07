@@ -30,10 +30,10 @@ use block_socialcomments\local\comment;
 
 $courseid = required_param('courseid', PARAM_INT);
 
-$baseurl = new moodle_url('/blocks/socialcomments/pinboard/index.php', array('courseid' => $courseid));
+$baseurl = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $courseid]);
 $PAGE->set_url($baseurl);
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 // Check access.
 require_login($course);

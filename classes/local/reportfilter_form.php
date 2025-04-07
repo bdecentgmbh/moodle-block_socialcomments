@@ -50,20 +50,20 @@ class reportfilter_form extends \moodleform {
         $visiblesectionmenu = $reporthelper->get_visible_section_menu();
 
         // Topics.
-        $choices = array('0' => get_string('selecttopic', 'block_socialcomments'));
+        $choices = ['0' => get_string('selecttopic', 'block_socialcomments')];
         $choices += $visiblesectionmenu;
         $mform->addElement('select', 'sectionid', get_string('topic', 'block_socialcomments'), $choices);
 
         // Add modules later.
         $sectionid = optional_param('sectionid', 0, PARAM_INT);
-        $choices = array(0 => get_string('selectactivity', 'block_socialcomments'));
+        $choices = [0 => get_string('selectactivity', 'block_socialcomments')];
         $choices += $reporthelper->get_visible_mods_menu($sectionid);
 
         $mform->addElement('select', 'activityid', get_string('activity', 'block_socialcomments'), $choices);
 
         // Daterange.
-        $mform->addElement('date_selector', 'fromdate', get_string('fromdate', 'block_socialcomments'), array('optional' => true));
-        $mform->addElement('date_selector', 'todate', get_string('todate', 'block_socialcomments'), array('optional' => true));
+        $mform->addElement('date_selector', 'fromdate', get_string('fromdate', 'block_socialcomments'), ['optional' => true]);
+        $mform->addElement('date_selector', 'todate', get_string('todate', 'block_socialcomments'), ['optional' => true]);
 
         $mform->addElement('text', 'author', get_string('author', 'block_socialcomments'));
         $mform->setType('author', PARAM_TEXT);
@@ -78,9 +78,9 @@ class reportfilter_form extends \moodleform {
         // Buttons.
         $mform->addElement('submit', 'submit', get_string('search'));
 
-        $args = array();
+        $args = [];
         $args['courseid'] = $this->_customdata['courseid'];
-        $PAGE->requires->js_call_amd('block_socialcomments/report', 'init', array($args));
+        $PAGE->requires->js_call_amd('block_socialcomments/report', 'init', [$args]);
     }
 
     /**
@@ -134,7 +134,7 @@ class reportfilter_form extends \moodleform {
      */
     public function get_url_params($data) {
 
-        $params = array();
+        $params = [];
 
         if (!empty($data->sectionid)) {
             $params['sectionid'] = $data->sectionid;

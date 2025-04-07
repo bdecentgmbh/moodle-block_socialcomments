@@ -84,12 +84,12 @@ class comment extends basepost {
      * @param boolean $fetch try to fetch attribute values from database first, attrs['id'] is needed.
      * @param int $strictness ignore or force comment exists in database.
      */
-    public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
+    public function __construct($attrs = [], $fetch = false, $strictness = IGNORE_MISSING) {
         global $DB;
 
         if ($fetch && !empty($attrs['id'])) {
 
-            if ($dbattrs = $DB->get_record('block_socialcomments_cmmnts', array('id' => $attrs['id']), '*', $strictness)) {
+            if ($dbattrs = $DB->get_record('block_socialcomments_cmmnts', ['id' => $attrs['id']], '*', $strictness)) {
 
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
@@ -144,11 +144,11 @@ class comment extends basepost {
         list($unused, $course, $cm) = get_context_info_array($context->id);
 
         if (self::get_group_mode($context, $course, $cm) != SEPARATEGROUPS) {
-            return array(0 => (object) array('id' => 0, 'name' => get_string('allgroups', 'block_socialcomments')));
+            return [0 => (object) ['id' => 0, 'name' => get_string('allgroups', 'block_socialcomments')]];
         }
 
         if (has_capability('moodle/site:accessallgroups', $context)) {
-            $visiblegroups[0] = (object) array('id' => 0, 'name' => get_string('allgroups', 'block_socialcomments'));
+            $visiblegroups[0] = (object) ['id' => 0, 'name' => get_string('allgroups', 'block_socialcomments')];
             $visiblegroups += groups_get_all_groups($course->id, 0);
         } else {
             $visiblegroups = groups_get_all_groups($course->id, $USER->id);
@@ -199,12 +199,12 @@ class comment extends basepost {
         global $DB;
 
         if (!$groupids = self::is_restricted_to_groupids($context)) {
-            return array('', array());
+            return ['', []];
         }
 
         list($ingroupstr, $ingroupparam) = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
 
-        return array(' AND groupid ' . $ingroupstr, $ingroupparam);
+        return [' AND groupid ' . $ingroupstr, $ingroupparam];
     }
 
     /**
@@ -263,11 +263,11 @@ class comment extends basepost {
     public function delete() {
         global $DB;
 
-        $DB->delete_records('block_socialcomments_cmmnts', array('id' => $this->id));
-        $DB->delete_records('block_socialcomments_replies', array('commentid' => $this->id));
-        $DB->delete_records('block_socialcomments_pins', array(
+        $DB->delete_records('block_socialcomments_cmmnts', ['id' => $this->id]);
+        $DB->delete_records('block_socialcomments_replies', ['commentid' => $this->id]);
+        $DB->delete_records('block_socialcomments_pins', [
             'itemid' => $this->id,
-            'itemtype' => comments_helper::PINNED_COMMENT)
+            'itemtype' => comments_helper::PINNED_COMMENT]
         );
     }
 
@@ -277,13 +277,13 @@ class comment extends basepost {
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\comment_created::create(
-                array(
+                [
                     'contextid' => $this->contextid,
                     'objectid' => $this->id,
-                    'other' => array(
-                        'userid' => $this->userid
-                    )
-                )
+                    'other' => [
+                        'userid' => $this->userid,
+                    ],
+                ]
         );
         $event->trigger();
     }

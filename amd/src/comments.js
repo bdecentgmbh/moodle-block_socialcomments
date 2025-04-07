@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, ajax, notification, corestr) {
+define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, ajax, notification, corestr) {
 
     var LASTPAGE = -1;
 
@@ -54,9 +54,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
 
         if (!content) {
             corestr.get_strings([
-                {'key': 'error'},
-                {'key': 'pleaseinputtext', component: 'block_socialcomments'}
-            ]).done(function(s) {
+                { 'key': 'error' },
+                { 'key': 'pleaseinputtext', component: 'block_socialcomments' }
+            ]).done(function (s) {
                 notification.alert(s[0], s[1]);
             }
             ).fail(notification.exception);
@@ -94,7 +94,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                     pagenumber: newpagenumber,
                     hidepins: params.hidepins
                 },
-                done: function(response) {
+                done: function (response) {
                     pagenumber = response.pagenumber;
                     $('#ccomment-commentspage-wrap').html(response.commentspage);
                 },
@@ -125,7 +125,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                         groupid: groupid,
                         id: commentid
                     },
-                    done: function(response) {
+                    done: function (response) {
                         // Update display.
                         $('.ccomment-comments-count').html(response.count);
                         $('#ccomment-comments-content-top').removeClass('hidden');
@@ -174,7 +174,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                         commentid: replycommentid,
                         id: replyid
                     },
-                    done: function() {
+                    done: function () {
                         // Update display.
                         $textarea.val('');
                         // Load the Page the where the comment is visible.
@@ -196,14 +196,14 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         // Before delete DOM Elements move forms to safe place.
         moveForms();
 
-        corestr.get_string('commentdeleted', 'block_socialcomments').done(function(s) {
+        corestr.get_string('commentdeleted', 'block_socialcomments').done(function (s) {
             $('#ccomment-comment-listitem-' + response.deletedcommentid).addClass('ccomment-highlight');
-            $('#ccomment-comment-listitem-' + response.deletedcommentid).html(s).fadeOut(2000, function() {
+            $('#ccomment-comment-listitem-' + response.deletedcommentid).html(s).fadeOut(2000, function () {
                 loadCommentsPage(pagenumber);
             });
         });
 
-        corestr.get_string('commentscount', 'block_socialcomments', response.count).done(function(s) {
+        corestr.get_string('commentscount', 'block_socialcomments', response.count).done(function (s) {
             $('.ccomment-comments-count').html(s);
         });
 
@@ -242,9 +242,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         // Before delete DOM Elements move forms to safe place.
         moveForms();
 
-        corestr.get_string('replydeleted', 'block_socialcomments').done(function(s) {
+        corestr.get_string('replydeleted', 'block_socialcomments').done(function (s) {
             $('#ccomment-reply-' + response.deletedreplyid).addClass('ccomment-highlight');
-            $('#ccomment-reply-' + response.deletedreplyid).html(s).fadeOut(2000, function() {
+            $('#ccomment-reply-' + response.deletedreplyid).html(s).fadeOut(2000, function () {
                 loadCommentsPage(pagenumber);
             });
         });
@@ -284,7 +284,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                     checked: $checkbox.prop('checked'),
                     commentid: Number($checkbox.attr('id').split('-')[2])
                 },
-                done: function(response) {
+                done: function (response) {
                     $checkbox.prop('checked', response.checked);
                     // Set correct tooltip.
                     var $tooltipdiv = $checkbox.parent().find('.ccomments-pin-tooltip');
@@ -309,7 +309,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
                     contextid: params.contextid,
                     checked: $checkbox.prop('checked')
                 },
-                done: function(response) {
+                done: function (response) {
                     params.subscribed = response.checked;
                     $checkbox.prop('checked').prop('checked', params.subscribed);
                 },
@@ -472,16 +472,16 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         $formtextarea = $('#ccomment-form-textarea');
         $formactionpost = $('#ccomment-form-action-post');
 
-        $formactionpost.click(function() {
+        $formactionpost.click(function () {
             saveComment($formtextarea, 0);
             highlightActionButton($formactionpost, $formtextarea.val());
         });
 
-        $formtextarea.keyup(function() {
+        $formtextarea.keyup(function () {
             highlightActionButton($formactionpost, $formtextarea.val());
         });
 
-        $('#ccomment-form-action-cancel').click(function() {
+        $('#ccomment-form-action-cancel').click(function () {
             $formtextarea.val('');
             $formactionpost.removeClass('ccomment-highlight-button');
         });
@@ -490,7 +490,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         $editactionsave = $('#ccomment-edit-action-save');
 
         // Edit comment.
-        $editactionsave.click(function() {
+        $editactionsave.click(function () {
 
             editcommentid = $edittextarea.attr('data-commentid');
 
@@ -501,30 +501,30 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         });
 
         // Cancel editing comment.
-        $('#ccomment-edit-action-cancel').click(function() {
+        $('#ccomment-edit-action-cancel').click(function () {
             if (editcommentid > 0) {
                 cancelEditComment();
                 resetEditComment();
             }
         });
 
-        $edittextarea.keyup(function() {
+        $edittextarea.keyup(function () {
             highlightActionButton($editactionsave, $edittextarea.val());
         });
 
         // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-post-action-delete-"]', 'click', function(e) {
+        $commentscontent.delegate('a[id^="ccomment-post-action-delete-"]', 'click', function (e) {
             e.preventDefault();
             onCommentDeleteClicked($(this));
         });
 
-        $commentscontent.delegate('a[id^="ccomment-post-action-edit-"]', 'click', function(e) {
+        $commentscontent.delegate('a[id^="ccomment-post-action-edit-"]', 'click', function (e) {
             e.preventDefault();
             startEditComment($(this));
         });
 
         // Reply-Link.
-        $commentscontent.delegate('a[id^="ccomment-reply-"]', 'click', function(e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-"]', 'click', function (e) {
             e.preventDefault();
             startCreateReply($(this));
         });
@@ -538,35 +538,35 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
         $replytextarea = $('#ccomment-reply-textarea');
         $replyactionsave = $('#ccomment-reply-action-save');
 
-        $replyactionsave.click(function() {
+        $replyactionsave.click(function () {
             saveReply($replytextarea, replyid);
             highlightActionButton($replyactionsave, $replytextarea.val());
         });
 
         // Cancel editing reply.
-        $('#ccomment-reply-action-cancel').click(function() {
+        $('#ccomment-reply-action-cancel').click(function () {
             cancelReplyComment();
             resetReplyComment();
         });
 
-        $replytextarea.keyup(function() {
+        $replytextarea.keyup(function () {
             highlightActionButton($replyactionsave, $replytextarea.val());
         });
 
         // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-reply-action-delete-"]', 'click', function(e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-action-delete-"]', 'click', function (e) {
             e.preventDefault();
             onReplyDeleteClicked($(this));
         });
 
-        $commentscontent.delegate('a[id^="ccomment-reply-action-edit-"]', 'click', function(e) {
+        $commentscontent.delegate('a[id^="ccomment-reply-action-edit-"]', 'click', function (e) {
             e.preventDefault();
             startEditReply($(this));
         });
     }
 
     return {
-        init: function(initparams) {
+        init: function (initparams) {
 
             // Params.
             params = initparams;
@@ -581,25 +581,25 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, aja
             initReplyForms();
 
             // Pin page or comment.
-            $('.block_socialcomments').delegate('input[id^="ccomment-pinned-"]', 'click', function() {
+            $('.block_socialcomments').delegate('input[id^="ccomment-pinned-"]', 'click', function () {
                 onPinnedClicked($(this));
             });
             // Subscribe.
-            $('#ccomment-comments-subscribed').click(function() {
+            $('#ccomment-comments-subscribed').click(function () {
                 onSubscribeClicked($(this));
             });
             // Open menu.
-            $commentscontent.delegate('a[id^="action-menu-toggle-"]', 'click', function(e) {
+            $commentscontent.delegate('a[id^="action-menu-toggle-"]', 'click', function (e) {
                 e.preventDefault();
                 showMenu($(this));
             });
             // Pagination.
-            $commentscontent.delegate('a[id^="ccomment-pagelink-"]', 'click', function(e) {
+            $commentscontent.delegate('a[id^="ccomment-pagelink-"]', 'click', function (e) {
                 e.preventDefault();
                 onPagingClicked($(this));
             });
             // Hide menu.
-            $(window).click(function() {
+            $(window).click(function () {
                 hideMenu();
             });
 

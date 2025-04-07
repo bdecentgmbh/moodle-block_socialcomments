@@ -24,7 +24,6 @@
  */
 namespace block_socialcomments\task;
 
-
 /**
  * Task to process digests for socialcomments block.
  *

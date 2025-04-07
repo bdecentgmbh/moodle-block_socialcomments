@@ -33,7 +33,7 @@ use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
-use \block_socialcomments\local\comments_helper;
+use block_socialcomments\local\comments_helper;
 
 /**
  * Privacy Subsystem for block block_socialcomments.
@@ -54,7 +54,7 @@ class provider implements
      * @param collection $collection The initialised collection to add items to.
      * @return collection A listing of user data stored through this system.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
             'block_socialcomments_cmmnts',
              [
@@ -106,10 +106,10 @@ class provider implements
      * @param int $userid The user to search.
      * @return contextlist $contextlist  The list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
         $params = [
-            'userid' => $userid
+            'userid' => $userid,
         ];
 
         // Get context by comments.
@@ -123,8 +123,8 @@ class provider implements
         // Get context by replies.
         $sql = "SELECT c.id
                 FROM {context} c
-                INNER JOIN mdl_block_socialcomments_cmmnts s ON s.contextid = c.id
-                INNER JOIN mdl_block_socialcomments_replies r ON r.commentid = s.id
+                INNER JOIN {block_socialcomments_cmmnts} s ON s.contextid = c.id
+                INNER JOIN {block_socialcomments_replies} r ON r.commentid = s.id
                 WHERE (r.userid = :userid)
                 GROUP BY id";
         $contextlist->add_from_sql($sql, $params);
@@ -245,7 +245,7 @@ class provider implements
                 return [
                         'content' => format_string($record->content),
                         'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified)
+                        'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
             writer::with_context($context)->export_data([get_string('privacy:commentspath',
@@ -272,7 +272,7 @@ class provider implements
                 return [
                         'content' => format_string($record->content),
                         'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified)
+                        'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
             writer::with_context($context)->export_data([get_string('privacy:repliespath',
@@ -301,7 +301,7 @@ class provider implements
                         'course' => format_string($course->fullname),
                         'timelastsent' => transform::datetime($record->timelastsent),
                         'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified)
+                        'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
             writer::with_context($context)->export_data([get_string('privacy:subscriptionspath',
@@ -369,7 +369,7 @@ class provider implements
             $DB->delete_records('block_socialcomments_replies', ['commentid' => $comment->id]);
             $DB->delete_records('block_socialcomments_pins', [
                 'itemid' => $comment->id,
-                'itemtype' => comments_helper::PINNED_COMMENT
+                'itemtype' => comments_helper::PINNED_COMMENT,
             ]);
         }
     }

@@ -36,12 +36,12 @@ class digest {
     /**
      * @var $grouprestriction
      */
-    private $grouprestriction = array();
+    private $grouprestriction = [];
 
     /**
      * @var $timelastsent
      */
-    private $timelastsent = array();
+    private $timelastsent = [];
 
     /**
      * @var $digesttype
@@ -114,15 +114,15 @@ class digest {
 
         $orderby = 'ORDER BY r.timecreated DESC';
 
-        $replies = $DB->get_records_sql($sql . $orderby, array($user->id));
+        $replies = $DB->get_records_sql($sql . $orderby, [$user->id]);
 
-        $neededcommentsid = array();
-        $repliesgroupedbycomments = array();
+        $neededcommentsid = [];
+        $repliesgroupedbycomments = [];
 
         foreach ($replies as $reply) {
 
             if (!isset($repliesgroupedbycomments[$reply->commentid])) {
-                $repliesgroupedbycomments[$reply->commentid] = array();
+                $repliesgroupedbycomments[$reply->commentid] = [];
             }
 
             $repliesgroupedbycomments[$reply->commentid][$reply->postid] = $reply;
@@ -137,7 +137,7 @@ class digest {
                 JOIN {user} u ON bc.userid = u.id
                 JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid ";
 
-        $params = array('userid' => $user->id);
+        $params = ['userid' => $user->id];
 
         $orcond = " (bc.timemodified >= sub.timelastsent)";
         // Add comments that are needed for replies.
@@ -153,11 +153,11 @@ class digest {
         $comments = $DB->get_records_sql($sql . $where . $orderby, $params);
 
         if (count($comments) == 0) {
-            return array();
+            return [];
         }
 
         // Group by course and context and add replies.
-        $groupeddata = array();
+        $groupeddata = [];
         foreach ($comments as $cmt) {
 
             $context = \context_helper::instance_by_id($cmt->postcontextid);
@@ -168,17 +168,17 @@ class digest {
             }
 
             if (!isset($groupeddata[$cmt->courseid])) {
-                $groupeddata[$cmt->courseid] = array();
-                $this->timelastsent[$cmt->courseid] = array();
+                $groupeddata[$cmt->courseid] = [];
+                $this->timelastsent[$cmt->courseid] = [];
             }
 
             if (!isset($groupeddata[$cmt->courseid][$cmt->postcontextid])) {
-                $groupeddata[$cmt->courseid][$cmt->postcontextid] = array();
+                $groupeddata[$cmt->courseid][$cmt->postcontextid] = [];
             }
 
             $commentdata = new \stdClass();
             $commentdata->comment = $cmt;
-            $commentdata->replies = array();
+            $commentdata->replies = [];
 
             if (isset($repliesgroupedbycomments[$cmt->postid])) {
                 $commentdata->replies = $repliesgroupedbycomments[$cmt->postid];
@@ -210,7 +210,7 @@ class digest {
         // Render new data for each course.
         foreach ($commentsdata as $courseid => $contextcomments) {
 
-            if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+            if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                 continue;
             }
             $messagetext .= $renderer->render_digest($course, $contextcomments);
@@ -279,7 +279,7 @@ class digest {
                 foreach ($this->timelastsent as $courseid => $contextids) {
 
                     foreach ($contextids as $contextid => $time) {
-                        $params = array('userid' => $user->id, 'contextid' => $contextid);
+                        $params = ['userid' => $user->id, 'contextid' => $contextid];
                         $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
                     }
                 }
@@ -295,7 +295,7 @@ class digest {
             // Render new data for each course.
             foreach ($newcommentsdata as $courseid => $contextcomments) {
 
-                if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+                if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                     continue;
                 }
                 $messagetext = $renderer->render_digest($course, $contextcomments);
@@ -304,7 +304,7 @@ class digest {
                 if ($messageid && isset($this->timelastsent[$courseid])) {
 
                     foreach ($this->timelastsent[$courseid] as $contextid => $time) {
-                        $params = array('userid' => $user->id, 'contextid' => $contextid);
+                        $params = ['userid' => $user->id, 'contextid' => $contextid];
                         $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
                     }
                 }
@@ -339,7 +339,7 @@ class digest {
                 GROUP BY s.userid
                 ORDER BY mintime ASC ";
 
-        $userids = $DB->get_records_sql($sql, array(), 0, $limit);
+        $userids = $DB->get_records_sql($sql, [], 0, $limit);
         if (!$userids) {
             return $result;
         }
@@ -348,18 +348,19 @@ class digest {
 
         foreach ($userids as $userid) {
 
-            $user = $DB->get_record('user', array('id' => $userid, 'deleted' => 0));
+            $user = $DB->get_record('user', ['id' => $userid, 'deleted' => 0]);
 
             if (!$user) {
                 continue;
             }
 
-            cron_setup_user($user);
+            \core\cron::setup_user($user);
 
             $digest = self::get_instance(true);
             $result = ($result && $digest->send_digest_for_user($user));
         }
-        cron_setup_user();
+
+        \core\cron::setup_user();
 
         return $result;
     }

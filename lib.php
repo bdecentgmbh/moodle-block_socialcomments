@@ -37,13 +37,13 @@ function block_socialcomments_extend_navigation_course($navigation, $course, $co
     $reportnode = $navigation->get('coursereports');
 
     if ($reportnode && has_capability('block/socialcomments:viewreport', $context)) {
-        $url = new moodle_url('/blocks/socialcomments/report/newsfeed.php', array('courseid' => $course->id));
+        $url = new moodle_url('/blocks/socialcomments/report/newsfeed.php', ['courseid' => $course->id]);
         $reportnode->add(get_string('socialcommentsreport', 'block_socialcomments'), $url,
             navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
 
     if ($reportnode && has_capability('block/socialcomments:pinitems', $context)) {
-        $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', array('courseid' => $course->id));
+        $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $course->id]);
         $reportnode->add(get_string('pinboard', 'block_socialcomments'), $url,
             navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
