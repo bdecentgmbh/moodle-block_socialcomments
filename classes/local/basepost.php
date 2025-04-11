@@ -25,7 +25,6 @@
 
 namespace block_socialcomments\local;
 
-
 /**
  * Abstract base class for comments and replies.
  *
@@ -42,7 +41,7 @@ abstract class basepost {
      * @param boolean $fetch try to fetch attribute values from database first, attrs['id'] is needed.
      * @param int $strictness ignore or force comment exists in database.
      */
-    public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
+    public function __construct($attrs = [], $fetch = false, $strictness = IGNORE_MISSING) {
         global $USER;
 
         foreach ($attrs as $key => $value) {

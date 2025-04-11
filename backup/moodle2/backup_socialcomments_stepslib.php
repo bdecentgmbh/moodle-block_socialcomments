@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use \block_socialcomments\local\comments_helper;
+use block_socialcomments\local\comments_helper;
 
 /**
  * Block socialcomments backup structure step class.
@@ -46,7 +46,7 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
         $subscriptions = new backup_nested_element('subscriptions');
 
         // Define each element separated.
-        $comment = new backup_nested_element('comment', array('id'), array(
+        $comment = new backup_nested_element('comment', ['id'], [
             'contextid',
             'component',
             'commentarea',
@@ -57,33 +57,33 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
             'groupid',
             'courseid',
             'timecreated',
-            'timemodified'
-        ));
+            'timemodified',
+        ]);
 
-        $reply = new backup_nested_element('reply', array('id'), array(
+        $reply = new backup_nested_element('reply', ['id'], [
             'commentid',
             'content',
             'format',
             'userid',
             'timecreated',
-            'timemodified'
-        ));
+            'timemodified',
+        ]);
 
-        $pin = new backup_nested_element('pin', array('id'), array(
+        $pin = new backup_nested_element('pin', ['id'], [
             'itemtype',
             'itemid',
             'userid',
             'timecreated',
-        ));
+        ]);
 
-        $subscription = new backup_nested_element('subscription', array('id'), array(
+        $subscription = new backup_nested_element('subscription', ['id'], [
             'courseid',
             'contextid',
             'userid',
             'timelastsent',
             'timecreated',
-            'timemodified'
-        ));
+            'timemodified',
+        ]);
 
         // Build the tree.
         $comments->add_child($comment);
@@ -101,11 +101,11 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
         if ($userinfo) {
             $comment->set_source_sql('SELECT *
                                        FROM {block_socialcomments_cmmnts}
-                                       WHERE courseid = ?', array(backup::VAR_COURSEID));
-            $reply->set_source_table('block_socialcomments_replies', array('commentid' => '../../id'));
+                                       WHERE courseid = ?', [backup::VAR_COURSEID]);
+            $reply->set_source_table('block_socialcomments_replies', ['commentid' => '../../id']);
             $subscription->set_source_sql('SELECT *
                                        FROM {block_socialcomments_subscrs}
-                                       WHERE courseid = ?', array(backup::VAR_COURSEID));
+                                       WHERE courseid = ?', [backup::VAR_COURSEID]);
 
             // Since the socialcomments block works with the course context in place of the block context,
             // we use the value from $contextid instead of backup::VAR_CONTEXTID.
@@ -121,9 +121,9 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
                                   SELECT p.* FROM {block_socialcomments_pins} p
                                   WHERE (p.itemid = '.$contextid.')
                                   AND (p.itemtype = '.comments_helper::PINNED_PAGE.')',
-                                  array(
+                                  [
                                       backup::VAR_COURSEID,
-                                  ));
+                                  ]);
         }
 
         // Define id annotations.

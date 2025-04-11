@@ -26,17 +26,19 @@ namespace block_socialcomments;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \block_socialcomments\local\digest;
+use block_socialcomments\local\digest;
 use context_course;
 
-
 global $CFG;
-require_once($CFG->libdir . '/externallib.php');
+
+if ($CFG->branch <= 401) {
+    require_once($CFG->libdir . '/externallib.php');
+}
 
 /**
  * Digest test cases.
  */
-class block_socialcomments_digest_test extends \advanced_testcase {
+final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Set the config.
@@ -69,13 +71,13 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $this->student2 = $generator->create_user();
         $generator->enrol_user($this->student2->id, $this->course->id, 'student');
 
-        $record = array('courseid' => $this->course->id, 'name' => 'Group 1');
+        $record = ['courseid' => $this->course->id, 'name' => 'Group 1'];
         $this->group1 = $generator->create_group($record);
-        $generator->create_group_member(array('userid' => $this->student1->id, 'groupid' => $this->group1->id));
+        $generator->create_group_member(['userid' => $this->student1->id, 'groupid' => $this->group1->id]);
 
-        $record = array('courseid' => $this->course->id, 'name' => 'Group 2');
+        $record = ['courseid' => $this->course->id, 'name' => 'Group 2'];
         $this->group2 = $generator->create_group($record);
-        $generator->create_group_member(array('userid' => $this->student2->id, 'groupid' => $this->group2->id));
+        $generator->create_group_member(['userid' => $this->student2->id, 'groupid' => $this->group2->id]);
 
     }
 
@@ -83,7 +85,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
      * Test digest
      * @covers ::test_digest
      */
-    public function test_digest() {
+    public function test_digest(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -93,7 +95,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $this->setUser($this->teacher);
         $plugingenerator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
 
-        $cparams = array('contextid' => $this->coursecontext->id, 'timecreated' => time() - DAYSECS);
+        $cparams = ['contextid' => $this->coursecontext->id, 'timecreated' => time() - DAYSECS];
         $comment1 = $plugingenerator->create_comment($cparams);
         $comment2 = $plugingenerator->create_comment($cparams);
 
@@ -102,10 +104,10 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $this->assertEquals(2, $count);
 
         // Subscribe student1 to context of course1.
-        $sparams = array(
+        $sparams = [
             'contextid' => $this->coursecontext->id,
-            'timecreated' => time() - 0.5 * DAYSECS
-        );
+            'timecreated' => time() - 0.5 * DAYSECS,
+        ];
 
         $sparams['userid'] = $this->student1->id;
         $plugingenerator->create_subscription($sparams);
@@ -136,7 +138,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $cparams['contextid'] = $this->coursecontext2->id;
         $comment4 = $plugingenerator->create_comment($cparams);
 
-        $rparams = array('commentid' => $comment1->id);
+        $rparams = ['commentid' => $comment1->id];
         $rparams['timecreated'] = time() - 0.2 * DAYSECS;
         $reply1 = $plugingenerator->create_reply($rparams);
 
@@ -169,7 +171,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
 
         // Check delete events.
         delete_user($this->student1);
-        $subscripts = $DB->get_records('block_socialcomments_subscrs', array('userid' => $this->student1->id));
+        $subscripts = $DB->get_records('block_socialcomments_subscrs', ['userid' => $this->student1->id]);
         $this->assertEmpty($subscripts);
     }
 
@@ -177,7 +179,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
      * Test visiblity and results on report page.
      * @covers \report_helper::get_instance
      */
-    public function test_report() {
+    public function test_report(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -190,8 +192,8 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         // Create some (yesterday) comments in different contexts.
         $plugingenerator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
 
-        $params = array('contextid' => $this->coursecontext->id, 'userid' => $this->teacher->id,
-            'timecreated' => time() - DAYSECS);
+        $params = ['contextid' => $this->coursecontext->id, 'userid' => $this->teacher->id,
+            'timecreated' => time() - DAYSECS];
         $comment0 = $plugingenerator->create_comment($params);
 
         $params['groupid'] = $this->group1->id;
@@ -205,13 +207,13 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $this->setUser($this->student2);
 
         $reporthelper = \block_socialcomments\local\report_helper::get_instance(true);
-        $filterdata = array(
+        $filterdata = [
             'courseid' => $this->course->id,
             'fromdate' => time() - 2 * DAYSECS,
             'todate' => time(),
             'content' => 'Comment',
-            'author' => $this->teacher->lastname
-        );
+            'author' => $this->teacher->lastname,
+        ];
 
         $items = $reporthelper->get_course_comments((object) $filterdata);
         $this->assertCount(3, $items);
@@ -235,7 +237,7 @@ class block_socialcomments_digest_test extends \advanced_testcase {
         $this->assertNotEmpty($comments[$comment0->id]);
 
         // ...comment2 should appear, when reply with a newet timestamp is created.
-        $params = array('commentid' => $comment2->id);
+        $params = ['commentid' => $comment2->id];
         $replytocomment2 = $plugingenerator->create_reply($params);
 
         $items = $reporthelper->get_course_new_comments_and_replies($this->course->id, time() - 1.5 * DAYSECS);

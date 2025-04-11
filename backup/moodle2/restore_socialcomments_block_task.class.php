@@ -40,7 +40,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      * @return array
      */
     public function get_fileareas() {
-        return array(); // No associated fileareas.
+        return []; // No associated fileareas.
     }
 
     /**
@@ -50,7 +50,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      * @return array
      */
     public function get_configdata_encoded_attributes() {
-        return array(); // No special handling of configdata.
+        return []; // No special handling of configdata.
     }
 
     /**
@@ -60,7 +60,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      * @return array
      */
     public static function define_decode_contents() {
-        return array();
+        return [];
     }
 
     /**
@@ -70,7 +70,7 @@ class restore_socialcomments_block_task extends restore_block_task {
      * @return array
      */
     public static function define_decode_rules() {
-        return array();
+        return [];
     }
 
     /**

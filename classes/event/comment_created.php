@@ -25,7 +25,6 @@
 
 namespace block_socialcomments\event;
 
-
 /**
  * block_socialcomments comment created event.
  *

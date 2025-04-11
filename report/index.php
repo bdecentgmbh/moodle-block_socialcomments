@@ -32,10 +32,10 @@ require_once($CFG->dirroot . '/lib/tablelib.php');
 
 $courseid = required_param('courseid', PARAM_INT);
 
-$baseurl = new moodle_url('/blocks/socialcomments/report/index.php', array('courseid' => $courseid));
+$baseurl = new moodle_url('/blocks/socialcomments/report/index.php', ['courseid' => $courseid]);
 $PAGE->set_url($baseurl);
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 // Check access.
 require_login($course);
@@ -52,9 +52,9 @@ $PAGE->set_context($context);
 
 require_capability('block/socialcomments:viewreport', $context);
 
-$formparams = array(
-    'courseid' => $courseid
-);
+$formparams = [
+    'courseid' => $courseid,
+];
 
 $filterform = new \block_socialcomments\local\reportfilter_form($baseurl, $formparams);
 
@@ -87,8 +87,8 @@ $table->set_attribute('cellpadding', '3');
 $table->set_attribute('class', 'generaltable');
 $table->set_attribute('id', 'report-table');
 
-$columns = array('topicname', 'activity', 'commentscount', 'timecreated', 'fullname', 'content', 'action');
-$headers = array('topicname', 'activity', 'commentscount', 'date', 'author', 'comment', 'action');
+$columns = ['topicname', 'activity', 'commentscount', 'timecreated', 'fullname', 'content', 'action'];
+$headers = ['topicname', 'activity', 'commentscount', 'date', 'author', 'comment', 'action'];
 
 foreach ($headers as $i => $header) {
     if (!empty($header)) {
@@ -109,10 +109,10 @@ $table->pageable(true);
 $table->is_downloadable(false);
 
 $table->set_control_variables(
-    array(
+    [
         TABLE_VAR_SORT => 'tsort',
-        TABLE_VAR_PAGE => 'page'
-    )
+        TABLE_VAR_PAGE => 'page',
+    ]
 );
 
 $table->setup();
@@ -133,12 +133,12 @@ echo $OUTPUT->tabtree($tabs, 'report');
 
 $filterform->display();
 
-echo html_writer::start_tag('div', array('id' => 'local-impact-table-wrapper'));
+echo html_writer::start_tag('div', ['id' => 'local-impact-table-wrapper']);
 $modinfo = get_fast_modinfo($course);
 
 foreach ($comments as $comment) {
 
-    $row = array();
+    $row = [];
 
     $row[] = $comment->topicname;
     $activity = $comment->activity;
@@ -157,7 +157,7 @@ foreach ($comments as $comment) {
     // User.
     $author = fullname($comment);
     if (!$download) {
-        $url = new moodle_url('/user/profile.php', array('id' => $comment->userid));
+        $url = new moodle_url('/user/profile.php', ['id' => $comment->userid]);
         $author = html_writer::link($url, $author);
     }
     $row[] = $author;
@@ -168,7 +168,7 @@ foreach ($comments as $comment) {
     $context = context_helper::instance_by_id($comment->contextid);
     if (comment::can_delete($comment->userid, $context)) {
 
-        $linkparams = array('id' => $comment->id, 'courseid' => $course->id, 'sesskey' => sesskey());
+        $linkparams = ['id' => $comment->id, 'courseid' => $course->id, 'sesskey' => sesskey()];
         $url = new moodle_url('/blocks/socialcomments/report/delete_comment.php', $linkparams);
         $link = html_writer::link($url, get_string('delete'));
     }

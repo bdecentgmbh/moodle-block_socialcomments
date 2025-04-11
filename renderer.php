@@ -49,18 +49,18 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $html = '';
 
         // Print posting textarea.
-        $textareaattrs = array(
+        $textareaattrs = [
             'name' => $idtextarea,
             'rows' => 4,
             'id' => $idtextarea,
             'placeholder' => $placeholder,
             'data-commentid' => 0,
-        );
+        ];
 
         $textareaattrs['class'] = 'fullwidth';
 
-        $html .= html_writer::start_tag('div', array('class' => 'ccomment-form-textarea-wrap'));
-        $html .= html_writer::start_tag('div', array('class' => ''));
+        $html .= html_writer::start_tag('div', ['class' => 'ccomment-form-textarea-wrap']);
+        $html .= html_writer::start_tag('div', ['class' => '']);
         $html .= html_writer::tag('textarea', '', $textareaattrs);
         $html .= html_writer::end_tag('div');
 
@@ -68,19 +68,19 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $buttons .= html_writer::tag(
                 'button',
                 get_string('cancel'),
-                array('id' => $idcancel, 'class' => 'btn btn-link')
+                ['id' => $idcancel, 'class' => 'btn btn-link']
             );
         $buttons .= html_writer::tag(
                 'button',
                 get_string($straction, 'block_socialcomments'),
-                array('id' => $idaction, 'class' => 'btn btn-primary')
+                ['id' => $idaction, 'class' => 'btn btn-primary']
             );
 
         $html .= html_writer::div($buttons, 'ccomment-form-action-buttons');
 
         $html .= html_writer::end_tag('div');
 
-        $html .= html_writer::tag('div', '', array('class' => 'clearer'));
+        $html .= html_writer::tag('div', '', ['class' => 'clearer']);
 
         return $html;
     }
@@ -98,7 +98,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $attributes = (array) $attributes;
         $output = '';
 
-        if ($label !== '' and ! is_null($label)) {
+        if ($label !== '' && ! is_null($label)) {
             if (empty($attributes['id'])) {
                 $attributes['id'] = self::random_id('checkbox_');
             }
@@ -110,16 +110,16 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         $checkbox = html_writer::empty_tag('input', $attributes);
 
-        $yestag = html_writer::tag('div', get_string('yes'), array('class' => 'labelyes'));
-        $notag = html_writer::tag('div', get_string('no'), array('class' => 'labelno'));
+        $yestag = html_writer::tag('div', get_string('yes'), ['class' => 'labelyes']);
+        $notag = html_writer::tag('div', get_string('no'), ['class' => 'labelno']);
 
-        if ($label !== '' and ! is_null($label)) {
-            $slider = html_writer::tag('div', $yestag . $notag, array('class' => 'slider'));
-            $output = html_writer::tag('div', $label, array('class' => 'cc-switch-label'));
-            $label = html_writer::tag('label', $checkbox . $slider, array('for' => $attributes['id']));
+        if ($label !== '' && ! is_null($label)) {
+            $slider = html_writer::tag('div', $yestag . $notag, ['class' => 'slider']);
+            $output = html_writer::tag('div', $label, ['class' => 'cc-switch-label']);
+            $label = html_writer::tag('label', $checkbox . $slider, ['for' => $attributes['id']]);
         }
 
-        $output .= html_writer::tag('div', $label, array('class' => 'cc-switch'));
+        $output .= html_writer::tag('div', $label, ['class' => 'cc-switch']);
 
         return $output;
     }
@@ -131,19 +131,19 @@ class block_socialcomments_renderer extends plugin_renderer_base {
     protected function render_group_selector($groups) {
 
         if (count($groups) == 0) {
-            return html_writer::empty_tag('input', array('type' => 'hidden', 'value' => -1, 'id' => 'ccomments-groupid'));
+            return html_writer::empty_tag('input', ['type' => 'hidden', 'value' => -1, 'id' => 'ccomments-groupid']);
         }
 
         if (count($groups) == 1) {
             $group = reset($groups);
-            return html_writer::empty_tag('input', array('type' => 'hidden', 'value' => $group->id, 'id' => 'ccomments-groupid'));
+            return html_writer::empty_tag('input', ['type' => 'hidden', 'value' => $group->id, 'id' => 'ccomments-groupid']);
         }
 
-        $choices = array();
+        $choices = [];
         foreach ($groups as $group) {
             $choices[$group->id] = $group->name;
         }
-        return html_writer::select($choices, 'groupid', '', false, array('id' => 'ccomments-groupid'));
+        return html_writer::select($choices, 'groupid', '', false, ['id' => 'ccomments-groupid']);
     }
 
     /**
@@ -164,19 +164,19 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $top = '';
 
         if ($commentshelper->can_subscribe()) {
-            $url = new moodle_url('/blocks/socialcomments/report/newsfeed.php', array('courseid' => $COURSE->id));
-            $params = array('title' => '');
+            $url = new moodle_url('/blocks/socialcomments/report/newsfeed.php', ['courseid' => $COURSE->id]);
+            $params = ['title' => ''];
             $text = $this->output->pix_icon(
                     'reportspage',
                     get_string('reportspage', 'block_socialcomments'),
                     'block_socialcomments', $params
                 );
             $text .= html_writer::tag('span', get_string('reportspage', 'block_socialcomments'));
-            $link = html_writer::link($url, $text, array('class' => 'ccomment-form-navlink cctooltip'));
+            $link = html_writer::link($url, $text, ['class' => 'ccomment-form-navlink cctooltip']);
             $top .= html_writer::div($link, 'ccomment-form-navlink-wrap');
         }
         if ($commentshelper->can_pin()) {
-            $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', array('courseid' => $COURSE->id));
+            $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $COURSE->id]);
             $text = $this->output->pix_icon(
                     'pinboard',
                     get_string('pinboard', 'block_socialcomments'),
@@ -184,15 +184,15 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                     $params
                 );
             $text .= html_writer::tag('span', get_string('pinboard', 'block_socialcomments'));
-            $link = html_writer::link($url, $text, array('class' => 'ccomment-form-navlink cctooltip'));
+            $link = html_writer::link($url, $text, ['class' => 'ccomment-form-navlink cctooltip']);
             $top .= html_writer::div($link, 'ccomment-form-navlink-wrap');
         }
         if ($commentshelper->can_pin()) {
             $pagepinned = !empty($contentdata->formdata->pagepinned);
 
-            $params = array(
+            $params = [
                 'id' => 'ccomment-pinned-0',
-            );
+            ];
 
             $cb = html_writer::checkbox('pagepinned', 1, !empty($pagepinned), '#', $params);
             $tooltip = (!empty($pagepinned))
@@ -232,14 +232,14 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $editform = $this->render_post_form(
             'ccomment-edit-textarea', 'ccomment-edit-action-cancel', 'ccomment-edit-action-save', 'save'
         );
-        $editform = html_writer::div($editform, 'ccomment-editform', array('id' => 'ccomment-editform'));
-        $html .= html_writer::div($editform, 'ccomment-editform hidden', array('id' => 'ccomment-editform-wrap'));
+        $editform = html_writer::div($editform, 'ccomment-editform', ['id' => 'ccomment-editform']);
+        $html .= html_writer::div($editform, 'ccomment-editform hidden', ['id' => 'ccomment-editform-wrap']);
 
         $replyform = $this->render_post_form(
             'ccomment-reply-textarea', 'ccomment-reply-action-cancel', 'ccomment-reply-action-save', 'reply'
         );
-        $replyform = html_writer::div($replyform, 'ccomment-replyform', array('id' => 'ccomment-replyform'));
-        $html .= html_writer::div($replyform, 'ccomment-replyform hidden', array('id' => 'ccomment-replyform-wrap'));
+        $replyform = html_writer::div($replyform, 'ccomment-replyform', ['id' => 'ccomment-replyform']);
+        $html .= html_writer::div($replyform, 'ccomment-replyform hidden', ['id' => 'ccomment-replyform-wrap']);
 
         return $html;
     }
@@ -261,9 +261,9 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         $subscribed = !empty($contentdata->comments->subscribed);
 
-        $params = array(
-            'id' => 'ccomment-comments-subscribed'
-        );
+        $params = [
+            'id' => 'ccomment-comments-subscribed',
+        ];
 
         if ($commentshelper->can_subscribe()) {
             $cb = $this->render_slider_checkbox(
@@ -276,15 +276,15 @@ class block_socialcomments_renderer extends plugin_renderer_base {
             $top .= html_writer::div($cb, 'ccomment-comments-subscribed-wrap');
         }
         $visibleclass = "";
-        if ((!$contentdata->comments->count) and ( $contentdata->comments->count == 0)) {
+        if ((!$contentdata->comments->count) && ( $contentdata->comments->count == 0)) {
             $visibleclass = "hidden";
         }
 
-        $html = html_writer::div($top, "clearfix $visibleclass", array('id' => 'ccomment-comments-content-top'));
+        $html = html_writer::div($top, "clearfix $visibleclass", ['id' => 'ccomment-comments-content-top']);
 
         $commentspage = $this->render_comments_page($commentshelper, $contentdata);
 
-        $html .= html_writer::div($commentspage, 'ccomment-commentspage', array('id' => 'ccomment-commentspage-wrap'));
+        $html .= html_writer::div($commentspage, 'ccomment-commentspage', ['id' => 'ccomment-commentspage-wrap']);
 
         return $html;
     }
@@ -305,7 +305,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $html = '';
         for ($i = $contentdata->comments->minpage; $i < $contentdata->comments->maxpage; $i++) {
             $class = ($i == $contentdata->comments->currentpage) ? 'ccomment-pagingbar-curpagelink' : 'ccomment-pagingbar-pagelink';
-            $html .= html_writer::link('#', $i + 1, array('id' => 'ccomment-pagelink-' . $i, 'class' => $class));
+            $html .= html_writer::link('#', $i + 1, ['id' => 'ccomment-pagelink-' . $i, 'class' => $class]);
         }
 
         return html_writer::div($html, 'ccomment-paging-bar');
@@ -340,7 +340,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      * @param array $menulinks for action buttons
      * @return string
      */
-    public function render_post($author, $post, $menulinks = array()) {
+    public function render_post($author, $post, $menulinks = []) {
 
         $h = $this->render_action_menu($menulinks);
 
@@ -358,7 +358,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         $p = html_writer::div($h, 'ccomment-post-header clearfix');
 
         // Apply filters to content as done in block_comments.
-        $content = format_text($post->content, FORMAT_MOODLE, array('para' => false));
+        $content = format_text($post->content, FORMAT_MOODLE, ['para' => false]);
         $p .= html_writer::div($content, 'ccomment-post-content');
 
         return $p;
@@ -377,19 +377,19 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         foreach ($replies as $post) {
 
-            $menulinks = array();
+            $menulinks = [];
             if (reply::can_edit($post->userid, $context)) {
                 $menulinks[] = html_writer::link(
                         '#',
                         get_string('edit'),
-                        array('id' => 'ccomment-reply-action-edit-' . $post->postid)
+                        ['id' => 'ccomment-reply-action-edit-' . $post->postid]
                     );
             }
             if (reply::can_delete($post->userid, $context)) {
                 $menulinks[] = html_writer::link(
                         '#',
                         get_string('delete'),
-                        array('id' => 'ccomment-reply-action-delete-' . $post->postid)
+                        ['id' => 'ccomment-reply-action-delete-' . $post->postid]
                     );
             }
 
@@ -398,14 +398,14 @@ class block_socialcomments_renderer extends plugin_renderer_base {
             $listitems .= html_writer::tag(
                     'li',
                     $p,
-                    array('class' => 'ccomment-reply-item', 'id' => 'ccomment-reply-' . $post->postid)
+                    ['class' => 'ccomment-reply-item', 'id' => 'ccomment-reply-' . $post->postid]
                 );
         }
 
         return html_writer::tag(
                 'ul',
                 $listitems,
-                array('id' => 'ccomment-reply-list-' . $commentid, 'class' => 'ccomment-reply-list')
+                ['id' => 'ccomment-reply-list-' . $commentid, 'class' => 'ccomment-reply-list']
             );
     }
 
@@ -430,36 +430,36 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         foreach ($contentdata->comments->posts as $post) {
 
-            $menulinks = array();
+            $menulinks = [];
 
             if (comment::can_edit($post->userid, $context)) {
                 $menulinks[] = html_writer::link(
                         '#',
                         get_string('edit'),
-                        array('id' => 'ccomment-post-action-edit-' . $post->postid)
+                        ['id' => 'ccomment-post-action-edit-' . $post->postid]
                     );
             }
             if (comment::can_delete($post->userid, $context)) {
                 $menulinks[] = html_writer::link(
                         '#',
                         get_string('delete'),
-                        array('id' => 'ccomment-post-action-delete-' . $post->postid)
+                        ['id' => 'ccomment-post-action-delete-' . $post->postid]
                     );
             }
             $p = $this->render_post($post, $post, $menulinks);
-            $p = html_writer::div($p, 'ccomment-post', array('id' => 'ccomment-post-' . $post->postid));
+            $p = html_writer::div($p, 'ccomment-post', ['id' => 'ccomment-post-' . $post->postid]);
 
             $f = '';
             if ($canreply) {
                 $f = html_writer::link(
                         '#',
                         get_string('reply', 'block_socialcomments'),
-                        array('id' => 'ccomment-reply-' . $post->postid)
+                        ['id' => 'ccomment-reply-' . $post->postid]
                     );
             }
 
             if ($canpin) {
-                $attr = array('id' => 'ccomment-pinned-' . $post->postid);
+                $attr = ['id' => 'ccomment-pinned-' . $post->postid];
                 $cb = html_writer::checkbox('commentpinned-' . $post->postid, 1, !empty($post->pinned), '#', $attr);
                 $tooltip = (!empty($post->pinned))
                         ? get_string('unpin', 'block_socialcomments')
@@ -472,10 +472,10 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
             $p .= $this->render_reply_list($context, $post->postid, $post->replies);
 
-            $commentslistitems .= html_writer::tag('li', $p, array('id' => 'ccomment-comment-listitem-' . $post->postid));
+            $commentslistitems .= html_writer::tag('li', $p, ['id' => 'ccomment-comment-listitem-' . $post->postid]);
         }
 
-        $html = html_writer::tag('ul', $commentslistitems, array('class' => 'ccomment-post-wrap'));
+        $html = html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
         $html .= $this->render_paging_bar($commentshelper, $contentdata);
 
         return $html;
@@ -492,22 +492,22 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      * @return string
      */
     public function render_block_content($commentshelper, $contentdata, $config) {
-        $html = html_writer::start_tag('div', array('id' => 'ccomment-form-content'));
+        $html = html_writer::start_tag('div', ['id' => 'ccomment-form-content']);
         $html .= $this->render_form_content($commentshelper, $contentdata);
         $html .= html_writer::end_tag('div');
 
         // Wrap this in div element for AJAX use, so not change id!
-        $html .= html_writer::start_tag('div', array('id' => 'ccomment-comments-content'));
+        $html .= html_writer::start_tag('div', ['id' => 'ccomment-comments-content']);
         $html .= $this->render_comments_content($commentshelper, $contentdata);
         $html .= html_writer::end_tag('div');
 
-        $args = array();
+        $args = [];
         $args['contextid'] = $commentshelper->get_context()->id;
         $args['subscribed'] = $contentdata->comments->subscribed;
         $args['commentscount'] = $contentdata->comments->count;
         $args['hidepins'] = isset($config->hidepins) ? $config->hidepins : 0;
 
-        $this->page->requires->js_call_amd('block_socialcomments/comments', 'init', array($args));
+        $this->page->requires->js_call_amd('block_socialcomments/comments', 'init', [$args]);
 
         return $html;
     }
@@ -533,11 +533,11 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         $mod = $visiblemodinfo->modules[$comment->activityid];
 
-        $icon = html_writer::empty_tag('img', array('src' => $mod->iconurl,
-                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .
-            html_writer::tag('span', $mod->name, array('class' => 'instancename'));
+        $icon = html_writer::empty_tag('img', ['src' => $mod->iconurl,
+                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation']) .
+            html_writer::tag('span', $mod->name, ['class' => 'instancename']);
 
-        $link = html_writer::link($mod->url, $icon, array('target' => '_blank'));
+        $link = html_writer::link($mod->url, $icon, ['target' => '_blank']);
 
         return html_writer::div($link, 'activity');
     }
@@ -576,11 +576,11 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                     }
 
                     // Print mod.
-                    $text = \html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
-                            'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation')) .
-                        html_writer::tag('span', $mod->get_formatted_name(), array('class' => 'instancename'));
+                    $text = \html_writer::empty_tag('img', ['src' => $mod->get_icon_url(),
+                            'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation']) .
+                        html_writer::tag('span', $mod->get_formatted_name(), ['class' => 'instancename']);
 
-                    $link = html_writer::link($mod->url, $text, array('target' => '_blank'));
+                    $link = html_writer::link($mod->url, $text, ['target' => '_blank']);
 
                     $sectioncommenhtml .= \html_writer::div($link, 'activity');
 
@@ -596,12 +596,12 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
                             $p = $this->render_post($reply, $reply);
                             $p = html_writer::div($p, 'ccomment-reply-wrap');
-                            $listitems .= html_writer::tag('li', $p, array('class' => 'ccomment-reply-item'));
+                            $listitems .= html_writer::tag('li', $p, ['class' => 'ccomment-reply-item']);
                         }
-                        $commenthtml .= html_writer::tag('ul', $listitems, array('class' => 'ccomment-reply-list'));
+                        $commenthtml .= html_writer::tag('ul', $listitems, ['class' => 'ccomment-reply-list']);
                         $commentslistitems .= html_writer::tag('li', $commenthtml);
                     }
-                    $sectioncommenhtml .= html_writer::tag('ul', $commentslistitems, array('class' => 'ccomment-post-wrap'));
+                    $sectioncommenhtml .= html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
                 }
 
                 if (!empty($sectioncommenhtml)) {
@@ -653,12 +653,12 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                     $post = $this->render_post($reply, $reply);
 
                     $p = html_writer::div($post, 'ccomment-reply-wrap');
-                    $replylistitems .= html_writer::tag('li', $p, array('class' => 'ccomment-reply-item'));
+                    $replylistitems .= html_writer::tag('li', $p, ['class' => 'ccomment-reply-item']);
                 }
-                $commenthtml .= html_writer::tag('ul', $replylistitems, array('class' => 'ccomment-reply-list'));
+                $commenthtml .= html_writer::tag('ul', $replylistitems, ['class' => 'ccomment-reply-list']);
                 $commentslistitems .= html_writer::tag('li', $commenthtml);
             }
-            $html .= html_writer::tag('ul', $commentslistitems, array('class' => 'ccomment-post-wrap'));
+            $html .= html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
         }
 
         return $html;
@@ -694,19 +694,19 @@ class block_socialcomments_renderer extends plugin_renderer_base {
 
         $mycourses = enrol_get_my_courses('format');
 
-        $coursesmenu = array();
+        $coursesmenu = [];
 
         foreach ($mycourses as $mycourse) {
 
             $coursecontext = context_course::instance($mycourse->id);
 
             if (has_capability('block/socialcomments:pinitems', $coursecontext)) {
-                $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', array('courseid' => $mycourse->id));
+                $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $mycourse->id]);
                 $coursesmenu[$url->out()] = $mycourse->fullname;
             }
         }
 
-        $selectedurl = new moodle_url('/blocks/socialcomments/pinboard/index.php', array('courseid' => $COURSE->id));
+        $selectedurl = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $COURSE->id]);
 
         $selecthtml = html_writer::tag('span', get_string('course'));
 
@@ -735,7 +735,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      */
     public function render_digest($course, $newcommentsdata) {
 
-        $html = html_writer::tag('h2', $course->fullname, array('class' => 'ccomment-digest-courseheader'));
+        $html = html_writer::tag('h2', $course->fullname, ['class' => 'ccomment-digest-courseheader']);
         $html .= $this->render_comments_overview($course, $newcommentsdata);
         return $html;
     }

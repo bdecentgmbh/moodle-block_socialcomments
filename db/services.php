@@ -24,70 +24,70 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$functions = array(
-    'block_socialcomments_save_comment' => array(
+$functions = [
+    'block_socialcomments_save_comment' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'save_comment',
         'description' => 'Create or update a comment',
         'capabilities' => 'block/socialcomments:postcomment',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_delete_comment' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_delete_comment' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'delete_comment',
         'description' => 'Delete a comment',
         'capabilities' => 'block/socialcomments:deleteowncomments, block/socialcomments:deletecomments',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_set_pinned' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_set_pinned' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'set_pinned',
         'description' => 'Pin a item',
         'capabilities' => 'block/socialcomments:pinitems',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_set_subscribed' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_set_subscribed' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'set_subscribed',
         'description' => 'Subscribe for a context',
         'capabilities' => 'block/socialcomments:subscribe',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_get_commentspage' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_get_commentspage' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'get_commentspage',
         'description' => 'Get a content page with comments',
         'capabilities' => 'block/socialcomments:view',
         'type' => 'read',
-        'ajax' => true
-    ),
-    'block_socialcomments_save_reply' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_save_reply' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'save_reply',
         'description' => 'Create or update a reply',
         'capabilities' => 'block/socialcomments:postcomment',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_delete_reply' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_delete_reply' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'delete_reply',
         'description' => 'Delete a reply',
         'capabilities' => 'block/socialcomments:deleteownreplies, block/socialcomments:deletereplies',
         'type' => 'write',
-        'ajax' => true
-    ),
-    'block_socialcomments_get_activity_options' => array(
+        'ajax' => true,
+    ],
+    'block_socialcomments_get_activity_options' => [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'get_activity_options',
         'description' => 'Get options for activity select',
         'capabilities' => 'block/socialcomments:viewreport',
         'type' => 'read',
-        'ajax' => true
-    ),
+        'ajax' => true,
+    ],
 
-);
+];

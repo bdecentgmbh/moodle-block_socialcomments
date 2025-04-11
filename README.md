@@ -12,7 +12,7 @@ The plugin was developed by [Synergy Learning](http://www.synergy-learning.com) 
 
 ## Version
 
-The plugin is released under [GNU GPL v3 or later](http://www.gnu.org/copyleft/gpl.html). It has been tested and is running on Moodle version 4.0.
+The plugin is released under [GNU GPL v3 or later](http://www.gnu.org/copyleft/gpl.html). It has been tested and is running on Moodle version 4.5.
 
 ## Install
 

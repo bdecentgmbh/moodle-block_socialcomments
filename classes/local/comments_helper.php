@@ -90,6 +90,11 @@ class comments_helper {
     protected $groupsql;
 
     /**
+     * @var array $config
+     */
+    public $config;
+
+    /**
      * Create an object of the helper for a context.
      *
      * @param context $pagecontext course or modul context.
@@ -115,11 +120,11 @@ class comments_helper {
     protected function get_formdata() {
         global $DB;
 
-        $params = array(
+        $params = [
             'itemtype' => self::PINNED_PAGE,
             'userid' => $this->user->id,
-            'itemid' => $this->context->id
-        );
+            'itemid' => $this->context->id,
+        ];
 
         $formdata = new \stdClass();
         $formdata->pagepinned = $DB->record_exists('block_socialcomments_pins', $params);
@@ -174,10 +179,10 @@ class comments_helper {
 
         $commentsdata = new \stdClass();
 
-        $countparams = array(
+        $countparams = [
             'contextid' => $this->context->id,
-            'userid' => $this->user->id
-        );
+            'userid' => $this->user->id,
+        ];
 
         $commentsdata->subscribed = $DB->count_records('block_socialcomments_subscrs', $countparams);
         $commentsdata->count = $this->get_commentscount();
@@ -186,7 +191,7 @@ class comments_helper {
         $commentsdata->currentpage = 0;
 
         if ($commentsdata->count == 0) {
-            $commentsdata->comments = array();
+            $commentsdata->comments = [];
             return $commentsdata;
         }
 
@@ -236,12 +241,12 @@ class comments_helper {
         global $DB;
 
         if (!$posts) {
-            return array();
+            return [];
         }
 
         foreach ($posts as $post) {
             $post->countreplies = 0;
-            $post->replies = array();
+            $post->replies = [];
         }
 
         $postids = array_keys($posts);
@@ -274,7 +279,7 @@ class comments_helper {
             if (!empty($replycounts[$post->postid])) {
 
                 $post->countreplies = $replycounts[$post->postid];
-                $post->replies = $DB->get_records_sql($sql, array($post->postid), 0, $limitreplies);
+                $post->replies = $DB->get_records_sql($sql, [$post->postid], 0, $limitreplies);
             }
         }
 
@@ -348,11 +353,11 @@ class comments_helper {
     public function set_pinned($contextid, $userid, $checked, $commentid) {
         global $DB;
 
-        $params = array(
+        $params = [
             'userid' => $userid,
             'itemtype' => self::PINNED_COMMENT,
-            'itemid' => $commentid
-        );
+            'itemid' => $commentid,
+        ];
 
         // Probably in page.
         if ($commentid == 0) {
@@ -389,10 +394,10 @@ class comments_helper {
     public static function set_subscribed($courseid, $contextid, $userid, $checked) {
         global $DB;
 
-        $params = array(
+        $params = [
             'userid' => $userid,
-            'contextid' => $contextid
-        );
+            'contextid' => $contextid,
+        ];
 
         if (!$checked) {
             $DB->delete_records('block_socialcomments_subscrs', $params);
@@ -430,16 +435,16 @@ class comments_helper {
                 FROM {block_socialcomments_cmmnts} bc
                 WHERE courseid = ? ";
 
-        $commentids = $DB->get_records_sql($sql, array($courseid));
+        $commentids = $DB->get_records_sql($sql, [$courseid]);
 
         // Delete comments.
         foreach ($commentids as $commentid => $unused) {
-            $comment = new comment(array('id' => $commentid));
+            $comment = new comment(['id' => $commentid]);
             $comment->delete();
         }
 
         // Delete subscriptions.
-        $DB->delete_records('block_socialcomments_subscrs', array('courseid' => $courseid));
+        $DB->delete_records('block_socialcomments_subscrs', ['courseid' => $courseid]);
     }
 
     /**
@@ -453,8 +458,8 @@ class comments_helper {
         $eventdata = $event->get_data();
         $userid = $eventdata['objectid'];
 
-        $DB->delete_records('block_socialcomments_subscrs', array('userid' => $userid));
-        $DB->delete_records('block_socialcomments_pins', array('userid' => $userid));
+        $DB->delete_records('block_socialcomments_subscrs', ['userid' => $userid]);
+        $DB->delete_records('block_socialcomments_pins', ['userid' => $userid]);
     }
 
     /**
@@ -463,10 +468,10 @@ class comments_helper {
      */
     public static function get_digest_type_menu() {
 
-        $choices = array(
+        $choices = [
             self::DIGEST_SITE => get_string('digestpersite', 'block_socialcomments'),
-            self::DIGEST_COURSE => get_string('digestpercourse', 'block_socialcomments')
-        );
+            self::DIGEST_COURSE => get_string('digestpercourse', 'block_socialcomments'),
+        ];
 
         return $choices;
     }

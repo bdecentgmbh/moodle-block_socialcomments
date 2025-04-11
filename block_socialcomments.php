@@ -45,7 +45,7 @@ class block_socialcomments extends block_base {
      * @return array
      */
     public function applicable_formats() {
-        return array('course' => true, 'mod' => true);
+        return ['course' => true, 'mod' => true];
     }
 
     /**

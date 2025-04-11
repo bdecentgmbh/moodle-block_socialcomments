@@ -163,8 +163,8 @@
 .block_socialcomments .ccomment-post-header .moodle-actionmenu.show[data-enhanced] .menu a {
     outline: none;
     text-decoration: none;
-    padding: 2px 1em 2px 1em;
-    text-align: center;
+    /* padding: 2px 1em 2px 1em;
+    text-align: center; */
 }
 
 /* Style checkbox as a togge switch */
@@ -253,6 +253,7 @@
 .block_socialcomments .comments-post-footer a:visited {
     color: #666;
 }
+
 .block_socialcomments .ccomment-post-pinned-wrap input:checked + label,
 .block_socialcomments .ccomment-form-pagepinned-wrap input:checked + label,
 .block_socialcomments .ccomment-post-pinned-wrap input[type="checkbox"] + label,

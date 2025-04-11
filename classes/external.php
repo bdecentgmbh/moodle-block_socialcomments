@@ -25,14 +25,17 @@
 namespace block_socialcomments;
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/externallib.php");
-use external_api;
-use external_function_parameters;
-use external_value;
-use external_multiple_structure;
-use external_single_structure;
-use external_warnings;
-use external_description;
+if ($CFG->branch <= 401) {
+    require_once($CFG->libdir . '/externallib.php');
+}
+
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_value;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_warnings;
+use core_external\external_description;
 use context_user;
 use context_course;
 use context_module;
@@ -61,12 +64,12 @@ class external extends external_api {
     public static function save_comment_parameters() {
 
         return new external_function_parameters(
-            array(
+            [
             'contextid' => new external_value(PARAM_INT, 'id of context...'),
             'content' => new external_value(PARAM_RAW, 'content...'),
             'groupid' => new external_value(PARAM_INT, 'groupid, 0 for all groups'),
             'id' => new external_value(PARAM_TEXT, 'id of comment, 0 for new comment'),
-            )
+            ]
         );
     }
 
@@ -82,13 +85,13 @@ class external extends external_api {
     public static function save_comment($contextid, $content, $groupid, $id) {
         global $USER, $COURSE;
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'contextid' => $contextid,
             'content' => $content,
             'groupid' => $groupid,
             'id' => $id,
-        );
+        ];
         $params = self::validate_parameters(self::save_comment_parameters(), $arrayparams);
 
         $comment = new \block_socialcomments\local\comment($params, true);
@@ -102,11 +105,11 @@ class external extends external_api {
         self::validate_context($context);
 
         if (!$comment->can_save($id, $comment->userid, $context, $groupid)) {
-            $results = array(
+            $results = [
                 'count' => '',
                 'id' => 0,
-                'warnings' => $warnings
-            );
+                'warnings' => $warnings,
+            ];
             return $results;
         }
 
@@ -121,11 +124,11 @@ class external extends external_api {
         $comment->save();
         $commentscount = $commentshelper->get_commentscount();
 
-        $results = array(
+        $results = [
             'count' => get_string('commentscount', 'block_socialcomments', $commentscount),
             'id' => $comment->id,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -138,11 +141,11 @@ class external extends external_api {
     public static function save_comment_returns() {
 
         return new external_single_structure(
-            array(
+            [
             'count' => new external_value(PARAM_TEXT, 'count of comments'),
             'id' => new external_value(PARAM_INT, 'id of comment'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -154,9 +157,9 @@ class external extends external_api {
      */
     public static function delete_comment_parameters() {
 
-        return new external_function_parameters(array(
+        return new external_function_parameters([
             'commentid' => new external_value(PARAM_INT, 'id of comment'),
-            )
+            ]
         );
     }
 
@@ -168,13 +171,13 @@ class external extends external_api {
      */
     public static function delete_comment($commentid) {
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'commentid' => $commentid,
-        );
+        ];
         $params = self::validate_parameters(self::delete_comment_parameters(), $arrayparams);
 
-        $comment = new \block_socialcomments\local\comment(array('id' => $params['commentid']), true, MUST_EXIST);
+        $comment = new \block_socialcomments\local\comment(['id' => $params['commentid']], true, MUST_EXIST);
         $context = $comment->get_context();
         self::validate_context($context);
         if (!$comment->can_delete($comment->userid, $context)) {
@@ -185,11 +188,11 @@ class external extends external_api {
         $commentshelper = new \block_socialcomments\local\comments_helper($context);
         $commentscount = $commentshelper->get_commentscount();
 
-        $results = array(
+        $results = [
             'deletedcommentid' => $comment->id,
             'count' => $commentscount,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -202,11 +205,11 @@ class external extends external_api {
     public static function delete_comment_returns() {
 
         return new external_single_structure(
-            array(
+            [
             'deletedcommentid' => new external_value(PARAM_INT, 'id of deleted comment'),
             'count' => new external_value(PARAM_INT, 'total count of comments'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -219,11 +222,11 @@ class external extends external_api {
     public static function set_pinned_parameters() {
 
         return new external_function_parameters(
-            array(
+            [
             'contextid' => new external_value(PARAM_INT, 'id of context...'),
             'checked' => new external_value(PARAM_BOOL, 'pinned status of page'),
             'commentid' => new external_value(PARAM_INT, 'id of comment or zero'),
-            )
+            ]
         );
     }
 
@@ -238,18 +241,18 @@ class external extends external_api {
     public static function set_pinned($contextid, $checked, $commentid) {
         global $USER;
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'contextid' => $contextid,
             'checked' => $checked,
-            'commentid' => $commentid
-        );
+            'commentid' => $commentid,
+        ];
         $params = self::validate_parameters(self::set_pinned_parameters(), $arrayparams);
 
         if ($commentid == 0) {
             $context = self::get_context_from_params($params);
         } else {
-            $comment = new \block_socialcomments\local\comment(array('id' => $params['commentid']), true, MUST_EXIST);
+            $comment = new \block_socialcomments\local\comment(['id' => $params['commentid']], true, MUST_EXIST);
             $context = $comment->get_context();
         }
         self::validate_context($context);
@@ -265,12 +268,12 @@ class external extends external_api {
             $tooltip = ($checked) ? get_string('unpin', 'block_socialcomments') : get_string('pin', 'block_socialcomments');
         }
 
-        $results = array(
+        $results = [
             'commentid' => $commentid,
             'checked' => $checked,
             'tooltip' => $tooltip,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -283,12 +286,12 @@ class external extends external_api {
     public static function set_pinned_returns() {
 
         return new external_single_structure(
-            array(
+            [
             'commentid' => new external_value(PARAM_INT, 'id of comment'),
             'checked' => new external_value(PARAM_BOOL, 'pin state'),
             'tooltip' => new external_value(PARAM_TEXT, 'tooltip'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -301,10 +304,10 @@ class external extends external_api {
     public static function set_subscribed_parameters() {
 
         return new external_function_parameters(
-            array(
+            [
             'contextid' => new external_value(PARAM_INT, 'id of context'),
             'checked' => new external_value(PARAM_BOOL, 'pinned status of page'),
-            )
+            ]
         );
     }
 
@@ -318,11 +321,11 @@ class external extends external_api {
     public static function set_subscribed($contextid, $checked) {
         global $USER, $COURSE;
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'contextid' => $contextid,
             'checked' => $checked,
-        );
+        ];
         $params = self::validate_parameters(self::set_subscribed_parameters(), $arrayparams);
 
         $context = self::get_context_from_params($params);
@@ -334,10 +337,10 @@ class external extends external_api {
 
         $checked = $commentshelper->set_subscribed($COURSE->id, $context->id, $USER->id, $checked);
 
-        $results = array(
+        $results = [
             'checked' => $checked,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -350,10 +353,10 @@ class external extends external_api {
     public static function set_subscribed_returns() {
 
         return new external_single_structure(
-            array(
+            [
             'checked' => new external_value(PARAM_BOOL, 'subscribed state'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -366,11 +369,11 @@ class external extends external_api {
     public static function get_commentspage_parameters() {
 
         return new external_function_parameters(
-            array(
+            [
             'contextid' => new external_value(PARAM_INT, 'id of context'),
             'pagenumber' => new external_value(PARAM_INT, 'number of page, (-1) to get the last page'),
-            'hidepins' => new external_value(PARAM_INT, 'Hide pin status')
-            )
+            'hidepins' => new external_value(PARAM_INT, 'Hide pin status'),
+            ]
         );
     }
 
@@ -385,12 +388,12 @@ class external extends external_api {
     public static function get_commentspage($contextid, $pagenumber, $hidepins) {
         global $PAGE;
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'contextid' => $contextid,
             'pagenumber' => $pagenumber,
-            'hidepins' => $hidepins
-        );
+            'hidepins' => $hidepins,
+        ];
         $params = self::validate_parameters(self::get_commentspage_parameters(), $arrayparams);
 
         $context = self::get_context_from_params($params);
@@ -406,11 +409,11 @@ class external extends external_api {
         $contentdata->comments = $commentshelper->get_comments($pagenumber);
         $commentspage = $renderer->render_comments_page($commentshelper, $contentdata);
 
-        $results = array(
+        $results = [
             'pagenumber' => $contentdata->comments->currentpage,
             'commentspage' => $commentspage,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -423,11 +426,11 @@ class external extends external_api {
     public static function get_commentspage_returns() {
 
         return new external_single_structure(
-            array(
+            [
             'pagenumber' => new external_value(PARAM_INT, 'number of returned page of commentslist'),
             'commentspage' => new external_value(PARAM_RAW, 'html page of comments'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -440,12 +443,12 @@ class external extends external_api {
     public static function save_reply_parameters() {
 
         return new external_function_parameters(
-            array(
+            [
             'contextid' => new external_value(PARAM_INT, 'id of context...'),
             'content' => new external_value(PARAM_RAW, 'content...'),
             'commentid' => new external_value(PARAM_INT, 'id of user...'),
             'id' => new external_value(PARAM_INT, 'id of comment, 0 for new comment'),
-            )
+            ]
         );
     }
 
@@ -460,13 +463,13 @@ class external extends external_api {
      */
     public static function save_reply($contextid, $content, $commentid, $id) {
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'contextid' => $contextid,
             'content' => $content,
             'commentid' => $commentid,
             'id' => $id,
-        );
+        ];
         $params = self::validate_parameters(self::save_reply_parameters(), $arrayparams);
 
         $reply = new \block_socialcomments\local\reply($params, true);
@@ -484,9 +487,9 @@ class external extends external_api {
         }
         $reply->save();
 
-        $results = array(
-            'warnings' => $warnings
-        );
+        $results = [
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -499,9 +502,9 @@ class external extends external_api {
     public static function save_reply_returns() {
 
         return new external_single_structure(
-            array(
-            'warnings' => new external_warnings()
-            )
+            [
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -513,9 +516,9 @@ class external extends external_api {
      */
     public static function delete_reply_parameters() {
 
-        return new external_function_parameters(array(
+        return new external_function_parameters([
             'replyid' => new external_value(PARAM_INT, 'id of reply'),
-            )
+            ]
         );
     }
 
@@ -527,13 +530,13 @@ class external extends external_api {
      */
     public static function delete_reply($replyid) {
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'replyid' => $replyid,
-        );
+        ];
         $params = self::validate_parameters(self::delete_reply_parameters(), $arrayparams);
 
-        $reply = new \block_socialcomments\local\reply(array('id' => $params['replyid']), true, MUST_EXIST);
+        $reply = new \block_socialcomments\local\reply(['id' => $params['replyid']], true, MUST_EXIST);
 
         // Validate context.
         $context = $reply->get_context();
@@ -545,10 +548,10 @@ class external extends external_api {
 
         $reply->delete();
 
-        $results = array(
+        $results = [
             'deletedreplyid' => $reply->id,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -560,10 +563,10 @@ class external extends external_api {
      */
     public static function delete_reply_returns() {
 
-        return new external_single_structure(array(
+        return new external_single_structure([
             'deletedreplyid' => new external_value(PARAM_INT, 'id of deleted comment'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 
@@ -575,10 +578,10 @@ class external extends external_api {
      */
     public static function get_activity_options_parameters() {
 
-        return new external_function_parameters(array(
+        return new external_function_parameters([
             'sectionid' => new external_value(PARAM_INT, 'id of section'),
             'courseid' => new external_value(PARAM_INT, 'id of courseid'),
-            )
+            ]
         );
     }
 
@@ -591,11 +594,11 @@ class external extends external_api {
      */
     public static function get_activity_options($sectionid, $courseid) {
 
-        $warnings = array();
-        $arrayparams = array(
+        $warnings = [];
+        $arrayparams = [
             'sectionid' => $sectionid,
-            'courseid' => $courseid
-        );
+            'courseid' => $courseid,
+        ];
 
         $params = self::validate_parameters(self::get_activity_options_parameters(), $arrayparams);
 
@@ -609,10 +612,10 @@ class external extends external_api {
         $reporthelper = \block_socialcomments\local\report_helper::get_instance();
         $options = $reporthelper->get_options($params['sectionid']);
 
-        $results = array(
+        $results = [
             'options' => $options,
-            'warnings' => $warnings
-        );
+            'warnings' => $warnings,
+        ];
         return $results;
     }
 
@@ -624,10 +627,10 @@ class external extends external_api {
      */
     public static function get_activity_options_returns() {
 
-        return new external_single_structure(array(
+        return new external_single_structure([
             'options' => new external_value(PARAM_RAW, 'options for activity select element'),
-            'warnings' => new external_warnings()
-            )
+            'warnings' => new external_warnings(),
+            ]
         );
     }
 

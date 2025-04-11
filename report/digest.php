@@ -30,10 +30,10 @@ use block_socialcomments\local\comment;
 
 $courseid = required_param('courseid', PARAM_INT);
 
-$baseurl = new moodle_url('/blocks/socialcomments/report/digest.php', array('courseid' => $courseid));
+$baseurl = new moodle_url('/blocks/socialcomments/report/digest.php', ['courseid' => $courseid]);
 $PAGE->set_url($baseurl);
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 // Check access.
 require_login($course);
@@ -48,7 +48,7 @@ require_capability('block/socialcomments:viewreport', $context);
 $PAGE->set_heading(get_string('pluginname', 'block_socialcomments'));
 $PAGE->set_title(get_string('digestsubject', 'block_socialcomments'));
 
-$reporturl = new moodle_url('/blocks/socialcomments/report/index.php', array('courseid' => $courseid));
+$reporturl = new moodle_url('/blocks/socialcomments/report/index.php', ['courseid' => $courseid]);
 \navigation_node::override_active_url($reporturl);
 
 $timesince = $USER->lastlogin;

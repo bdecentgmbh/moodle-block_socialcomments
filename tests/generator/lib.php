@@ -32,10 +32,10 @@
  */
 class block_socialcomments_generator extends component_generator_base {
 
-    /** @var integer Number of created comments. */
+    /** @var int Number of created comments. */
     private $countcomment = 0;
 
-    /** @var integer Number of created replies. */
+    /** @var int Number of created replies. */
     private $countreplies = 0;
 
     /**
@@ -95,7 +95,7 @@ class block_socialcomments_generator extends component_generator_base {
         $comment = (object) $record;
         $id = $DB->insert_record('block_socialcomments_cmmnts', $comment);
 
-        return $DB->get_record('block_socialcomments_cmmnts', array('id' => $id));
+        return $DB->get_record('block_socialcomments_cmmnts', ['id' => $id]);
     }
 
     /**
@@ -134,7 +134,7 @@ class block_socialcomments_generator extends component_generator_base {
         $comment = (object) $record;
         $id = $DB->insert_record('block_socialcomments_replies', $comment);
 
-        return $DB->get_record('block_socialcomments_replies', array('id' => $id));
+        return $DB->get_record('block_socialcomments_replies', ['id' => $id]);
     }
 
     /**
@@ -172,7 +172,7 @@ class block_socialcomments_generator extends component_generator_base {
         $subscription = (object) $record;
         $id = $DB->insert_record('block_socialcomments_subscrs', $subscription);
 
-        return $DB->get_record('block_socialcomments_subscrs', array('id' => $id));
+        return $DB->get_record('block_socialcomments_subscrs', ['id' => $id]);
     }
 
 }

@@ -61,12 +61,12 @@ class reply extends basepost {
      * @param boolean $fetch try to fetch attribute values from database first, attrs['id'] is needed.
      * @param int $strictness ignore or force comment exists in database.
      */
-    public function __construct($attrs = array(), $fetch = false, $strictness = IGNORE_MISSING) {
+    public function __construct($attrs = [], $fetch = false, $strictness = IGNORE_MISSING) {
         global $DB;
 
         if ($fetch && !empty($attrs['id'])) {
 
-            if ($dbattrs = $DB->get_record('block_socialcomments_replies', array('id' => $attrs['id']), '*', $strictness)) {
+            if ($dbattrs = $DB->get_record('block_socialcomments_replies', ['id' => $attrs['id']], '*', $strictness)) {
 
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
@@ -87,7 +87,7 @@ class reply extends basepost {
      */
     public function get_context() {
         global $DB;
-        $comment = $DB->get_record('block_socialcomments_cmmnts', array('id' => $this->commentid), '*', MUST_EXIST);
+        $comment = $DB->get_record('block_socialcomments_cmmnts', ['id' => $this->commentid], '*', MUST_EXIST);
         $context = \context::instance_by_id($comment->contextid, MUST_EXIST);
 
         return $context;
@@ -116,7 +116,7 @@ class reply extends basepost {
      */
     public function delete() {
         global $DB;
-        $DB->delete_records('block_socialcomments_replies', array('id' => $this->id));
+        $DB->delete_records('block_socialcomments_replies', ['id' => $this->id]);
     }
 
     /**
@@ -126,13 +126,13 @@ class reply extends basepost {
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\reply_created::create(
-                array(
+                [
                     'contextid' => $this->contextid,
                     'objectid' => $this->id,
-                    'other' => array(
-                        'userid' => $this->userid
-                    )
-                )
+                    'other' => [
+                        'userid' => $this->userid,
+                    ],
+                ]
         );
         $event->trigger();
     }
