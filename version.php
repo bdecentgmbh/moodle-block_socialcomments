@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025040700;
+$plugin->version   = 2026020500;
 $plugin->requires  = 2020061500;
 $plugin->component = 'block_socialcomments';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->supported = [403, 405];
-$plugin->release = '1.3';
+$plugin->supported = [403, 501];
+$plugin->release = '1.4';

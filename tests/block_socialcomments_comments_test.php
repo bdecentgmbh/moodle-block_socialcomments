@@ -26,7 +26,7 @@ namespace block_socialcomments;
 
 defined('MOODLE_INTERNAL') || die();
 
-use block_socialcomments\local\comments_helper as comments_helper;
+use block_socialcomments\local\comments_helper;
 use context_course;
 
 global $CFG;
@@ -39,7 +39,38 @@ if ($CFG->branch <= 401) {
  * Test for social comments.
  */
 final class block_socialcomments_comments_test extends \advanced_testcase {
+    /**
+     * @var \stdClass
+     */
+    private $course;
 
+    /**
+     * @var \context_course
+     */
+    private $coursecontext;
+
+    /**
+     * @var \stdClass
+     */
+    private $teacher;
+
+    /**
+     * @var \stdClass
+     */
+    private $student1;
+
+    /**
+     * @var \stdClass
+     */
+    private $student2;
+
+    /**
+     * @var \stdClass
+     */
+
+    /**
+     * Test, whether the plugin is properly installed.
+     */
     public function setup(): void {
         $this->resetAfterTest(true);
         $generator = $this->getDataGenerator();
@@ -370,5 +401,4 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
         $url = new \moodle_url('/course/view.php', ['id' => $this->course->id]);
         $this->assertEquals($url, $event->get_url());
     }
-
 }

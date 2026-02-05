@@ -22,6 +22,7 @@
  * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require(dirname(__FILE__) . '/../../../config.php');
 
 global $CFG, $PAGE, $OUTPUT;
@@ -137,7 +138,6 @@ echo html_writer::start_tag('div', ['id' => 'local-impact-table-wrapper']);
 $modinfo = get_fast_modinfo($course);
 
 foreach ($comments as $comment) {
-
     $row = [];
 
     $row[] = $comment->topicname;
@@ -151,9 +151,15 @@ foreach ($comments as $comment) {
     $row[] = $comment->commentscount;
     // Date.
     $row[] = userdate(
-            $comment->timecreated,
-            get_string('strftimedatefullshort', 'langconfig').' '.get_string('strftimetime', 'langconfig')
-        );
+        $comment->timecreated,
+        get_string(
+            'strftimedatefullshort',
+            'langconfig'
+        ) . ' ' . get_string(
+            'strftimetime',
+            'langconfig'
+        )
+    );
     // User.
     $author = fullname($comment);
     if (!$download) {
@@ -167,7 +173,6 @@ foreach ($comments as $comment) {
     $link = '';
     $context = context_helper::instance_by_id($comment->contextid);
     if (comment::can_delete($comment->userid, $context)) {
-
         $linkparams = ['id' => $comment->id, 'courseid' => $course->id, 'sesskey' => sesskey()];
         $url = new moodle_url('/blocks/socialcomments/report/delete_comment.php', $linkparams);
         $link = html_writer::link($url, get_string('delete'));

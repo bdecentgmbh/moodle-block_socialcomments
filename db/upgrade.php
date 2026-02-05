@@ -33,7 +33,6 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2019072601) {
-
         $table = new xmldb_table('block_scomments_comments');
         if ($dbman->table_exists($table)) {
             $dbman->rename_table($table, 'block_socialcomments_cmmnts');

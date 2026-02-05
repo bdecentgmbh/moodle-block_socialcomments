@@ -31,7 +31,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments_generator extends component_generator_base {
-
     /** @var int Number of created comments. */
     private $countcomment = 0;
 
@@ -76,7 +75,7 @@ class block_socialcomments_generator extends component_generator_base {
         }
 
         if (!isset($record['courseid'])) {
-            list($unused, $course, $cm) = get_context_info_array($record['contextid']);
+            [$unused, $course, $cm] = get_context_info_array($record['contextid']);
             $record['courseid'] = $course->id;
         }
 
@@ -149,7 +148,7 @@ class block_socialcomments_generator extends component_generator_base {
         }
 
         if (!isset($record['courseid'])) {
-            list($unused, $course, $cm) = get_context_info_array($record['contextid']);
+            [$unused, $course, $cm] = get_context_info_array($record['contextid']);
             $record['courseid'] = $course->id;
         }
 
@@ -174,5 +173,4 @@ class block_socialcomments_generator extends component_generator_base {
 
         return $DB->get_record('block_socialcomments_subscrs', ['id' => $id]);
     }
-
 }

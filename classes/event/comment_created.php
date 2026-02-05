@@ -34,7 +34,6 @@ namespace block_socialcomments\event;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class comment_created extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,5 +77,4 @@ class comment_created extends \core\event\base {
             return null;
         }
     }
-
 }

@@ -46,7 +46,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                 },
                 fail: notification.exception
             }
-        ], false);
+        ]);
     }
 
     /**

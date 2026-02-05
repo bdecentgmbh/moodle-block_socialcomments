@@ -44,10 +44,9 @@ use block_socialcomments\local\comments_helper;
  */
 class provider implements
     // This plugin does store course related comments entered by users.
-    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\request\core_userlist_provider {
-
+    \core_privacy\local\metadata\provider {
     /**
      * Returns meta data about this system.
      *
@@ -57,44 +56,44 @@ class provider implements
     public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
             'block_socialcomments_cmmnts',
-             [
-                'contextid' => 'privacy:metadata:block_socialcomments_cmmnts:contextid',
-                'content' => 'privacy:metadata:block_socialcomments_cmmnts:content',
-                'userid' => 'privacy:metadata:block_socialcomments_cmmnts:userid',
-                'groupid' => 'privacy:metadata:block_socialcomments_cmmnts:groupid',
-                'courseid' => 'privacy:metadata:block_socialcomments_cmmnts:courseid',
-                'timemodified' => 'privacy:metadata:block_socialcomments_cmmnts:timemodified',
-             ],
+            [
+               'contextid' => 'privacy:metadata:block_socialcomments_cmmnts:contextid',
+               'content' => 'privacy:metadata:block_socialcomments_cmmnts:content',
+               'userid' => 'privacy:metadata:block_socialcomments_cmmnts:userid',
+               'groupid' => 'privacy:metadata:block_socialcomments_cmmnts:groupid',
+               'courseid' => 'privacy:metadata:block_socialcomments_cmmnts:courseid',
+               'timemodified' => 'privacy:metadata:block_socialcomments_cmmnts:timemodified',
+            ],
             'privacy:metadata:block_socialcomments_cmmnts'
         );
         $collection->add_database_table(
             'block_socialcomments_subscrs',
-             [
-                'courseid' => 'privacy:metadata:block_socialcomments_subscrs:courseid',
-                'contextid' => 'privacy:metadata:block_socialcomments_subscrs:contextid',
-                'userid' => 'privacy:metadata:block_socialcomments_subscrs:userid',
-                'timelastsent' => 'privacy:metadata:block_socialcomments_subscrs:timelastsent',
-                'timemodified' => 'privacy:metadata:block_socialcomments_subscrs:timemodified',
-             ],
+            [
+               'courseid' => 'privacy:metadata:block_socialcomments_subscrs:courseid',
+               'contextid' => 'privacy:metadata:block_socialcomments_subscrs:contextid',
+               'userid' => 'privacy:metadata:block_socialcomments_subscrs:userid',
+               'timelastsent' => 'privacy:metadata:block_socialcomments_subscrs:timelastsent',
+               'timemodified' => 'privacy:metadata:block_socialcomments_subscrs:timemodified',
+            ],
             'privacy:metadata:block_socialcomments_subscrs'
         );
         $collection->add_database_table(
             'block_socialcomments_pins',
-             [
-                'itemtype' => 'privacy:metadata:block_socialcomments_pins:itemtype',
-                'itemid' => 'privacy:metadata:block_socialcomments_pins:itemid',
-                'userid' => 'privacy:metadata:block_socialcomments_pins:userid',
-             ],
+            [
+               'itemtype' => 'privacy:metadata:block_socialcomments_pins:itemtype',
+               'itemid' => 'privacy:metadata:block_socialcomments_pins:itemid',
+               'userid' => 'privacy:metadata:block_socialcomments_pins:userid',
+            ],
             'privacy:metadata:block_socialcomments_pins'
         );
         $collection->add_database_table(
             'block_socialcomments_replies',
-             [
-                'commentid' => 'privacy:metadata:block_socialcomments_replies:commentid',
-                'content' => 'privacy:metadata:block_socialcomments_replies:content',
-                'userid' => 'privacy:metadata:block_socialcomments_replies:userid',
-                'timemodified' => 'privacy:metadata:block_socialcomments_replies:timemodified',
-             ],
+            [
+               'commentid' => 'privacy:metadata:block_socialcomments_replies:commentid',
+               'content' => 'privacy:metadata:block_socialcomments_replies:content',
+               'userid' => 'privacy:metadata:block_socialcomments_replies:userid',
+               'timemodified' => 'privacy:metadata:block_socialcomments_replies:timemodified',
+            ],
             'privacy:metadata:block_socialcomments_replies'
         );
         return $collection;
@@ -241,15 +240,22 @@ class provider implements
         $params = ['userid' => $userid];
         $records = $DB->get_records_sql($sql, $params);
         if (!empty($records)) {
-            $comments = (object) array_map(function($record) use($context) {
+            $comments = (object) array_map(function ($record) use ($context) {
                 return [
                         'content' => format_string($record->content),
                         'timecreated' => transform::datetime($record->timecreated),
                         'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
-            writer::with_context($context)->export_data([get_string('privacy:commentspath',
-                    'block_socialcomments')], $comments);
+            writer::with_context($context)->export_data(
+                [
+                    get_string(
+                        'privacy:commentspath',
+                        'block_socialcomments'
+                    ),
+                ],
+                $comments
+            );
         }
     }
 
@@ -268,15 +274,22 @@ class provider implements
         $params = ['userid' => $userid];
         $records = $DB->get_records_sql($sql, $params);
         if (!empty($records)) {
-            $replies = (object) array_map(function($record) use($context) {
+            $replies = (object) array_map(function ($record) use ($context) {
                 return [
                         'content' => format_string($record->content),
                         'timecreated' => transform::datetime($record->timecreated),
                         'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
-            writer::with_context($context)->export_data([get_string('privacy:repliespath',
-                    'block_socialcomments')], $replies);
+            writer::with_context($context)->export_data(
+                [
+                    get_string(
+                        'privacy:repliespath',
+                        'block_socialcomments'
+                    ),
+                ],
+                $replies
+            );
         }
     }
 
@@ -294,7 +307,7 @@ class provider implements
         $params = ['userid' => $userid];
         $records = $DB->get_records_sql($sql, $params);
         if (!empty($records)) {
-            $subscriptions = (object) array_map(function($record) use($context) {
+            $subscriptions = (object) array_map(function ($record) use ($context) {
                 global $DB;
                 $course = $DB->get_record('course', ['id' => $record->courseid]);
                 return [
@@ -304,8 +317,15 @@ class provider implements
                         'timemodified' => transform::datetime($record->timemodified),
                 ];
             }, $records);
-            writer::with_context($context)->export_data([get_string('privacy:subscriptionspath',
-                    'block_socialcomments')], $subscriptions);
+            writer::with_context($context)->export_data(
+                [
+                    get_string(
+                        'privacy:subscriptionspath',
+                        'block_socialcomments'
+                    ),
+                ],
+                $subscriptions
+            );
         }
     }
 
@@ -336,25 +356,32 @@ class provider implements
         ];
         $records = $DB->get_records_sql($sql, $params);
         if (!empty($records)) {
-            $pins = (object) array_map(function($record) use($context) {
+            $pins = (object) array_map(function ($record) use ($context) {
                 return [
                         'type' => format_string($record->itemtype),
                         'timecreated' => transform::datetime($record->timecreated),
                 ];
             }, $records);
-            writer::with_context($context)->export_data([get_string('privacy:pinspath',
-                    'block_socialcomments')], $pins);
+            writer::with_context($context)->export_data(
+                [
+                    get_string(
+                        'privacy:pinspath',
+                        'block_socialcomments'
+                    ),
+                ],
+                $pins
+            );
         }
     }
 
     /**
      * Delete all data depending on comments in the specified context.
-     * If a user ID is specified, delete only data depending on this users comments.
+     * If a user ID is specified, delete only data depending on this user's comments.
      *
      * @param \context $context Course context.
-     * @param int $userid ID of the user.
+     * @param int|null $userid ID of the user, or null to delete data for all users.
      */
-    protected static function delete_all_comment_dependant_data(\context $context, int $userid = null) {
+    protected static function delete_all_comment_dependant_data(\context $context, ?int $userid = null) {
         global $DB;
         if ($context->contextlevel !== CONTEXT_COURSE) {
             return;
@@ -413,11 +440,10 @@ class provider implements
 
         if ($context instanceof \context_course) {
             $userids = $userlist->get_userids();
-            list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
             foreach ($userids as $userid) {
                 self::delete_all_comment_dependant_data($context, $userid);
-
             }
             $DB->delete_records_select(
                 'block_socialcomments_cmmnts',

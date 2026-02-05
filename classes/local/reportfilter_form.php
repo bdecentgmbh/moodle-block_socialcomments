@@ -37,7 +37,6 @@ require_once($CFG->dirroot . '/lib/formslib.php');
  * Filterform for report page.
  */
 class reportfilter_form extends \moodleform {
-
     /**
      * Form define base function.
      */
@@ -166,5 +165,4 @@ class reportfilter_form extends \moodleform {
 
         return $params;
     }
-
 }

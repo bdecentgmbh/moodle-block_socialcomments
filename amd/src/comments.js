@@ -100,7 +100,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                 },
                 fail: notification.exception
             }
-        ], false);
+        ]);
     }
 
     /**
@@ -149,7 +149,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                     },
                     fail: notification.exception
                 }
-            ], false);
+            ]);
         }
     }
 
@@ -182,7 +182,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                     },
                     fail: notification.exception
                 }
-            ], false);
+            ]);
         }
     }
 

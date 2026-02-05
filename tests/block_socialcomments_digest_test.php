@@ -39,6 +39,55 @@ if ($CFG->branch <= 401) {
  * Digest test cases.
  */
 final class block_socialcomments_digest_test extends \advanced_testcase {
+    /**
+     * @var \testing_data_generator
+     */
+    public $generator;
+
+    /**
+     * @var \stdClass
+     */
+    public $course;
+
+    /**
+     * @var \context_course
+     */
+    public $coursecontext;
+
+    /**
+     * @var \stdClass
+     */
+    public $course2;
+
+    /**
+     * @var \context_course
+     */
+    public $coursecontext2;
+
+    /**
+     * @var \stdClass
+     */
+    public $teacher;
+
+    /**
+     * @var \stdClass
+     */
+    public $student1;
+
+    /**
+     * @var \stdClass
+     */
+    public $student2;
+
+    /**
+     * @var \stdClass
+     */
+    public $group1;
+
+    /**
+     * @var \stdClass
+     */
+    public $group2;
 
     /**
      * Set the config.
@@ -78,7 +127,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
         $record = ['courseid' => $this->course->id, 'name' => 'Group 2'];
         $this->group2 = $generator->create_group($record);
         $generator->create_group_member(['userid' => $this->student2->id, 'groupid' => $this->group2->id]);
-
     }
 
     /**
@@ -245,6 +293,5 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
         // ...comment0 is visible, comment1 not visible because of group, comment2 not visible because of timestamp.
         $comments = reset($items);
         $this->assertNotEmpty($comments[$comment2->id]);
-
     }
 }

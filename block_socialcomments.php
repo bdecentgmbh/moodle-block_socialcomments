@@ -31,7 +31,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments extends block_base {
-
     /**
      * Initialise the block.
      */
@@ -112,5 +111,4 @@ class block_socialcomments extends block_base {
 
         return $attributes;
     }
-
 }

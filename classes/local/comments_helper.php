@@ -27,13 +27,12 @@ namespace block_socialcomments\local;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot."/blocks/socialcomments/lib.php");
+require_once($CFG->dirroot . "/blocks/socialcomments/lib.php");
 
 /**
  * Class for comments helper.
  */
 class comments_helper {
-
     /**
      * @var int
      */
@@ -103,7 +102,7 @@ class comments_helper {
     public function __construct($pagecontext, $config = []) {
         global $USER;
 
-        list($context, $course, $cm) = get_context_info_array($pagecontext->id);
+        [$context, $course, $cm] = get_context_info_array($pagecontext->id);
 
         $this->context = $context;
         $this->course = $course;
@@ -140,7 +139,7 @@ class comments_helper {
     public function get_commentscount() {
         global $DB;
 
-        list($andingroups, $params) = $this->get_groups_restriction_sql();
+        [$andingroups, $params] = $this->get_groups_restriction_sql();
 
         $params['contextid'] = $this->context->id;
 
@@ -196,7 +195,7 @@ class comments_helper {
         }
 
         // Params.
-        list($andingroups, $params) = $this->get_groups_restriction_sql();
+        [$andingroups, $params] = $this->get_groups_restriction_sql();
         $params['contextid'] = $this->context->id;
         $params['itemtype'] = self::PINNED_COMMENT;
         $params['userid'] = $this->user->id;
@@ -250,7 +249,7 @@ class comments_helper {
         }
 
         $postids = array_keys($posts);
-        list($instr, $params) = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED);
+        [$instr, $params] = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED);
 
         $sql = "SELECT commentid, count(*)
                 FROM {block_socialcomments_replies}
@@ -275,9 +274,7 @@ class comments_helper {
                 ORDER by r.timecreated ASC";
 
         foreach ($posts as $post) {
-
             if (!empty($replycounts[$post->postid])) {
-
                 $post->countreplies = $replycounts[$post->postid];
                 $post->replies = $DB->get_records_sql($sql, [$post->postid], 0, $limitreplies);
             }
@@ -475,5 +472,4 @@ class comments_helper {
 
         return $choices;
     }
-
 }
