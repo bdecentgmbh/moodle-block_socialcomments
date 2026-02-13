@@ -34,6 +34,9 @@ use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use block_socialcomments\local\comments_helper;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\metadata\provider as core_privacy_provider;
+use core_privacy\local\request\plugin\provider as core_plugin_provider;
 
 /**
  * Privacy Subsystem for block block_socialcomments.
@@ -42,11 +45,7 @@ use block_socialcomments\local\comments_helper;
  * @copyright 2019 Paul Steffen, EDU-Werkstatt GmbH
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements
-    // This plugin does store course related comments entered by users.
-    \core_privacy\local\request\core_userlist_provider,
-    \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\metadata\provider {
+class provider implements core_plugin_provider, core_privacy_provider, core_userlist_provider {
     /**
      * Returns meta data about this system.
      *
