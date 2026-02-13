@@ -158,35 +158,37 @@ class digest {
         // Group by course and context and add replies.
         $groupeddata = [];
         foreach ($comments as $cmt) {
-            $context = \context_helper::instance_by_id($cmt->postcontextid);
-            $restrictedtogroups = $this->is_restricted_to_groupids($context, $user);
+            $context = \context_helper::instance_by_id($cmt->postcontextid, IGNORE_MISSING);
+            if ($context) {
+                $restrictedtogroups = $this->is_restricted_to_groupids($context, $user);
 
-            if (($restrictedtogroups) && (!in_array($cmt->groupid, $restrictedtogroups))) {
-                continue;
+                if (($restrictedtogroups) && (!in_array($cmt->groupid, $restrictedtogroups))) {
+                    continue;
+                }
+
+                if (!isset($groupeddata[$cmt->courseid])) {
+                    $groupeddata[$cmt->courseid] = [];
+                    $this->timelastsent[$cmt->courseid] = [];
+                }
+
+                if (!isset($groupeddata[$cmt->courseid][$cmt->postcontextid])) {
+                    $groupeddata[$cmt->courseid][$cmt->postcontextid] = [];
+                }
+
+                $commentdata = new \stdClass();
+                $commentdata->comment = $cmt;
+                $commentdata->replies = [];
+
+                if (isset($repliesgroupedbycomments[$cmt->postid])) {
+                    $commentdata->replies = $repliesgroupedbycomments[$cmt->postid];
+                }
+
+                $groupeddata[$cmt->courseid][$cmt->postcontextid][$cmt->postid] = $commentdata;
+
+                // Note the actual time for later use.
+                // Set this here to skip the time, during access is restricted by group.
+                $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = time();
             }
-
-            if (!isset($groupeddata[$cmt->courseid])) {
-                $groupeddata[$cmt->courseid] = [];
-                $this->timelastsent[$cmt->courseid] = [];
-            }
-
-            if (!isset($groupeddata[$cmt->courseid][$cmt->postcontextid])) {
-                $groupeddata[$cmt->courseid][$cmt->postcontextid] = [];
-            }
-
-            $commentdata = new \stdClass();
-            $commentdata->comment = $cmt;
-            $commentdata->replies = [];
-
-            if (isset($repliesgroupedbycomments[$cmt->postid])) {
-                $commentdata->replies = $repliesgroupedbycomments[$cmt->postid];
-            }
-
-            $groupeddata[$cmt->courseid][$cmt->postcontextid][$cmt->postid] = $commentdata;
-
-            // Note the actual time for later use.
-            // Set this here to skip the time, during access is restricted by group.
-            $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = time();
         }
 
         return $groupeddata;
