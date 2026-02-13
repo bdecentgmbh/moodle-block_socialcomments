@@ -140,6 +140,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                         }
                         // Check, whether element is visible, if not scroll.
                         var comment = $("#ccomment-comment-listitem-" + response.id);
+                        if (!comment.offset()) {
+                            return;
+                        }
                         var win = $(window);
                         if (comment.offset().top > win.scrollTop() + win.height()) {
                             $('html, body').animate({
@@ -311,7 +314,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, aj
                 },
                 done: function (response) {
                     params.subscribed = response.checked;
-                    $checkbox.prop('checked').prop('checked', params.subscribed);
+                    $checkbox.prop('checked', params.subscribed);
                 },
                 fail: notification.exception
             }
