@@ -27,6 +27,7 @@ $string['actions'] = 'Actions';
 $string['activity'] = 'Activity';
 $string['allgroups'] = 'All groups';
 $string['author'] = 'Author';
+$string['categorycontextinfo'] = 'Content only available in course context.';
 $string['commentdeleted'] = 'Your comment has been deleted';
 $string['commentscount'] = 'Comments: {$a}';
 $string['commentsperpage'] = 'Comments per page';
