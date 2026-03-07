@@ -224,6 +224,42 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
     }
 
     /**
+     * Test that setting users per cron.
+     * @covers \block_socialcomments\local\digest::cron
+     */
+    public function test_digest_userspercron(): void {
+        set_config('digesttype', 1, 'block_socialcomments');
+        set_config('userspercron', 1, 'block_socialcomments');
+
+        $plugingenerator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
+
+        $subscriptionbase = time() - 300;
+        foreach ([$this->teacher, $this->student1, $this->student2] as $offset => $user) {
+            $plugingenerator->create_subscription([
+                'contextid'    => $this->coursecontext->id,
+                'userid'       => $user->id,
+                'timelastsent' => $subscriptionbase + ($offset * 10),
+            ]);
+        }
+        $plugingenerator->create_comment([
+            'contextid'   => $this->coursecontext->id,
+            'timecreated' => $subscriptionbase + 60,
+        ]);
+
+        $sink = $this->redirectMessages();
+        digest::cron();
+        $messages = $sink->get_messages();
+        $sink->close();
+        $this->assertCount(1, $messages, 'First cron run should send digest to 1 user.');
+
+        $sink = $this->redirectMessages();
+        digest::cron();
+        $messages = $sink->get_messages();
+        $sink->close();
+        $this->assertCount(1, $messages, 'Second cron run should send digest to another user.');
+    }
+
+    /**
      * Test visiblity and results on report page.
      * @covers \report_helper::get_instance
      */

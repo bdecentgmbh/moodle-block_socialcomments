@@ -56,5 +56,32 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
         // Socialcomments savepoint reached.
         upgrade_plugin_savepoint(true, 2019072601, 'block', 'socialcomments');
     }
+
+    if ($oldversion < 2026030701) {
+        $DB->set_field(
+            'task_scheduled',
+            'minute',
+            '*',
+            [
+                'component' => 'block_socialcomments',
+                'classname' => '\block_socialcomments\task\process_digest_cron',
+                'customised' => 0,
+            ]
+        );
+
+        $DB->set_field(
+            'task_scheduled',
+            'hour',
+            '*',
+            [
+                'component' => 'block_socialcomments',
+                'classname' => '\block_socialcomments\task\process_digest_cron',
+                'customised' => 0,
+            ]
+        );
+
+        upgrade_plugin_savepoint(true, 2026030701, 'block', 'socialcomments');
+    }
+
     return true;
 }

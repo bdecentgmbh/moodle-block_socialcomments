@@ -264,6 +264,7 @@ class digest {
         $newcommentsdata = $this->get_subscribed_new_comments_and_replies($user);
 
         if (empty($newcommentsdata)) {
+            $DB->set_field('block_socialcomments_subscrs', 'timelastsent', time(), ['userid' => $user->id]);
             return true;
         }
 
