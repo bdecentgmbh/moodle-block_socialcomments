@@ -50,7 +50,6 @@ use moodle_exception;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class external extends external_api {
-
     /**
      * Returns description of method parameters.
      *
@@ -159,8 +158,7 @@ class external extends external_api {
 
         return new external_function_parameters([
             'commentid' => new external_value(PARAM_INT, 'id of comment'),
-            ]
-        );
+            ]);
     }
 
     /**
@@ -518,8 +516,7 @@ class external extends external_api {
 
         return new external_function_parameters([
             'replyid' => new external_value(PARAM_INT, 'id of reply'),
-            ]
-        );
+            ]);
     }
 
     /**
@@ -566,8 +563,7 @@ class external extends external_api {
         return new external_single_structure([
             'deletedreplyid' => new external_value(PARAM_INT, 'id of deleted comment'),
             'warnings' => new external_warnings(),
-            ]
-        );
+            ]);
     }
 
     /**
@@ -581,8 +577,7 @@ class external extends external_api {
         return new external_function_parameters([
             'sectionid' => new external_value(PARAM_INT, 'id of section'),
             'courseid' => new external_value(PARAM_INT, 'id of courseid'),
-            ]
-        );
+            ]);
     }
 
     /**
@@ -630,8 +625,6 @@ class external extends external_api {
         return new external_single_structure([
             'options' => new external_value(PARAM_RAW, 'options for activity select element'),
             'warnings' => new external_warnings(),
-            ]
-        );
+            ]);
     }
-
 }

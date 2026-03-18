@@ -98,7 +98,7 @@ class digest {
      */
     public function get_subscribed_new_comments_and_replies($user) {
         global $DB, $CFG;
-        require_once($CFG->dirroot."/blocks/socialcomments/lib.php");
+        require_once($CFG->dirroot . "/blocks/socialcomments/lib.php");
 
         $authorfields = block_socialcomments_get_all_user_name_fields();
         $authorpicturefields = block_socialcomments_get_userpicture_fields();
@@ -120,7 +120,6 @@ class digest {
         $repliesgroupedbycomments = [];
 
         foreach ($replies as $reply) {
-
             if (!isset($repliesgroupedbycomments[$reply->commentid])) {
                 $repliesgroupedbycomments[$reply->commentid] = [];
             }
@@ -142,7 +141,7 @@ class digest {
         $orcond = " (bc.timemodified >= sub.timelastsent)";
         // Add comments that are needed for replies.
         if (!empty($neededcommentsid)) {
-            list($incommentids, $incommentidparam) = $DB->get_in_or_equal($neededcommentsid, SQL_PARAMS_NAMED);
+            [$incommentids, $incommentidparam] = $DB->get_in_or_equal($neededcommentsid, SQL_PARAMS_NAMED);
             $orcond .= " OR (bc.id {$incommentids}) ";
             $params += $incommentidparam;
         }
@@ -159,36 +158,37 @@ class digest {
         // Group by course and context and add replies.
         $groupeddata = [];
         foreach ($comments as $cmt) {
+            $context = \context_helper::instance_by_id($cmt->postcontextid, IGNORE_MISSING);
+            if ($context) {
+                $restrictedtogroups = $this->is_restricted_to_groupids($context, $user);
 
-            $context = \context_helper::instance_by_id($cmt->postcontextid);
-            $restrictedtogroups = $this->is_restricted_to_groupids($context, $user);
+                if (($restrictedtogroups) && (!in_array($cmt->groupid, $restrictedtogroups))) {
+                    continue;
+                }
 
-            if (($restrictedtogroups) && (!in_array($cmt->groupid, $restrictedtogroups))) {
-                continue;
+                if (!isset($groupeddata[$cmt->courseid])) {
+                    $groupeddata[$cmt->courseid] = [];
+                    $this->timelastsent[$cmt->courseid] = [];
+                }
+
+                if (!isset($groupeddata[$cmt->courseid][$cmt->postcontextid])) {
+                    $groupeddata[$cmt->courseid][$cmt->postcontextid] = [];
+                }
+
+                $commentdata = new \stdClass();
+                $commentdata->comment = $cmt;
+                $commentdata->replies = [];
+
+                if (isset($repliesgroupedbycomments[$cmt->postid])) {
+                    $commentdata->replies = $repliesgroupedbycomments[$cmt->postid];
+                }
+
+                $groupeddata[$cmt->courseid][$cmt->postcontextid][$cmt->postid] = $commentdata;
+
+                // Note the actual time for later use.
+                // Set this here to skip the time, during access is restricted by group.
+                $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = time();
             }
-
-            if (!isset($groupeddata[$cmt->courseid])) {
-                $groupeddata[$cmt->courseid] = [];
-                $this->timelastsent[$cmt->courseid] = [];
-            }
-
-            if (!isset($groupeddata[$cmt->courseid][$cmt->postcontextid])) {
-                $groupeddata[$cmt->courseid][$cmt->postcontextid] = [];
-            }
-
-            $commentdata = new \stdClass();
-            $commentdata->comment = $cmt;
-            $commentdata->replies = [];
-
-            if (isset($repliesgroupedbycomments[$cmt->postid])) {
-                $commentdata->replies = $repliesgroupedbycomments[$cmt->postid];
-            }
-
-            $groupeddata[$cmt->courseid][$cmt->postcontextid][$cmt->postid] = $commentdata;
-
-            // Note the actual time for later use.
-            // Set this here to skip the time, during access is restricted by group.
-            $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = time();
         }
 
         return $groupeddata;
@@ -209,7 +209,6 @@ class digest {
 
         // Render new data for each course.
         foreach ($commentsdata as $courseid => $contextcomments) {
-
             if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                 continue;
             }
@@ -225,7 +224,7 @@ class digest {
      */
     protected function get_css_styles() {
         global $CFG;
-        $css = file_get_contents($CFG->dirroot.'/blocks/socialcomments/styles.css');
+        $css = file_get_contents($CFG->dirroot . '/blocks/socialcomments/styles.css');
         return \html_writer::tag('style', $css);
     }
 
@@ -245,7 +244,7 @@ class digest {
         $message->subject = get_string('digestsubject', 'block_socialcomments');
         $message->fullmessage = html_to_text($messagetext, 80, false);
         $message->fullmessageformat = FORMAT_MARKDOWN;
-        $message->fullmessagehtml = $this->get_css_styles().$messagetext;
+        $message->fullmessagehtml = $this->get_css_styles() . $messagetext;
         $message->notification = 1;
 
         $messageid = message_send($message);
@@ -265,19 +264,17 @@ class digest {
         $newcommentsdata = $this->get_subscribed_new_comments_and_replies($user);
 
         if (empty($newcommentsdata)) {
+            $DB->set_field('block_socialcomments_subscrs', 'timelastsent', time(), ['userid' => $user->id]);
             return true;
         }
 
         if ($this->digesttype == comments_helper::DIGEST_SITE) {
-
             $messagetext = $this->render_digest_messagetext($newcommentsdata);
 
             $messageid = $this->send_message($user, $messagetext);
             // Note the time.
             if ($messageid) {
-
                 foreach ($this->timelastsent as $courseid => $contextids) {
-
                     foreach ($contextids as $contextid => $time) {
                         $params = ['userid' => $user->id, 'contextid' => $contextid];
                         $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
@@ -289,12 +286,10 @@ class digest {
 
         $result = true;
         if ($this->digesttype == comments_helper::DIGEST_COURSE) {
-
             $renderer = $PAGE->get_renderer('block_socialcomments');
 
             // Render new data for each course.
             foreach ($newcommentsdata as $courseid => $contextcomments) {
-
                 if (!$course = $DB->get_record('course', ['id' => $courseid])) {
                     continue;
                 }
@@ -302,7 +297,6 @@ class digest {
                 $messageid = $this->send_message($user, $messagetext);
 
                 if ($messageid && isset($this->timelastsent[$courseid])) {
-
                     foreach ($this->timelastsent[$courseid] as $contextid => $time) {
                         $params = ['userid' => $user->id, 'contextid' => $contextid];
                         $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $time, $params);
@@ -347,7 +341,6 @@ class digest {
         $userids = array_keys($userids);
 
         foreach ($userids as $userid) {
-
             $user = $DB->get_record('user', ['id' => $userid, 'deleted' => 0]);
 
             if (!$user) {
@@ -364,5 +357,4 @@ class digest {
 
         return $result;
     }
-
 }

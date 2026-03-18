@@ -32,7 +32,6 @@ use block_socialcomments\local\comments_helper;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_socialcomments_block_structure_step extends backup_block_structure_step {
-
     /**
      *  Define the complete structure for backup.
      */
@@ -111,19 +110,22 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
             // we use the value from $contextid instead of backup::VAR_CONTEXTID.
             $courseid = $this->get_courseid();
             $contextid = context_course::instance($courseid)->id;
-            $pin->set_source_sql('SELECT p.*
-                                  FROM {block_socialcomments_pins} p
-                                  JOIN {block_socialcomments_cmmnts} c
-                                  ON p.itemid = c.id
-                                  AND p.itemtype = '.comments_helper::PINNED_COMMENT.'
-                                  AND c.courseid = ?
-                                  UNION
-                                  SELECT p.* FROM {block_socialcomments_pins} p
-                                  WHERE (p.itemid = '.$contextid.')
-                                  AND (p.itemtype = '.comments_helper::PINNED_PAGE.')',
-                                  [
-                                      backup::VAR_COURSEID,
-                                  ]);
+            $pin->set_source_sql(
+                'SELECT p.*
+                   FROM {block_socialcomments_pins} p
+                   JOIN {block_socialcomments_cmmnts} c
+                     ON p.itemid = c.id
+                    AND p.itemtype = ' . comments_helper::PINNED_COMMENT . '
+                    AND c.courseid = ?
+                 UNION
+                 SELECT p.*
+                   FROM {block_socialcomments_pins} p
+                  WHERE p.itemid = ' . $contextid . '
+                    AND p.itemtype = ' . comments_helper::PINNED_PAGE,
+                [
+                    backup::VAR_COURSEID,
+                ]
+            );
         }
 
         // Define id annotations.

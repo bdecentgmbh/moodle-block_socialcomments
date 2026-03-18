@@ -29,8 +29,8 @@ $tasks = [
     [
         'classname' => 'block_socialcomments\task\process_digest_cron',
         'blocking' => 0,
-        'minute' => 'R',
-        'hour' => 'R',
+        'minute' => '*',
+        'hour' => '*',
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*',

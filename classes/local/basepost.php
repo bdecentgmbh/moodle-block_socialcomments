@@ -33,7 +33,6 @@ namespace block_socialcomments\local;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class basepost {
-
     /**
      * Create a object of this class.
      *
@@ -137,5 +136,4 @@ abstract class basepost {
      * Create or update this post.
      */
     abstract public function save();
-
 }

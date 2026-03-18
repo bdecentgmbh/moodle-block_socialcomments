@@ -34,7 +34,6 @@ require_once(__DIR__ . '/backup_socialcomments_stepslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_socialcomments_block_task extends backup_block_task {
-
     /**
      * Define (add) particular settings that each block can have.
      */

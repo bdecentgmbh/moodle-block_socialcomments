@@ -55,6 +55,21 @@ class reply extends basepost {
     public $userid = 0;
 
     /**
+     * @var $contextid
+     */
+    public $contextid;
+
+    /**
+     * @var $timemodified
+     */
+    public $timemodified = 0;
+
+    /**
+     * @var $timecreated
+     */
+    public $timecreated = 0;
+
+    /**
      * Create a reply.
      *
      * @param array $attrs parameter for creating a reply indexed by attriute names.
@@ -65,9 +80,7 @@ class reply extends basepost {
         global $DB;
 
         if ($fetch && !empty($attrs['id'])) {
-
             if ($dbattrs = $DB->get_record('block_socialcomments_replies', ['id' => $attrs['id']], '*', $strictness)) {
-
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
                     $dbattrs->content = $attrs['content'];
@@ -126,13 +139,13 @@ class reply extends basepost {
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\reply_created::create(
-                [
-                    'contextid' => $this->contextid,
-                    'objectid' => $this->id,
-                    'other' => [
-                        'userid' => $this->userid,
-                    ],
-                ]
+            [
+                'contextid' => $this->contextid,
+                'objectid' => $this->id,
+                'other' => [
+                    'userid' => $this->userid,
+                ],
+            ]
         );
         $event->trigger();
     }

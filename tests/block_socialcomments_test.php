@@ -48,6 +48,60 @@ if ($CFG->branch <= 401) {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class block_socialcomments_test extends \advanced_testcase {
+    /**
+     * @var \stdClass
+     */
+    public $student;
+
+    /**
+     * @var \stdClass
+     */
+    public $teacher;
+
+    /**
+     * @var \stdClass
+     */
+    public $course;
+
+    /**
+     * @var \stdClass
+     */
+    public $course1;
+
+    /**
+     * @var \stdClass
+     */
+    public $course2;
+
+    /**
+     * @var \context_course
+     */
+    public $coursecontext;
+
+    /**
+     * @var \context_course
+     */
+    public $coursecontext1;
+
+    /**
+     * @var \context_course
+     */
+    public $coursecontext2;
+
+    /**
+     * @var \context_user
+     */
+    public $studentcontext;
+
+    /**
+     * @var \context_user
+     */
+    public $teachercontext;
+
+    /**
+     * @var \context_system
+     */
+    public $systemcontext;
 
     /**
      * Basic setup for these tests.
@@ -152,7 +206,6 @@ final class block_socialcomments_test extends \advanced_testcase {
 
         $data = $DB->count_records('block_socialcomments_cmmnts');
         $this->assertEquals(1, $data);
-
     }
 
     /**

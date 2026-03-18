@@ -33,7 +33,6 @@ namespace block_socialcomments\task;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class process_digest_cron extends \core\task\scheduled_task {
-
     /**
      * Get the name.
      */

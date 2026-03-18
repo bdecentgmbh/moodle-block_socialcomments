@@ -78,6 +78,16 @@ class comment extends basepost {
     public $groupid = 0;
 
     /**
+     * @var $timemodified
+     */
+    public $timemodified = 0;
+
+    /**
+     * @var $timecreated
+     */
+    public $timecreated = 0;
+
+    /**
      * Create a comment.
      *
      * @param array $attrs parameter for creating a comment indexed by attriute names.
@@ -88,18 +98,14 @@ class comment extends basepost {
         global $DB;
 
         if ($fetch && !empty($attrs['id'])) {
-
             if ($dbattrs = $DB->get_record('block_socialcomments_cmmnts', ['id' => $attrs['id']], '*', $strictness)) {
-
                 // Load new content, if available.
                 if (isset($attrs['content'])) {
                     $dbattrs->content = $attrs['content'];
                 }
-
                 $attrs = (array) $dbattrs;
             }
         }
-
         parent::__construct($attrs, $fetch, $strictness);
     }
 
@@ -141,7 +147,7 @@ class comment extends basepost {
     public static function get_accessible_groups($context) {
         global $USER;
 
-        list($unused, $course, $cm) = get_context_info_array($context->id);
+        [$unused, $course, $cm] = get_context_info_array($context->id);
 
         if (self::get_group_mode($context, $course, $cm) != SEPARATEGROUPS) {
             return [0 => (object) ['id' => 0, 'name' => get_string('allgroups', 'block_socialcomments')]];
@@ -175,7 +181,7 @@ class comment extends basepost {
             return false;
         }
         // Get group mode.
-        list($unused, $course, $cm) = get_context_info_array($context->id);
+        [$unused, $course, $cm] = get_context_info_array($context->id);
         $groupmode = self::get_group_mode($context, $course, $cm);
 
         if ($groupmode != SEPARATEGROUPS) {
@@ -202,7 +208,7 @@ class comment extends basepost {
             return ['', []];
         }
 
-        list($ingroupstr, $ingroupparam) = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
+        [$ingroupstr, $ingroupparam] = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
 
         return [' AND groupid ' . $ingroupstr, $ingroupparam];
     }
@@ -267,8 +273,7 @@ class comment extends basepost {
         $DB->delete_records('block_socialcomments_replies', ['commentid' => $this->id]);
         $DB->delete_records('block_socialcomments_pins', [
             'itemid' => $this->id,
-            'itemtype' => comments_helper::PINNED_COMMENT]
-        );
+            'itemtype' => comments_helper::PINNED_COMMENT]);
     }
 
     /**
@@ -277,13 +282,13 @@ class comment extends basepost {
     public function fire_event_created() {
 
         $event = \block_socialcomments\event\comment_created::create(
-                [
-                    'contextid' => $this->contextid,
-                    'objectid' => $this->id,
-                    'other' => [
-                        'userid' => $this->userid,
-                    ],
-                ]
+            [
+                'contextid' => $this->contextid,
+                'objectid' => $this->id,
+                'other' => [
+                    'userid' => $this->userid,
+                ],
+            ]
         );
         $event->trigger();
     }
@@ -298,7 +303,7 @@ class comment extends basepost {
 
         // Course id is needed for proper cleanup, when course is deleted.
         if ($this->contextid > 0) {
-            list($unused, $course, $cm) = get_context_info_array($this->contextid);
+            [$unused, $course, $cm] = get_context_info_array($this->contextid);
             $this->courseid = $course->id;
         } else {
             $this->courseid = SITEID;

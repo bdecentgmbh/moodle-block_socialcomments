@@ -22,13 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments_edit_form extends block_edit_form {
-
     /**
      * Define the custom settings mform.
      * @param object $mform the form being built.
      */
     protected function specific_definition($mform) {
-
         $mform->addElement('header', 'configheader', get_string('blocksettings', 'block'));
         $mform->addElement('selectyesno', 'config_hidepins', get_string('config_hidepins', 'block_socialcomments'));
         $mform->setDefault('config_hidepins', 0);

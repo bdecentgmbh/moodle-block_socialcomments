@@ -31,7 +31,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_socialcomments extends block_base {
-
     /**
      * Initialise the block.
      */
@@ -83,6 +82,12 @@ class block_socialcomments extends block_base {
             return $this->content;
         }
 
+        // Category context.
+        if ($this->page->context->contextlevel == CONTEXT_COURSECAT) {
+            $this->content->text = get_string('categorycontextinfo', 'block_socialcomments');
+            return $this->content;
+        }
+
         if (!has_capability('block/socialcomments:view', $this->page->context)) {
             return $this->content;
         }
@@ -112,5 +117,4 @@ class block_socialcomments extends block_base {
 
         return $attributes;
     }
-
 }

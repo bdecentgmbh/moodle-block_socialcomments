@@ -25,29 +25,100 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
+    $settings->add(
+        new admin_setting_configtext(
+            'block_socialcomments/commentsperpage',
+            new lang_string(
+                'commentsperpage',
+                'block_socialcomments'
+            ),
+            new lang_string(
+                'commentsperpagedesc',
+                'block_socialcomments'
+            ),
+            10,
+            PARAM_INT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext('block_socialcomments/commentsperpage',
-        new lang_string('commentsperpage', 'block_socialcomments'),
-        new lang_string('commentsperpagedesc', 'block_socialcomments'), 10, PARAM_INT));
+    $settings->add(
+        new admin_setting_configtext(
+            'block_socialcomments/limitreplies',
+            new lang_string(
+                'limitreplies',
+                'block_socialcomments'
+            ),
+            new lang_string(
+                'limitrepliesdesc',
+                'block_socialcomments'
+            ),
+            10,
+            PARAM_INT
+        )
+    );
 
-    $settings->add(new admin_setting_configtext('block_socialcomments/limitreplies',
-        new lang_string('limitreplies', 'block_socialcomments'),
-        new lang_string('limitrepliesdesc', 'block_socialcomments'), 10, PARAM_INT));
-
-    $settings->add(new admin_setting_configtext('block_socialcomments/reportperpage',
-        new lang_string('reportperpage', 'block_socialcomments'),
-        new lang_string('reportperpagedesc', 'block_socialcomments'), 25, PARAM_INT));
+    $settings->add(
+        new admin_setting_configtext(
+            'block_socialcomments/reportperpage',
+            new lang_string(
+                'reportperpage',
+                'block_socialcomments'
+            ),
+            new lang_string(
+                'reportperpagedesc',
+                'block_socialcomments'
+            ),
+            25,
+            PARAM_INT
+        )
+    );
 
     $url = new moodle_url('/admin/tool/task/scheduledtasks.php');
-    $link = html_writer::link($url, get_string('pluginname', 'tool_task'), ['target' => '_blank']);
 
-    $settings->add(new admin_setting_configtext('block_socialcomments/userspercron',
-        new lang_string('userspercron', 'block_socialcomments'),
-        new lang_string('userspercrondesc', 'block_socialcomments', $link), 0, PARAM_INT));
+    $link = html_writer::link(
+        $url,
+        get_string(
+            'pluginname',
+            'tool_task'
+        ),
+        [
+            'target' => '_blank',
+        ]
+    );
+
+    $settings->add(
+        new admin_setting_configtext(
+            'block_socialcomments/userspercron',
+            new lang_string(
+                'userspercron',
+                'block_socialcomments'
+            ),
+            new lang_string(
+                'userspercrondesc',
+                'block_socialcomments',
+                $link
+            ),
+            0,
+            PARAM_INT
+        )
+    );
 
     $choices = \block_socialcomments\local\comments_helper::get_digest_type_menu();
-    $settings->add(new admin_setting_configselect('block_socialcomments/digesttype',
-        new lang_string('digesttype', 'block_socialcomments'),
-        new lang_string('digesttypedesc', 'block_socialcomments', $link), 1, $choices));
 
+    $settings->add(
+        new admin_setting_configselect(
+            'block_socialcomments/digesttype',
+            new lang_string(
+                'digesttype',
+                'block_socialcomments'
+            ),
+            new lang_string(
+                'digesttypedesc',
+                'block_socialcomments',
+                $link
+            ),
+            1,
+            $choices
+        )
+    );
 }

@@ -30,7 +30,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_socialcomments_block_structure_step extends restore_structure_step {
-
     /**
      * Define the structure for restoring a socialcomments block.
      */
