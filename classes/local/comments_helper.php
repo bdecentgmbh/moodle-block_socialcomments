@@ -418,35 +418,67 @@ class comments_helper {
     }
 
     /**
+     * Delete comments with their replies and pins.
+     *
+     * @param int[] $commentids
+     */
+    public static function delete_comments(array $commentids) {
+        global $DB;
+
+        foreach (array_chunk($commentids, 1000) as $chunk) {
+            [$insql, $params] = $DB->get_in_or_equal($chunk, SQL_PARAMS_NAMED);
+            $DB->delete_records_select('block_socialcomments_replies', "commentid $insql", $params);
+            $DB->delete_records_select(
+                'block_socialcomments_pins',
+                "itemtype = :itemtype AND itemid $insql",
+                $params + ['itemtype' => self::PINNED_COMMENT]
+            );
+            $DB->delete_records_select('block_socialcomments_cmmnts', "id $insql", $params);
+        }
+    }
+
+    /**
+     * Delete everything of a page: comments, replies, pins and subscriptions.
+     *
+     * @param int $contextid context of the course or activity.
+     */
+    public static function delete_context_data(int $contextid) {
+        global $DB;
+
+        self::delete_comments($DB->get_fieldset_select('block_socialcomments_cmmnts', 'id', 'contextid = ?', [$contextid]));
+        $DB->delete_records('block_socialcomments_pins', ['itemtype' => self::PINNED_PAGE, 'itemid' => $contextid]);
+        $DB->delete_records('block_socialcomments_subscrs', ['contextid' => $contextid]);
+    }
+
+    /**
      * Delete the comments when deleted the course.
-     * @param course_deleted $event
+     * @param \core\event\course_deleted $event
      * @return void
      */
     public static function course_deleted(\core\event\course_deleted $event) {
         global $DB;
 
-        $eventdata = $event->get_data();
-        $courseid = $eventdata['objectid'];
-
-        $sql = "SELECT bc.id
-                FROM {block_socialcomments_cmmnts} bc
-                WHERE courseid = ? ";
-
-        $commentids = $DB->get_records_sql($sql, [$courseid]);
-
-        // Delete comments.
-        foreach ($commentids as $commentid => $unused) {
-            $comment = new comment(['id' => $commentid]);
-            $comment->delete();
+        $courseid = $event->objectid;
+        $contextids = $DB->get_fieldset_select('block_socialcomments_cmmnts', 'DISTINCT contextid', 'courseid = ?', [$courseid]);
+        foreach ($contextids as $contextid) {
+            self::delete_context_data($contextid);
         }
-
-        // Delete subscriptions.
+        self::delete_context_data($event->contextid);
         $DB->delete_records('block_socialcomments_subscrs', ['courseid' => $courseid]);
     }
 
     /**
+     * Delete the comments of an activity with the activity.
+     *
+     * @param \core\event\course_module_deleted $event
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+        self::delete_context_data($event->contextid);
+    }
+
+    /**
      * Delete the user subscribe and pins data.
-     * @param user_deleted $event
+     * @param \core\event\user_deleted $event
      * @return void
      */
     public static function user_deleted(\core\event\user_deleted $event) {

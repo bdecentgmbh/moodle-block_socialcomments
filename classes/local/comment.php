@@ -311,13 +311,7 @@ class comment extends basepost {
      * Delete this comment and all related items.
      */
     public function delete() {
-        global $DB;
-
-        $DB->delete_records('block_socialcomments_cmmnts', ['id' => $this->id]);
-        $DB->delete_records('block_socialcomments_replies', ['commentid' => $this->id]);
-        $DB->delete_records('block_socialcomments_pins', [
-            'itemid' => $this->id,
-            'itemtype' => comments_helper::PINNED_COMMENT]);
+        comments_helper::delete_comments([$this->id]);
     }
 
     /**
