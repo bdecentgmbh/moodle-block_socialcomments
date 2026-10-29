@@ -30,7 +30,7 @@
  * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_socialcomments_generator extends component_generator_base {
+class block_socialcomments_generator extends testing_block_generator {
     /** @var int Number of created comments. */
     private $countcomment = 0;
 

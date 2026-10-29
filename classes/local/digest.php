@@ -44,6 +44,11 @@ class digest {
     private $timelastsent = [];
 
     /**
+     * @var array whether the user may still see the comments of a context, by context id.
+     */
+    private $canview = [];
+
+    /**
      * @var $digesttype
      */
     private $digesttype = 0;
@@ -90,6 +95,21 @@ class digest {
     }
 
     /**
+     * Check, whether the user may still see the comments of a subscribed context.
+     * Subscriptions outlive enrolments, group memberships and the visibility of activities.
+     *
+     * @param \context $context
+     * @param object $user
+     * @return bool
+     */
+    private function can_view_context($context, $user) {
+        if (!isset($this->canview[$context->id])) {
+            $this->canview[$context->id] = comment::can_view_context($context, $user);
+        }
+        return $this->canview[$context->id];
+    }
+
+    /**
      * Get all new comments and replies since the last subscription senttime.
      * If a new reply is found, its comments is retrieved.
      *
@@ -110,11 +130,11 @@ class digest {
                 JOIN {user} u ON r.userid = u.id
                 JOIN {block_socialcomments_cmmnts} bc ON bc.id = r.commentid
                 JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid AND r.timemodified >= sub.timelastsent
-                WHERE sub.userid = ? ";
+                WHERE sub.userid = ? AND r.userid <> ? ";
 
         $orderby = 'ORDER BY r.timecreated DESC';
 
-        $replies = $DB->get_records_sql($sql . $orderby, [$user->id]);
+        $replies = $DB->get_records_sql($sql . $orderby, [$user->id, $user->id]);
 
         $neededcommentsid = [];
         $repliesgroupedbycomments = [];
@@ -136,9 +156,10 @@ class digest {
                 JOIN {user} u ON bc.userid = u.id
                 JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid ";
 
-        $params = ['userid' => $user->id];
+        $params = ['userid' => $user->id, 'authorid' => $user->id];
 
-        $orcond = " (bc.timemodified >= sub.timelastsent)";
+        // New comments of others, and the comments that got new replies.
+        $orcond = " (bc.timemodified >= sub.timelastsent AND bc.userid <> :authorid)";
         // Add comments that are needed for replies.
         if (!empty($neededcommentsid)) {
             [$incommentids, $incommentidparam] = $DB->get_in_or_equal($neededcommentsid, SQL_PARAMS_NAMED);
@@ -159,7 +180,7 @@ class digest {
         $groupeddata = [];
         foreach ($comments as $cmt) {
             $context = \context_helper::instance_by_id($cmt->postcontextid, IGNORE_MISSING);
-            if ($context) {
+            if ($context && $this->can_view_context($context, $user)) {
                 $restrictedtogroups = $this->is_restricted_to_groupids($context, $user);
 
                 if (($restrictedtogroups) && (!in_array($cmt->groupid, $restrictedtogroups))) {
@@ -219,16 +240,6 @@ class digest {
     }
 
     /**
-     * Get plugin styles.
-     * @return string css.
-     */
-    protected function get_css_styles() {
-        global $CFG;
-        $css = file_get_contents($CFG->dirroot . '/blocks/socialcomments/styles.css');
-        return \html_writer::tag('style', $css);
-    }
-
-    /**
      * Send message
      * @param object $userto
      * @param string $messagetext
@@ -243,8 +254,8 @@ class digest {
         $message->userto = $userto;
         $message->subject = get_string('digestsubject', 'block_socialcomments');
         $message->fullmessage = html_to_text($messagetext, 80, false);
-        $message->fullmessageformat = FORMAT_MARKDOWN;
-        $message->fullmessagehtml = $this->get_css_styles() . $messagetext;
+        $message->fullmessageformat = FORMAT_PLAIN;
+        $message->fullmessagehtml = $messagetext;
         $message->notification = 1;
 
         $messageid = message_send($message);

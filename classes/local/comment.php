@@ -214,6 +214,50 @@ class comment extends basepost {
     }
 
     /**
+     * Checks whether a user may see the comments of a page (course or activity) at all.
+     *
+     * Used wherever comments leave the page they belong to: replies, pins, the reports, the pinboard and the digest.
+     *
+     * @param \context $context the context of the page.
+     * @param \stdClass|null $user defaults to the current user.
+     * @return bool
+     */
+    public static function can_view_context(\context $context, $user = null) {
+        global $USER;
+
+        $user = $user ?? $USER;
+        if (!in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE])) {
+            return false;
+        }
+        if (!has_capability('block/socialcomments:view', $context, $user)) {
+            return false;
+        }
+        $course = get_course($context->get_course_context()->instanceid);
+        if (!can_access_course($course, $user, '', true)) {
+            return false;
+        }
+        if ($context->contextlevel == CONTEXT_MODULE) {
+            $cms = get_fast_modinfo($course, $user->id)->get_cms();
+            return isset($cms[$context->instanceid]) && $cms[$context->instanceid]->uservisible;
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether the current user may see this comment: its page and, in separate groups, its group.
+     *
+     * @return bool
+     */
+    public function can_view() {
+        $context = \context::instance_by_id($this->contextid, IGNORE_MISSING);
+        if (!$context || !self::can_view_context($context)) {
+            return false;
+        }
+        $groupids = self::is_restricted_to_groupids($context);
+        return $groupids === false || in_array($this->groupid, $groupids);
+    }
+
+    /**
      * Checks if the user is allowed to post a comment to a specific group.
      *
      * Note: When we are in seperate group mode and the user is not in at least one

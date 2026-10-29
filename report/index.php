@@ -168,10 +168,11 @@ foreach ($comments as $comment) {
     }
     $row[] = $author;
 
-    $row[] = $comment->content;
+    $context = context_helper::instance_by_id($comment->contextid);
+    $content = format_text($comment->content, $comment->format, ['context' => $context, 'para' => false]);
+    $row[] = $download ? content_to_text($content, FORMAT_HTML) : $content;
 
     $link = '';
-    $context = context_helper::instance_by_id($comment->contextid);
     if (comment::can_delete($comment->userid, $context)) {
         $linkparams = ['id' => $comment->id, 'courseid' => $course->id, 'sesskey' => sesskey()];
         $url = new moodle_url('/blocks/socialcomments/report/delete_comment.php', $linkparams);

@@ -104,7 +104,7 @@ class report_helper {
                 foreach ($modinfo->sections[$thissection->section] as $modnumber) {
                     $mod = $modinfo->cms[$modnumber];
 
-                    if (!$mod->uservisible) {
+                    if (!$mod->uservisible || !has_capability('block/socialcomments:view', $mod->context)) {
                         continue;
                     }
 
@@ -161,10 +161,12 @@ class report_helper {
         global $DB;
 
         $context = $args->context;
+        $suffix = $context->id;
 
-        $select = "SELECT cc.*, {$args->usernamefields}, '{$args->activity}' as activity,
-                   '{$args->activityid}' as activityid, {$args->commentscount} as commentscount,
-                   '{$args->topicname}' as topicname ";
+        // Names of sections and activities are data, so they go into the query as parameters.
+        $select = "SELECT cc.*, {$args->usernamefields}, :activity{$suffix} AS activity,
+                   :activityid{$suffix} AS activityid, " . $DB->sql_cast_char2int(":commentscount{$suffix}") . " AS commentscount,
+                   :topicname{$suffix} AS topicname ";
 
         $selectcount = "SELECT cc.id ";
 
@@ -173,21 +175,29 @@ class report_helper {
 
         $fromcount = "FROM {block_socialcomments_cmmnts} cc ";
 
-        $params = [];
+        $params = [
+            'activity' . $suffix => $args->activity,
+            'activityid' . $suffix => $args->activityid,
+            'commentscount' . $suffix => $args->commentscount,
+            'topicname' . $suffix => $args->topicname,
+        ];
+        $countparams = [];
 
         $cond = [];
-        $cond[] = " cc.contextid = {$context->id} ";
+        $cond[] = " cc.contextid = :contextid{$suffix} ";
+        $params['contextid' . $suffix] = $context->id;
+        $countparams['contextid' . $suffix] = $context->id;
 
         if (!empty($filterdata->content)) {
-            $cond[] = $DB->sql_like('cc.content', ':content' . $context->id, false);
-            $params['content' . $context->id] = '%' . $filterdata->content . '%';
+            $cond[] = $DB->sql_like('cc.content', ':content' . $suffix, false);
+            $countparams['content' . $suffix] = '%' . $DB->sql_like_escape($filterdata->content) . '%';
         }
 
         if (!empty($filterdata->author)) {
-            $cond1 = $DB->sql_like('u.firstname', ':firstname' . $context->id, false);
-            $params['firstname' . $context->id] = $filterdata->author . '%';
-            $cond2 = $DB->sql_like('u.lastname', ':lastname' . $context->id, false);
-            $params['lastname' . $context->id] = $filterdata->author . '%';
+            $cond1 = $DB->sql_like('u.firstname', ':firstname' . $suffix, false);
+            $countparams['firstname' . $suffix] = $DB->sql_like_escape($filterdata->author) . '%';
+            $cond2 = $DB->sql_like('u.lastname', ':lastname' . $suffix, false);
+            $countparams['lastname' . $suffix] = $DB->sql_like_escape($filterdata->author) . '%';
 
             $cond[] = "($cond1 OR $cond2)";
 
@@ -195,13 +205,13 @@ class report_helper {
         }
 
         if (!empty($filterdata->fromdate)) {
-            $cond[] = 'cc.timecreated >= :fromdate' . $context->id;
-            $params['fromdate' . $context->id] = $filterdata->fromdate;
+            $cond[] = 'cc.timecreated >= :fromdate' . $suffix;
+            $countparams['fromdate' . $suffix] = $filterdata->fromdate;
         }
 
         if (!empty($filterdata->todate)) {
-            $cond[] = 'cc.timecreated <= :todate' . $context->id;
-            $params['todate' . $context->id] = $filterdata->todate + DAYSECS;
+            $cond[] = 'cc.timecreated <= :todate' . $suffix;
+            $countparams['todate' . $suffix] = $filterdata->todate + DAYSECS;
         }
 
         $where = 'WHERE ' . implode(' AND ', $cond);
@@ -209,11 +219,11 @@ class report_helper {
         // Control visibility of group.
         [$ingroupsql, $ingroupparam] = $this->get_group_restriction_sql($context);
         $where .= $ingroupsql;
-        $params += $ingroupparam;
+        $countparams += $ingroupparam;
 
         $sql = $select . $from . $where;
         $sqlcount = $selectcount . $fromcount . $where;
-        return [$sql, $sqlcount, $params];
+        return [$sql, $sqlcount, $params + $countparams, $countparams];
     }
 
     /**
@@ -238,12 +248,13 @@ class report_helper {
         $modinfo = $this->get_visible_modinfo();
 
         // Get commentscount per context.
-        if (!empty($filterdata->activityid)) {
+        $contextids = [];
+        if (!empty($filterdata->activityid) && isset($modinfo->modules[$filterdata->activityid])) {
             $contextids = [$modinfo->modules[$filterdata->activityid]->contextid];
         }
 
-        if (empty($filterdata->activityid) && (!empty($filterdata->sectionid))) {
-            $contextids = $modinfo->sections[$filterdata->sectionid]->contextids;
+        if (empty($filterdata->activityid) && !empty($filterdata->sectionid) && isset($modinfo->sections[$filterdata->sectionid])) {
+            $contextids = $modinfo->sections[$filterdata->sectionid]->contextids ?? [];
         }
 
         if (empty($filterdata->activityid) && (empty($filterdata->sectionid))) {
@@ -251,6 +262,7 @@ class report_helper {
         }
 
         $params = [];
+        $countparams = [];
         $subselect = [];
         $subselectcount = [];
 
@@ -286,16 +298,17 @@ class report_helper {
                             'context' => $modinfo->contexts[$module->contextid],
                     ];
 
-                    [$subsql, $countsql, $subparam] = $this->get_module_comments_sql($sqlvalues, $filterdata);
+                    [$subsql, $countsql, $subparam, $subcountparam] = $this->get_module_comments_sql($sqlvalues, $filterdata);
                     $subselect[] = "($subsql)";
                     $subselectcount[] = "($countsql)";
                     $params += $subparam;
+                    $countparams += $subcountparam;
                 }
             }
         }
 
-        if ((empty($filterdata->sectionid)) && empty($filterdata->activityid)) {
-            $coursecontext = \context_course::instance($filterdata->courseid);
+        $coursecontext = \context_course::instance($filterdata->courseid);
+        if (empty($filterdata->sectionid) && empty($filterdata->activityid) && comment::can_view_context($coursecontext)) {
             $commentscount = $DB->count_records('block_socialcomments_cmmnts', ['contextid' => $coursecontext->id]);
 
             $sqlvalues = (object) [
@@ -307,11 +320,12 @@ class report_helper {
                     'context' => $coursecontext,
             ];
 
-            [$subsql, $countsql, $subparam] = $this->get_module_comments_sql($sqlvalues, $filterdata);
+            [$subsql, $countsql, $subparam, $subcountparam] = $this->get_module_comments_sql($sqlvalues, $filterdata);
 
             $subselect[] = "($subsql)";
             $subselectcount[] = "($countsql)";
             $params += $subparam;
+            $countparams += $subcountparam;
         }
 
         $sql = implode(' UNION ALL ', $subselect);
@@ -321,7 +335,7 @@ class report_helper {
 
         // Page size of table.
         $sqlcount = implode(' UNION ALL ', $subselectcount);
-        $total = $DB->count_records_sql("SELECT count(id) FROM ($sqlcount) as uc ", $params);
+        $total = $DB->count_records_sql("SELECT count(id) FROM ($sqlcount) uc ", $countparams);
 
         if (!$download && isset($table)) {
             $tableperpage = ($perpage == 0) ? $total : $perpage;
@@ -445,6 +459,20 @@ class report_helper {
     }
 
     /**
+     * Check, whether the comments of a context of this course are visible to this user.
+     *
+     * @param \context $context
+     * @param array $visiblecontexts the visible activity contexts, indexed by id
+     * @return bool
+     */
+    private function can_view_context($context, $visiblecontexts) {
+        if ($context->contextlevel == CONTEXT_MODULE) {
+            return isset($visiblecontexts[$context->id]);
+        }
+        return $context->contextlevel == CONTEXT_COURSE && has_capability('block/socialcomments:view', $context);
+    }
+
+    /**
      * Whether check the user add replies.
      * @param array $comments
      * @param array $repliesgroupedbycomments
@@ -453,8 +481,12 @@ class report_helper {
         // Group comments by contextid and add replies.
         $groupedcomments = [];
 
+        $visiblecontexts = $this->get_visible_modinfo()->contexts;
         foreach ($comments as $comment) {
-            $context = \context_helper::instance_by_id($comment->postcontextid);
+            $context = \context_helper::instance_by_id($comment->postcontextid, IGNORE_MISSING);
+            if (!$context || !$this->can_view_context($context, $visiblecontexts)) {
+                continue;
+            }
             $restrictedtogroups = $this->is_restricted_to_groupids($context);
 
             if (($restrictedtogroups) && ( !in_array($comment->groupid, $restrictedtogroups))) {
