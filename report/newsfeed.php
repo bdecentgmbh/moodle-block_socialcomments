@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(__FILE__) . '/../../../config.php');
+require(__DIR__ . '/../../../config.php');
 
 global $CFG, $PAGE, $OUTPUT;
 
@@ -46,7 +46,7 @@ $PAGE->set_context($context);
 
 require_capability('block/socialcomments:viewreport', $context);
 
-$PAGE->set_heading(get_string('pluginname', 'block_socialcomments'));
+$PAGE->set_heading(format_string($course->fullname, true, ['context' => $context]));
 $PAGE->set_title(get_string('newsfeed', 'block_socialcomments'));
 
 $reporturl = new moodle_url('/blocks/socialcomments/report/index.php', ['courseid' => $courseid]);
@@ -59,8 +59,7 @@ $newcomments = $reporthelper->get_course_new_comments_and_replies($course->id, $
 $renderer = $PAGE->get_renderer('block_socialcomments');
 $tabs = $reporthelper->get_tab_tree($course->id);
 
-$heading = $OUTPUT->pix_icon('hreport', '', 'block_socialcomments');
-$heading .= get_string('reportspage', 'block_socialcomments');
+$heading = get_string('reportspage', 'block_socialcomments');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
