@@ -569,6 +569,43 @@ class external extends external_api {
      * Returns description of method parameters
      *
      * @return external_function_parameters
+     */
+    public static function renew_token_parameters() {
+        return new external_function_parameters([
+            'contextid' => new external_value(PARAM_INT, 'id of the context of the page'),
+        ]);
+    }
+
+    /**
+     * A new token to listen to changes of the comments of a page in real time.
+     *
+     * @param int $contextid
+     * @return array
+     */
+    public static function renew_token($contextid) {
+        $params = self::validate_parameters(self::renew_token_parameters(), ['contextid' => $contextid]);
+        $context = \context::instance_by_id($params['contextid']);
+        self::validate_context($context);
+        require_capability('block/socialcomments:view', $context);
+
+        return ['token' => (string) \block_socialcomments\local\realtime::get_token($context)];
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function renew_token_returns() {
+        return new external_single_structure([
+            'token' => new external_value(PARAM_RAW, 'token of the updating service, empty when not available'),
+        ]);
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
      * @since Moodle 2.9
      */
     public static function get_activity_options_parameters() {

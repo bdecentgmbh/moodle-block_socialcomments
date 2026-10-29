@@ -527,7 +527,7 @@ class report_helper {
         $authorpicturefields = block_socialcomments_get_userpicture_fields();
 
         // Get new replies.
-        $sql = "SELECT r.id as postid, r.commentid, r.content, r.timecreated, r.userid,
+        $sql = "SELECT r.id as postid, r.commentid, r.content, r.format, r.timecreated, r.userid,
                 $authorfields, $authorpicturefields, bc.contextid as postcontextid
                 FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id
@@ -563,7 +563,7 @@ class report_helper {
         }
 
         // Get new comments or needed comments.
-        $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, bc.userid,
+        $sql = "SELECT bc.id as postid, bc.content, bc.format, bc.timecreated, bc.userid,
                 u.id, $authorfields, $authorpicturefields, bc.contextid as postcontextid, bc.groupid
                 FROM {block_socialcomments_cmmnts} bc
                 JOIN {user} u ON bc.userid = u.id
@@ -614,7 +614,7 @@ class report_helper {
         $authorpicturefields = block_socialcomments_get_userpicture_fields();
 
         // Get pinned page comments.
-        $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, bc.userid,
+        $sql = "SELECT bc.id as postid, bc.content, bc.format, bc.timecreated, bc.userid,
                 u.id, $authorfields, $authorpicturefields, bc.contextid as postcontextid, bc.groupid
                 FROM {block_socialcomments_cmmnts} bc
                 JOIN {block_socialcomments_pins} p ON p.itemid = bc.contextid AND p.itemtype = :itemtype AND p.userid = :thisuserid
@@ -637,7 +637,7 @@ class report_helper {
         $pagepinnedcomments = $DB->get_records_sql($sql . $where . $orderby, $params);
 
         // Get all comments of this course this user has individually pinned.
-        $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, bc.userid,
+        $sql = "SELECT bc.id as postid, bc.content, bc.format, bc.timecreated, bc.userid,
                 u.id, $authorfields, $authorpicturefields, bc.contextid as postcontextid, bc.groupid
                 FROM {block_socialcomments_cmmnts} bc
                 JOIN {block_socialcomments_pins} p ON p.itemid = bc.id AND p.itemtype = :itemtype AND p.userid = :thisuserid
@@ -656,7 +656,7 @@ class report_helper {
         [$incommentid, $inparams] = $DB->get_in_or_equal(array_keys($pinnedcomments), SQL_PARAMS_NAMED);
 
         // Get replies for given comments.
-        $sql = "SELECT r.id as postid, r.commentid, r.content, r.timecreated, r.userid,
+        $sql = "SELECT r.id as postid, r.commentid, r.content, r.format, r.timecreated, r.userid,
                 $authorfields, $authorpicturefields
                 FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id

@@ -312,6 +312,7 @@ class comment extends basepost {
      */
     public function delete() {
         comments_helper::delete_comments([$this->id]);
+        realtime::notify($this->get_context());
     }
 
     /**
@@ -358,6 +359,7 @@ class comment extends basepost {
 
             $this->fire_event_created();
         }
+        realtime::notify($this->get_context());
         return $this;
     }
 }

@@ -46,10 +46,7 @@ function block_socialcomments_extend_navigation_course($navigation, $course, $co
             navigation_node::TYPE_SETTING,
             null,
             null,
-            new pix_icon(
-                'i/report',
-                ''
-            )
+            new pix_icon('report', '', 'block_socialcomments')
         );
     }
 
@@ -64,12 +61,23 @@ function block_socialcomments_extend_navigation_course($navigation, $course, $co
             navigation_node::TYPE_SETTING,
             null,
             null,
-            new pix_icon(
-                'i/report',
-                ''
-            )
+            new pix_icon('pinboard', '', 'block_socialcomments')
         );
     }
+}
+
+/**
+ * Font Awesome icons of the block.
+ *
+ * @return array
+ */
+function block_socialcomments_get_fontawesome_icon_map() {
+    return [
+        'block_socialcomments:pin' => 'fa-thumbtack',
+        'block_socialcomments:pinboard' => 'fa-clipboard-list',
+        'block_socialcomments:reply' => 'fa-reply',
+        'block_socialcomments:report' => 'fa-comments',
+    ];
 }
 
 /**
@@ -86,7 +94,7 @@ function block_socialcomments_get_all_user_name_fields() {
  * Get the user picture fields.
  */
 function block_socialcomments_get_userpicture_fields() {
-    $userfieldsapi = \core_user\fields::for_name()->with_userpic()->including(...([]));
+    $userfieldsapi = \core_user\fields::for_name()->with_userpic();
     $userpicturefields = array_values($userfieldsapi->get_sql('u')->mappings);
     $userpicturefields = implode(",", $userpicturefields);
     return $userpicturefields;

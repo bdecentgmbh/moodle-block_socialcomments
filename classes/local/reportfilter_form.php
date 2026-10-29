@@ -77,9 +77,7 @@ class reportfilter_form extends \moodleform {
         // Buttons.
         $mform->addElement('submit', 'submit', get_string('search'));
 
-        $args = [];
-        $args['courseid'] = $this->_customdata['courseid'];
-        $PAGE->requires->js_call_amd('block_socialcomments/report', 'init', [$args]);
+        $PAGE->requires->js_call_amd('block_socialcomments/report', 'init', [(int) $this->_customdata['courseid']]);
     }
 
     /**

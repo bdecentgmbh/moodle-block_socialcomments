@@ -1,0 +1,83 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_socialcomments/comments_page
+
+    A page of comments with their replies, and the links to the other pages.
+
+    Context variables required for this template:
+    * comments - The comments: id, post (context of block_socialcomments/post), canreply, canpin, pinned, pinlabel,
+      replies (id, post) and morereplies (text when not all replies are shown)
+    * pages - The pages: page (number from 0), label, current
+    * currentpage - The number of this page
+    * count - The number of comments
+    * countlabel - The number of comments, e.g. "3 comments"
+
+    Example context (json):
+    {
+        "comments": [{
+            "id": 1,
+            "post": {"fullname": "Amelia Clarke", "time": "5 minutes ago", "content": "Great tip, thanks!"},
+            "canreply": true,
+            "canpin": true,
+            "pinned": false,
+            "pinlabel": "Pin comment",
+            "replies": [{"id": 2, "post": {"fullname": "Laura Bennett", "time": "Just now", "content": "You are welcome!"} }]
+        }],
+        "pages": [],
+        "currentpage": 0,
+        "count": 1,
+        "countlabel": "1 comment"
+    }
+}}
+<ul class="sc-comments" data-region="list" data-page="{{currentpage}}" data-count="{{count}}" data-countlabel="{{countlabel}}">
+    {{#comments}}
+    <li class="sc-comment" data-region="comment" data-commentid="{{id}}">
+        {{#post}}{{> block_socialcomments/post}}{{/post}}
+        <div class="sc-post-footer">
+            {{#canreply}}
+            <button type="button" class="btn btn-link btn-sm sc-reply-button" data-action="reply">
+                {{#pix}}reply, block_socialcomments{{/pix}}{{#str}}reply, block_socialcomments{{/str}}
+            </button>
+            {{/canreply}}
+            {{#canpin}}
+            <button type="button" class="btn btn-icon sc-pin" data-action="pin" data-commentid="{{id}}"
+                aria-pressed="{{#pinned}}true{{/pinned}}{{^pinned}}false{{/pinned}}" title="{{pinlabel}}" aria-label="{{pinlabel}}">
+                {{#pix}}pin, block_socialcomments{{/pix}}
+            </button>
+            {{/canpin}}
+        </div>
+        <ul class="sc-replies" data-region="replies">
+            {{#replies}}
+            <li class="sc-reply" data-region="reply" data-replyid="{{id}}">{{#post}}{{> block_socialcomments/post}}{{/post}}</li>
+            {{/replies}}
+        </ul>
+        {{#morereplies}}<p class="sc-more">{{morereplies}}</p>{{/morereplies}}
+    </li>
+    {{/comments}}
+</ul>
+{{#pages.0}}
+<nav aria-label="{{#str}}pagination, block_socialcomments{{/str}}">
+    <ul class="pagination pagination-sm sc-pages">
+        {{#pages}}
+        <li class="page-item{{#current}} active{{/current}}">
+            <a class="page-link" href="#" data-action="page" data-page="{{page}}"{{#current}} aria-current="page"{{/current}}>{{label}}</a>
+        </li>
+        {{/pages}}
+    </ul>
+</nav>
+{{/pages.0}}

@@ -14,598 +14,306 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Javascript controller for the socialcomments block.
+ * Comments, replies, pins and the subscription of the Social comments block.
  *
  * @module     block_socialcomments/comments
- * @copyright 2021, bdecent gmbh bdecent.de
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function ($, ajax, notification, corestr) {
+import Ajax from 'core/ajax';
+import Notification from 'core/notification';
+import Pending from 'core/pending';
+import Templates from 'core/templates';
+import {getStrings} from 'core/str';
 
-    var LASTPAGE = -1;
+/** Page number of the last page, to show a new comment. */
+const LASTPAGE = -1;
 
-    var params = null; // ...contextid, subscribed, commentscount.
+/** Forms to edit or reply, which a refresh would throw away. */
+const OPENFORMS = '[data-region="form"]:not([data-type="comment"])';
 
-    var editcommentid = 0; // Current edited comment.
-    var replycommentid = 0; // Id of comment user is currently replying.
-    var replyid = 0; // Current edited reply;
-    var menunumber = -1; // Current opened menu.
-    var pagenumber = 0; // Current loaded page.
+/** Event the real-time module sends when the comments of the page changed. */
+export const CHANGED = 'block_socialcomments:changed';
 
-    var $formtextarea = null;
-    var $formactionpost = null;
+/**
+ * Call a web service of the block.
+ *
+ * @param {string} methodname
+ * @param {Object} args
+ * @returns {Promise}
+ */
+const call = (methodname, args) => Ajax.call([{methodname, args}])[0];
 
-    var $edittextarea = null;
-    var $editactionsave = null;
-
-    var $replytextarea = null;
-    var $replyactionsave = null;
-
-    var $commentscontent = null; // Container wrapping the comments area.
-
-    /**
-     * Check post content and do an alert when empty.
-     *
-     * @param {string} content - Content of the post.
-     * @returns {boolean} - Result is true when the post content is empty.
-     */
-    function alertPostEmpty(content) {
-
-        if (!content) {
-            corestr.get_strings([
-                { 'key': 'error' },
-                { 'key': 'pleaseinputtext', component: 'block_socialcomments' }
-            ]).done(function (s) {
-                notification.alert(s[0], s[1]);
-            }
-            ).fail(notification.exception);
-            return true;
-        }
-
-        return false;
+/**
+ * Start the block.
+ *
+ * @param {string} uniqid Id of the block content
+ * @param {number} contextid Context of the page the comments belong to
+ * @param {number} hidepins Whether the block hides the pins
+ */
+export const init = (uniqid, contextid, hidepins) => {
+    const root = document.getElementById(uniqid);
+    if (!root) {
+        return;
     }
+    const comments = root.querySelector('[data-region="comments"]');
+    const currentList = () => comments.querySelector('[data-region="list"]');
+    let page = Number(currentList().dataset.page);
+    let refreshwaiting = false;
 
     /**
-     * Move form.
-     */
-    function moveForms() {
-        $('#ccomment-editform-wrap').append($('#ccomment-editform'));
-        resetEditComment();
-
-        $('#ccomment-replyform-wrap').append($('#ccomment-replyform'));
-        resetReplyComment();
-    }
-
-    /**
-     * Get HTML of a page with pagenumber 0..maxpage via AJAX.
+     * Load a page of comments.
      *
-     * @param {int} newpagenumber Number of the page.
+     * @param {number} newpage
      */
-    function loadCommentsPage(newpagenumber) {
-
-        moveForms();
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_get_commentspage',
-                args: {
-                    contextid: params.contextid,
-                    pagenumber: newpagenumber,
-                    hidepins: params.hidepins
-                },
-                done: function (response) {
-                    pagenumber = response.pagenumber;
-                    $('#ccomment-commentspage-wrap').html(response.commentspage);
-                },
-                fail: notification.exception
-            }
-        ]);
-    }
-
-    /**
-     * Create a new comment, when commentid == 0 or update a comment.
-     *
-     * @param {Object} $textarea
-     * @param {int} commentid
-     */
-    function saveComment($textarea, commentid) {
-
-        var content = $textarea.val();
-        var groupid = $('#ccomments-groupid').val();
-
-        if (!alertPostEmpty(content)) {
-
-            ajax.call([
-                {
-                    methodname: 'block_socialcomments_save_comment',
-                    args: {
-                        contextid: params.contextid,
-                        content: content,
-                        groupid: groupid,
-                        id: commentid
-                    },
-                    done: function (response) {
-                        // Update display.
-                        $('.ccomment-comments-count').html(response.count);
-                        $('#ccomment-comments-content-top').removeClass('hidden');
-                        $textarea.val('');
-                        // Load the Page the comment is visible.
-                        if (commentid === 0) {
-                            loadCommentsPage(LASTPAGE);
-                            // When user posts new comment, set subscribed checkbox to true.
-                            $('#ccomment-comments-subscribed').prop('checked', true);
-                        } else {
-                            loadCommentsPage(pagenumber);
-                        }
-                        // Check, whether element is visible, if not scroll.
-                        var comment = $("#ccomment-comment-listitem-" + response.id);
-                        if (!comment.offset()) {
-                            return;
-                        }
-                        var win = $(window);
-                        if (comment.offset().top > win.scrollTop() + win.height()) {
-                            $('html, body').animate({
-                                scrollTop: comment.offset().top - comment.outerHeight()
-                            }, 1000);
-                        }
-                    },
-                    fail: notification.exception
-                }
-            ]);
-        }
-    }
-
-    /**
-     * Save a reply, create when replyid == 0 or update otherwise.
-     *
-     * @param {Object} $textarea jQuery object of textarea.
-     * @param {int} replyid ID of the reply.
-     */
-    function saveReply($textarea, replyid) {
-
-        var content = $textarea.val();
-
-        if (!alertPostEmpty(content)) {
-
-            ajax.call([
-                {
-                    methodname: 'block_socialcomments_save_reply',
-                    args: {
-                        contextid: params.contextid,
-                        content: content,
-                        commentid: replycommentid,
-                        id: replyid
-                    },
-                    done: function () {
-                        // Update display.
-                        $textarea.val('');
-                        // Load the Page the where the comment is visible.
-                        loadCommentsPage(pagenumber);
-                    },
-                    fail: notification.exception
-                }
-            ]);
-        }
-    }
-
-    /**
-     * Display a the deleted message and refresh commentslist after some secs.
-     *
-     * @param {Object} response of AJAX call.
-     */
-    function onCommentDeleteDone(response) {
-
-        // Before delete DOM Elements move forms to safe place.
-        moveForms();
-
-        corestr.get_string('commentdeleted', 'block_socialcomments').done(function (s) {
-            $('#ccomment-comment-listitem-' + response.deletedcommentid).addClass('ccomment-highlight');
-            $('#ccomment-comment-listitem-' + response.deletedcommentid).html(s).fadeOut(2000, function () {
-                loadCommentsPage(pagenumber);
+    const load = async(newpage) => {
+        const pending = new Pending('block_socialcomments/load');
+        try {
+            const response = await call('block_socialcomments_get_commentspage', {
+                contextid,
+                pagenumber: newpage,
+                hidepins,
             });
-        });
-
-        corestr.get_string('commentscount', 'block_socialcomments', response.count).done(function (s) {
-            $('.ccomment-comments-count').html(s);
-        });
-
-        // Probably hide the comments top content (Count and subscribed checkbox).
-        if ((response.count === 0) && (!params.subscribed)) {
-            $('#ccomment-comments-content-top').addClass('hidden');
-        }
-    }
-
-    /**
-     * Delete a comment in the database.
-     *
-     * @param {Object} $href jQuery object of ancor.
-     */
-    function onCommentDeleteClicked($href) {
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_delete_comment',
-                args: {
-                    commentid: Number($href.attr('id').split('-')[4])
-                },
-                done: onCommentDeleteDone,
-                fail: notification.exception
-            }
-        ]);
-    }
-
-    /**
-     * Display a the deleted message and refresh commentslist after some secs.
-     *
-     * @param {Object} response of AJAX call.
-     */
-    function onReplyDeleteDone(response) {
-
-        // Before delete DOM Elements move forms to safe place.
-        moveForms();
-
-        corestr.get_string('replydeleted', 'block_socialcomments').done(function (s) {
-            $('#ccomment-reply-' + response.deletedreplyid).addClass('ccomment-highlight');
-            $('#ccomment-reply-' + response.deletedreplyid).html(s).fadeOut(2000, function () {
-                loadCommentsPage(pagenumber);
-            });
-        });
-    }
-
-    /**
-     * Delete a reply in the database.
-     *
-     * @param {Object} $href jQuery object of ancor.
-     */
-    function onReplyDeleteClicked($href) {
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_delete_reply',
-                args: {
-                    replyid: Number($href.attr('id').split('-')[4])
-                },
-                done: onReplyDeleteDone,
-                fail: notification.exception
-            }
-        ]);
-    }
-
-    /**
-     * Save the pin status for comment or page in database.
-     *
-     * @param {Object} $checkbox
-     */
-    function onPinnedClicked($checkbox) {
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_set_pinned',
-                args: {
-                    contextid: params.contextid,
-                    checked: $checkbox.prop('checked'),
-                    commentid: Number($checkbox.attr('id').split('-')[2])
-                },
-                done: function (response) {
-                    $checkbox.prop('checked', response.checked);
-                    // Set correct tooltip.
-                    var $tooltipdiv = $checkbox.parent().find('.ccomments-pin-tooltip');
-                    $tooltipdiv.html(response.tooltip);
-                },
-                fail: notification.exception
-            }
-        ]);
-    }
-
-    /**
-     * Save the subscribed status for the page in database.
-     *
-     * @param {Object} $checkbox
-     */
-    function onSubscribeClicked($checkbox) {
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_set_subscribed',
-                args: {
-                    contextid: params.contextid,
-                    checked: $checkbox.prop('checked')
-                },
-                done: function (response) {
-                    params.subscribed = response.checked;
-                    $checkbox.prop('checked', params.subscribed);
-                },
-                fail: notification.exception
-            }
-        ]);
-    }
-
-    /**
-     * Load the form and note the commentid.
-     *
-     * @param {Object} $href
-     */
-    function startCreateReply($href) {
-
-        cancelReplyComment();
-
-        // Note the parent comment id.
-        replycommentid = Number($href.attr('id').split('-')[2]);
-        $replytextarea.attr('data-commentid', replycommentid);
-
-        // Load the form.
-        var $replylist = $('#ccomment-reply-list-' + replycommentid);
-        $replylist.before($('#ccomment-replyform'));
-    }
-
-    /**
-     * Load the form into the comment and fill textarea with comments text.
-     *
-     * @param {Object} $href
-     */
-    function startEditReply($href) {
-
-        cancelReplyComment();
-
-        // Note the replyid.
-        replyid = Number($href.attr('id').split('-')[4]);
-        $replytextarea.attr('data-replyid', replyid);
-
-        // Load the form.
-        var $contentdiv = $('#ccomment-reply-' + replyid + ' .ccomment-post-content');
-        $replytextarea.val($contentdiv.html());
-        $contentdiv.after($('#ccomment-replyform'));
-        $contentdiv.hide();
-    }
-
-    /**
-     * Cancel editing or creating a reply.
-     */
-    function cancelReplyComment() {
-        $('#ccomment-replyform-wrap').append($('#ccomment-replyform'));
-        $('#ccomment-reply-' + replyid + ' .ccomment-post-content').show();
-        resetReplyComment();
-    }
-
-    /**
-     * Resetting reply form to default
-     */
-    function resetReplyComment() {
-        replyid = 0;
-        $replytextarea.attr('data-replyid', 0);
-        replycommentid = 0;
-        $replytextarea.attr('data-commentid', 0);
-        $replytextarea.val('');
-    }
-
-    /**
-     * Load the form into the comment and fill textarea with comments text.
-     *
-     * @param {Objec} $href
-     */
-    function startEditComment($href) {
-
-        cancelEditComment();
-
-        // Note the commentid.
-        editcommentid = Number($href.attr('id').split('-')[4]);
-        $edittextarea.attr('data-commentid', editcommentid);
-
-        // Load the form.
-        var $contentdiv = $('#ccomment-post-' + editcommentid + ' .ccomment-post-content');
-        $edittextarea.val($contentdiv.html());
-        $contentdiv.after($('#ccomment-editform'));
-        $contentdiv.hide();
-    }
-
-    /**
-     * Resetting edit comment form to default and show existing comment.
-     */
-    function cancelEditComment() {
-        $('#ccomment-editform-wrap').append($('#ccomment-editform'));
-        $('#ccomment-post-' + editcommentid + ' .ccomment-post-content').show();
-        resetEditComment();
-    }
-
-    /**
-     * Resetting edit comment form to default
-     */
-    function resetEditComment() {
-        editcommentid = 0;
-        $edittextarea.attr('data-commentid', 0);
-        $edittextarea.val('');
-    }
-
-    /**
-     * Load the page of comments.
-     *
-     * @param {Object} $href
-     */
-    function onPagingClicked($href) {
-        pagenumber = Number($href.attr('id').split('-')[2]);
-        loadCommentsPage(pagenumber);
-    }
-
-    /**
-     * Show action menu.
-     *
-     * @param {Object} href link to trigger menu
-     */
-    function showMenu(href) {
-
-        hideMenu();
-
-        menunumber = Number(href.attr('id').split('-')[3]);
-        $('#ccomment-comments-content #action-menu-' + menunumber).addClass('show');
-        $('#ccomment-comments-content #action-menu-' + menunumber).attr('data-enhanced', 1);
-    }
-
-    /**
-     * Hide action menu.
-     */
-    function hideMenu() {
-
-        if (menunumber >= 0) {
-            $('#ccomment-comments-content #action-menu-' + menunumber).removeClass('show');
-            $('#ccomment-comments-content #action-menu-' + menunumber).removeAttr('data-enhanced');
-            menunumber = -1;
-        }
-    }
-
-    /**
-     * Hightlight the button.
-     *
-     * @param {Object} $actionbutton
-     * @param {String} content
-     */
-    function highlightActionButton($actionbutton, content) {
-        if (!content) {
-            $actionbutton.removeClass('ccomment-highlight-button');
-        } else {
-            $actionbutton.addClass('ccomment-highlight-button');
-        }
-    }
-
-    /**
-     * Attach eventlisteners for comments.
-     */
-    function initCommentForms() {
-
-        $formtextarea = $('#ccomment-form-textarea');
-        $formactionpost = $('#ccomment-form-action-post');
-
-        $formactionpost.click(function () {
-            saveComment($formtextarea, 0);
-            highlightActionButton($formactionpost, $formtextarea.val());
-        });
-
-        $formtextarea.keyup(function () {
-            highlightActionButton($formactionpost, $formtextarea.val());
-        });
-
-        $('#ccomment-form-action-cancel').click(function () {
-            $formtextarea.val('');
-            $formactionpost.removeClass('ccomment-highlight-button');
-        });
-
-        $edittextarea = $('#ccomment-edit-textarea');
-        $editactionsave = $('#ccomment-edit-action-save');
-
-        // Edit comment.
-        $editactionsave.click(function () {
-
-            editcommentid = $edittextarea.attr('data-commentid');
-
-            if (editcommentid > 0) {
-                saveComment($edittextarea, editcommentid);
-                highlightActionButton($editactionsave, $edittextarea.val());
-            }
-        });
-
-        // Cancel editing comment.
-        $('#ccomment-edit-action-cancel').click(function () {
-            if (editcommentid > 0) {
-                cancelEditComment();
-                resetEditComment();
-            }
-        });
-
-        $edittextarea.keyup(function () {
-            highlightActionButton($editactionsave, $edittextarea.val());
-        });
-
-        // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-post-action-delete-"]', 'click', function (e) {
-            e.preventDefault();
-            onCommentDeleteClicked($(this));
-        });
-
-        $commentscontent.delegate('a[id^="ccomment-post-action-edit-"]', 'click', function (e) {
-            e.preventDefault();
-            startEditComment($(this));
-        });
-
-        // Reply-Link.
-        $commentscontent.delegate('a[id^="ccomment-reply-"]', 'click', function (e) {
-            e.preventDefault();
-            startCreateReply($(this));
-        });
-    }
-
-    /**
-     * Attach eventlisteners for replies.
-     */
-    function initReplyForms() {
-
-        $replytextarea = $('#ccomment-reply-textarea');
-        $replyactionsave = $('#ccomment-reply-action-save');
-
-        $replyactionsave.click(function () {
-            saveReply($replytextarea, replyid);
-            highlightActionButton($replyactionsave, $replytextarea.val());
-        });
-
-        // Cancel editing reply.
-        $('#ccomment-reply-action-cancel').click(function () {
-            cancelReplyComment();
-            resetReplyComment();
-        });
-
-        $replytextarea.keyup(function () {
-            highlightActionButton($replyactionsave, $replytextarea.val());
-        });
-
-        // Action menu.
-        $commentscontent.delegate('a[id^="ccomment-reply-action-delete-"]', 'click', function (e) {
-            e.preventDefault();
-            onReplyDeleteClicked($(this));
-        });
-
-        $commentscontent.delegate('a[id^="ccomment-reply-action-edit-"]', 'click', function (e) {
-            e.preventDefault();
-            startEditReply($(this));
-        });
-    }
-
-    return {
-        init: function (initparams) {
-
-            // Params.
-            params = initparams;
-
-            // Container for all AJAX-loaded objects for delegations.
-            $commentscontent = $('#ccomment-comments-content');
-
-            // Creating and editing a comment.
-            initCommentForms();
-
-            // Creating and editing a reply.
-            initReplyForms();
-
-            // Pin page or comment.
-            $('.block_socialcomments').delegate('input[id^="ccomment-pinned-"]', 'click', function () {
-                onPinnedClicked($(this));
-            });
-            // Subscribe.
-            $('#ccomment-comments-subscribed').click(function () {
-                onSubscribeClicked($(this));
-            });
-            // Open menu.
-            $commentscontent.delegate('a[id^="action-menu-toggle-"]', 'click', function (e) {
-                e.preventDefault();
-                showMenu($(this));
-            });
-            // Pagination.
-            $commentscontent.delegate('a[id^="ccomment-pagelink-"]', 'click', function (e) {
-                e.preventDefault();
-                onPagingClicked($(this));
-            });
-            // Hide menu.
-            $(window).click(function () {
-                hideMenu();
-            });
-
+            page = response.pagenumber;
+            await Templates.replaceNodeContents(comments, response.commentspage, '');
+            root.querySelector('[data-region="count"]').textContent = currentList().dataset.countlabel;
+        } finally {
+            pending.resolve();
         }
     };
-});
+
+    /**
+     * Load the comments again, unless the user is editing or replying: then once the form is closed.
+     */
+    const refresh = () => {
+        if (root.querySelector(OPENFORMS)) {
+            refreshwaiting = true;
+            return;
+        }
+        refreshwaiting = false;
+        load(page).catch(Notification.exception);
+    };
+
+    /**
+     * Close a form: empty the comment form, remove the forms to edit or reply.
+     *
+     * @param {HTMLElement} form
+     */
+    const close = (form) => {
+        if (form.dataset.type === 'comment') {
+            form.querySelector('[data-region="text"]').value = '';
+            return;
+        }
+        const content = form.previousElementSibling;
+        if (content && content.matches('[data-region="content"]')) {
+            content.hidden = false;
+        }
+        form.remove();
+        if (refreshwaiting) {
+            refresh();
+        }
+    };
+
+    /**
+     * Show a form to edit or reply after an element.
+     *
+     * @param {HTMLElement} element
+     * @param {Object} context of block_socialcomments/form
+     * @returns {HTMLElement} the form
+     */
+    const openForm = async(element, context) => {
+        root.querySelectorAll(OPENFORMS).forEach((form) => {
+            const content = form.previousElementSibling;
+            if (content && content.matches('[data-region="content"]')) {
+                content.hidden = false;
+            }
+            form.remove();
+        });
+        const {html, js} = await Templates.renderForPromise('block_socialcomments/form', context);
+        element.insertAdjacentHTML('afterend', html);
+        Templates.runTemplateJS(js);
+        const form = element.nextElementSibling;
+        form.querySelector('[data-region="text"]').focus();
+        return form;
+    };
+
+    /**
+     * Edit a comment or a reply in place.
+     *
+     * @param {HTMLElement} action
+     */
+    const edit = async(action) => {
+        const reply = action.closest('[data-region="reply"]');
+        const post = reply || action.closest('[data-region="comment"]');
+        const content = post.querySelector('[data-region="content"]');
+        const [submitlabel, label] = await getStrings([
+            {key: 'save', component: 'block_socialcomments'},
+            {key: reply ? 'writereply' : 'writecomment', component: 'block_socialcomments'},
+        ]);
+        const form = await openForm(content, {
+            type: reply ? 'editreply' : 'editcomment',
+            text: content.dataset.raw,
+            label,
+            submitlabel,
+        });
+        form.dataset.id = reply ? reply.dataset.replyid : post.dataset.commentid;
+        content.hidden = true;
+    };
+
+    /**
+     * Reply to a comment.
+     *
+     * @param {HTMLElement} action
+     */
+    const reply = async(action) => {
+        const comment = action.closest('[data-region="comment"]');
+        const [submitlabel, label] = await getStrings([
+            {key: 'reply', component: 'block_socialcomments'},
+            {key: 'writereply', component: 'block_socialcomments'},
+        ]);
+        const form = await openForm(comment.querySelector('[data-region="replies"]'), {
+            type: 'reply',
+            label,
+            placeholder: label,
+            submitlabel,
+        });
+        form.dataset.commentid = comment.dataset.commentid;
+    };
+
+    /**
+     * Send a form.
+     *
+     * @param {HTMLElement} form
+     */
+    const submit = async(form) => {
+        const textarea = form.querySelector('[data-region="text"]');
+        const content = textarea.value.trim();
+        if (!content) {
+            textarea.focus();
+            return;
+        }
+        const buttons = form.querySelectorAll('button');
+        buttons.forEach((button) => {
+            button.disabled = true;
+        });
+        const pending = new Pending('block_socialcomments/save');
+        try {
+            if (form.dataset.type === 'comment') {
+                const group = form.querySelector('[data-region="group"]');
+                await call('block_socialcomments_save_comment', {
+                    contextid,
+                    content,
+                    groupid: group ? Number(group.value) : 0,
+                    id: 0,
+                });
+                textarea.value = '';
+                // Writing a comment subscribes to the page.
+                const subscription = root.querySelector('[data-action="subscribe"]');
+                if (subscription) {
+                    subscription.checked = true;
+                }
+                await load(LASTPAGE);
+            } else if (form.dataset.type === 'editcomment') {
+                await call('block_socialcomments_save_comment', {contextid, content, groupid: 0, id: Number(form.dataset.id)});
+                form.remove();
+                await load(page);
+            } else {
+                await call('block_socialcomments_save_reply', {
+                    contextid,
+                    content,
+                    commentid: Number(form.dataset.commentid || 0),
+                    id: form.dataset.type === 'editreply' ? Number(form.dataset.id) : 0,
+                });
+                form.remove();
+                await load(page);
+            }
+        } finally {
+            buttons.forEach((button) => {
+                button.disabled = false;
+            });
+            pending.resolve();
+        }
+    };
+
+    /**
+     * Delete a comment or a reply, after asking.
+     *
+     * @param {HTMLElement} action
+     */
+    const remove = async(action) => {
+        const reply = action.closest('[data-region="reply"]');
+        const comment = action.closest('[data-region="comment"]');
+        const [title, question] = await getStrings([
+            {key: 'delete', component: 'core'},
+            {key: reply ? 'deletereplycheck' : 'deletecommentcheck', component: 'block_socialcomments'},
+        ]);
+        try {
+            await Notification.deleteCancelPromise(title, question, title);
+        } catch (cancelled) {
+            return;
+        }
+        if (reply) {
+            await call('block_socialcomments_delete_reply', {replyid: Number(reply.dataset.replyid)});
+        } else {
+            await call('block_socialcomments_delete_comment', {commentid: Number(comment.dataset.commentid)});
+        }
+        await load(page);
+    };
+
+    /**
+     * Pin or unpin a comment, or all comments of the page.
+     *
+     * @param {HTMLElement} button
+     */
+    const pin = async(button) => {
+        const response = await call('block_socialcomments_set_pinned', {
+            contextid,
+            checked: button.getAttribute('aria-pressed') !== 'true',
+            commentid: Number(button.dataset.commentid),
+        });
+        button.setAttribute('aria-pressed', response.checked ? 'true' : 'false');
+        button.setAttribute('aria-label', response.tooltip);
+        button.title = response.tooltip;
+    };
+
+    root.addEventListener('submit', (e) => {
+        const form = e.target.closest('[data-region="form"]');
+        if (form) {
+            e.preventDefault();
+            submit(form).catch(Notification.exception);
+        }
+    });
+
+    root.addEventListener('click', (e) => {
+        const action = e.target.closest('[data-action]');
+        if (!action || !root.contains(action)) {
+            return;
+        }
+        const handlers = {
+            cancel: () => close(action.closest('[data-region="form"]')),
+            edit: () => edit(action),
+            delete: () => remove(action),
+            reply: () => reply(action),
+            pin: () => pin(action),
+            page: () => load(Number(action.dataset.page)),
+        };
+        if (handlers[action.dataset.action]) {
+            e.preventDefault();
+            Promise.resolve(handlers[action.dataset.action]()).catch(Notification.exception);
+        }
+    });
+
+    root.addEventListener('change', (e) => {
+        if (e.target.matches('[data-action="subscribe"]')) {
+            call('block_socialcomments_set_subscribed', {contextid, checked: e.target.checked})
+                .then((response) => {
+                    e.target.checked = response.checked;
+                    return response;
+                })
+                .catch(Notification.exception);
+        }
+    });
+
+    root.addEventListener(CHANGED, refresh);
+};

@@ -202,7 +202,7 @@ class comments_helper {
 
         $userfields = block_socialcomments_get_all_user_name_fields();
         $userpicturefields = block_socialcomments_get_userpicture_fields();
-        $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, p.itemtype as pinned,
+        $sql = "SELECT bc.id as postid, bc.content, bc.format, bc.groupid, bc.timecreated, p.itemtype as pinned,
                 bc.userid, $userfields, $userpicturefields
                 FROM {block_socialcomments_cmmnts} bc
                 JOIN {user} u ON bc.userid = u.id
@@ -266,7 +266,7 @@ class comments_helper {
 
         $userfields = block_socialcomments_get_all_user_name_fields();
         $userpicturefields = block_socialcomments_get_userpicture_fields();
-        $sql = "SELECT r.id as postid, r.content, r.timecreated, r.userid,
+        $sql = "SELECT r.id as postid, r.content, r.format, r.timecreated, r.userid,
                 $userfields, $userpicturefields
                 FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id
@@ -489,6 +489,72 @@ class comments_helper {
 
         $DB->delete_records('block_socialcomments_subscrs', ['userid' => $userid]);
         $DB->delete_records('block_socialcomments_pins', ['userid' => $userid]);
+    }
+
+    /**
+     * The date of a post as shown with it, and the exact date and time for its tooltip.
+     *
+     * @param int $time
+     * @param bool|null $relative "5 minutes ago" instead of the date; null for the site setting.
+     * @param int|null $now
+     * @return array display, exact (for the tooltip) and iso (for the datetime attribute)
+     */
+    public static function format_time(int $time, ?bool $relative = null, ?int $now = null): array {
+        $relative = $relative ?? get_config('block_socialcomments', 'dateformat') !== 'absolute';
+        $exact = userdate($time, get_string('strftimedatetime', 'langconfig'));
+        $display = $relative
+            ? self::format_relative_time($time, $now ?? time())
+            : userdate($time, get_string('strftimedatefullshort', 'langconfig') . ' ' . get_string('strftimetime', 'langconfig'));
+        return ['display' => $display, 'exact' => $exact, 'iso' => date(DATE_ATOM, $time)];
+    }
+
+    /**
+     * How long ago something happened: minutes and hours today, days, weeks, months or years before today.
+     *
+     * @param int $time
+     * @param int $now
+     * @return string
+     */
+    public static function format_relative_time(int $time, int $now): string {
+        $seconds = $now - $time;
+        if ($seconds < MINSECS) {
+            return get_string('timejustnow', 'block_socialcomments');
+        }
+        $today = usergetmidnight($now);
+        if ($time >= $today || $seconds < HOURSECS) {
+            if ($seconds < HOURSECS) {
+                return self::time_string('minute', intdiv($seconds, MINSECS));
+            }
+            return self::time_string('hour', intdiv($seconds, HOURSECS));
+        }
+        // Calendar days, so that last night is yesterday. Rounded, as days with a clock change are 23 or 25 hours.
+        $days = (int) round(($today - usergetmidnight($time)) / DAYSECS);
+        if ($days <= 1) {
+            return get_string('timeyesterday', 'block_socialcomments');
+        }
+        if ($days < 7) {
+            return self::time_string('day', $days);
+        }
+        if ($days < 30) {
+            return self::time_string('week', intdiv($days, 7));
+        }
+        if ($days < 365) {
+            return self::time_string('month', intdiv($days, 30));
+        }
+        return self::time_string('year', intdiv($days, 365));
+    }
+
+    /**
+     * "1 week ago" or "3 weeks ago".
+     *
+     * @param string $unit minute, hour, day, week, month or year
+     * @param int $count
+     * @return string
+     */
+    protected static function time_string(string $unit, int $count): string {
+        return $count == 1
+            ? get_string('time' . $unit . 'ago', 'block_socialcomments')
+            : get_string('time' . $unit . 'sago', 'block_socialcomments', $count);
     }
 
     /**

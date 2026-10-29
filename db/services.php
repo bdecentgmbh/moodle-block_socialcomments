@@ -89,5 +89,12 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
-
+    'block_socialcomments_renew_token' => [
+        'classname' => 'block_socialcomments\external',
+        'methodname' => 'renew_token',
+        'description' => 'Get a new token to update the comments of a page in real time',
+        'capabilities' => 'block/socialcomments:view',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];
