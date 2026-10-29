@@ -46,14 +46,16 @@
     }
 }}
 <div class="sc-post">
-    {{#userpicture}}<div class="sc-post-picture">{{{userpicture}}}</div>{{/userpicture}}
-    <div class="sc-post-main">
-        <div class="sc-post-header">
+    <div class="sc-post-header">
+        {{#userpicture}}<div class="sc-post-picture">{{{userpicture}}}</div>{{/userpicture}}
+        <div class="sc-post-meta">
             <span class="sc-post-author">{{fullname}}</span>
-            <time class="sc-post-time" datetime="{{datetime}}" title="{{exacttime}}">{{time}}</time>
-            {{#groupname}}<span class="sc-post-group">{{{groupname}}}</span>{{/groupname}}
-            {{#actions}}<div class="sc-post-menu">{{{actions}}}</div>{{/actions}}
+            <span class="sc-post-details">
+                <time class="sc-post-time" datetime="{{datetime}}" title="{{exacttime}}">{{time}}</time>
+                {{#groupname}}<span class="sc-post-group">{{{groupname}}}</span>{{/groupname}}
+            </span>
         </div>
-        <div class="sc-post-content" data-region="content"{{#raw}} data-raw="{{raw}}"{{/raw}}>{{{content}}}</div>
+        {{#actions}}<div class="sc-post-menu">{{{actions}}}</div>{{/actions}}
     </div>
+    <div class="sc-post-content" data-region="content"{{#raw}} data-raw="{{raw}}"{{/raw}}>{{{content}}}</div>
 </div>
