@@ -36,6 +36,8 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
      *  Define the complete structure for backup.
      */
     protected function define_structure() {
+        global $DB;
+
         // To know if we are including userinfo.
         $userinfo = $this->get_setting_value('users');
 
@@ -94,43 +96,49 @@ class backup_socialcomments_block_structure_step extends backup_block_structure_
         $pins->add_child($pin);
         $subscriptions->add_child($subscription);
 
-        // Define sources.
-
-        // All the elements only happen if we are including user info.
+        // Comments belong to the page (course or activity) they were posted on, not to the block. A block on the
+        // course page backs up the comments of the whole course, a block on an activity page those of its activity.
+        // The restore skips what another block of the same backup restored already.
         if ($userinfo) {
-            $comment->set_source_sql('SELECT *
-                                       FROM {block_socialcomments_cmmnts}
-                                       WHERE courseid = ?', [backup::VAR_COURSEID]);
-            $reply->set_source_table('block_socialcomments_replies', ['commentid' => '../../id']);
-            $subscription->set_source_sql('SELECT *
-                                       FROM {block_socialcomments_subscrs}
-                                       WHERE courseid = ?', [backup::VAR_COURSEID]);
+            $page = context::instance_by_id($this->task->get_contextid())->get_parent_context();
+            if ($page->contextlevel == CONTEXT_COURSE) {
+                $pages = 'SELECT id FROM {context} WHERE id = ? OR ' . $DB->sql_like('path', '?');
+                $pageparams = [backup_helper::is_sqlparam($page->id), backup_helper::is_sqlparam($page->path . '/%')];
+            } else {
+                $pages = 'SELECT id FROM {context} WHERE id = ?';
+                $pageparams = [backup_helper::is_sqlparam($page->id)];
+            }
 
-            // Since the socialcomments block works with the course context in place of the block context,
-            // we use the value from $contextid instead of backup::VAR_CONTEXTID.
-            $courseid = $this->get_courseid();
-            $contextid = context_course::instance($courseid)->id;
+            $comment->set_source_sql("SELECT * FROM {block_socialcomments_cmmnts} WHERE contextid IN ($pages)", $pageparams);
+            $reply->set_source_table('block_socialcomments_replies', ['commentid' => '../../id']);
+            $subscription->set_source_sql(
+                "SELECT * FROM {block_socialcomments_subscrs} WHERE contextid IN ($pages)",
+                $pageparams
+            );
             $pin->set_source_sql(
-                'SELECT p.*
+                "SELECT p.*
                    FROM {block_socialcomments_pins} p
-                   JOIN {block_socialcomments_cmmnts} c
-                     ON p.itemid = c.id
-                    AND p.itemtype = ' . comments_helper::PINNED_COMMENT . '
-                    AND c.courseid = ?
-                 UNION
+                   JOIN {block_socialcomments_cmmnts} c ON c.id = p.itemid
+                  WHERE p.itemtype = ? AND c.contextid IN ($pages)
+                  UNION
                  SELECT p.*
                    FROM {block_socialcomments_pins} p
-                  WHERE p.itemid = ' . $contextid . '
-                    AND p.itemtype = ' . comments_helper::PINNED_PAGE,
-                [
-                    backup::VAR_COURSEID,
-                ]
+                  WHERE p.itemtype = ? AND p.itemid IN ($pages)",
+                array_merge(
+                    [backup_helper::is_sqlparam(comments_helper::PINNED_COMMENT)],
+                    $pageparams,
+                    [backup_helper::is_sqlparam(comments_helper::PINNED_PAGE)],
+                    $pageparams
+                )
             );
         }
 
         // Define id annotations.
         $comment->annotate_ids('user', 'userid');
         $comment->annotate_ids('group', 'groupid');
+        $reply->annotate_ids('user', 'userid');
+        $pin->annotate_ids('user', 'userid');
+        $subscription->annotate_ids('user', 'userid');
 
         // No file annotations defined.
 
