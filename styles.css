@@ -278,6 +278,8 @@
     margin-bottom: 1.5rem;
 }
 
-.block_socialcomments .sc-overview-page .sc-post-footer {
-    display: none;
+/* On pages, the background is as light as the bubbles. */
+.block_socialcomments .sc-overview .sc-post-content {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    background-color: var(--bs-body-bg, #fff);
 }
