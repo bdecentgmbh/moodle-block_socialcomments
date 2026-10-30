@@ -14,69 +14,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Javascript controller for the socialcomments block on report page.
+ * Filter of the comments report: the activities of the chosen section.
  *
- * @module     block_socialcomments/comments
- * @copyright 2021, bdecent gmbh bdecent.de
+ * @module     block_socialcomments/report
+ * @copyright  2021 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
+import Ajax from 'core/ajax';
+import Notification from 'core/notification';
 
-    var params = null; // ...contextid, subscribed, commentscount.
-    /**
-     * Load options for the selected topic.
-     *
-     * @method loadOptions
-     * @param {Object} $selecttopic ID of the selected topic.
-     */
-    function loadOptions($selecttopic) {
-
-        var topicindex = $selecttopic.val();
-
-        ajax.call([
-            {
-                methodname: 'block_socialcomments_get_activity_options',
-                args: {
-                    sectionid: Number(topicindex),
-                    courseid: params.courseid
-                },
-                done: function (response) {
-                    $('#id_activityid').html(response.options);
-                },
-                fail: notification.exception
-            }
-        ]);
+/**
+ * Load the activities of a section into the activity menu when the section changes.
+ *
+ * @param {number} courseid
+ */
+export const init = (courseid) => {
+    const section = document.getElementById('id_sectionid');
+    const activity = document.getElementById('id_activityid');
+    if (!section || !activity) {
+        return;
     }
-
-    /**
-     * Action triggered on activity selection.
-     *
-     * @method onActivitySelected
-     * @param {Object} $selecttopic ID of the selected topic.
-     */
-    function onActivitySelected($selecttopic) {
-
-        var index = $selecttopic.val();
-
-        if (index == 0) {
-            $('#id_sectionid').val('0');
+    section.addEventListener('change', () => {
+        Ajax.call([{
+            methodname: 'block_socialcomments_get_activity_options',
+            args: {sectionid: Number(section.value), courseid},
+        }])[0].then((response) => {
+            activity.innerHTML = response.options;
+            return response;
+        }).catch(Notification.exception);
+    });
+    activity.addEventListener('change', () => {
+        if (activity.value === '0') {
+            section.value = '0';
         }
-    }
-
-    return {
-        init: function (initparams) {
-
-            // Params.
-            params = initparams;
-
-            $('#id_sectionid').change(function () {
-                loadOptions($(this));
-            });
-
-            $('#id_activityid').change(function () {
-                onActivitySelected($(this));
-            });
-        }
-    };
-});
+    });
+};

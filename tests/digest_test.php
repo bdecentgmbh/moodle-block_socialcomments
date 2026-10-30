@@ -24,21 +24,21 @@
  */
 namespace block_socialcomments;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_socialcomments\local\digest;
 use context_course;
 
-global $CFG;
-
-if ($CFG->branch <= 401) {
-    require_once($CFG->libdir . '/externallib.php');
-}
-
+#[\PHPUnit\Framework\Attributes\CoversClass(local\digest::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(local\report_helper::class)]
 /**
- * Digest test cases.
+ * Tests for the digest and the report.
+ *
+ * @package   block_socialcomments
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \block_socialcomments\local\digest
+ * @covers \block_socialcomments\local\report_helper
  */
-final class block_socialcomments_digest_test extends \advanced_testcase {
+final class digest_test extends \advanced_testcase {
     /**
      * @var \testing_data_generator
      */
@@ -90,13 +90,13 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
     public $group2;
 
     /**
-     * Set the config.
-     *
-     * @return void
+     * Two courses with groups, teachers and students.
      */
-    public function setup(): void {
+    #[\Override]
+    protected function setUp(): void {
         global $DB;
 
+        parent::setUp();
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
@@ -131,7 +131,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Test digest
-     * @covers ::test_digest
      */
     public function test_digest(): void {
         global $DB;
@@ -225,7 +224,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Test that setting users per cron.
-     * @covers \block_socialcomments\local\digest::cron
      */
     public function test_digest_userspercron(): void {
         set_config('digesttype', 1, 'block_socialcomments');
@@ -260,8 +258,40 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
     }
 
     /**
+     * A run without new posts writes nothing; a post saved while the digests are sent goes into the next digest.
+     */
+    public function test_digest_timing(): void {
+        global $DB;
+        set_config('digesttype', 1, 'block_socialcomments');
+        $plugingenerator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
+        $lastsent = time() - HOURSECS;
+        $subscription = $plugingenerator->create_subscription([
+            'contextid' => $this->coursecontext->id,
+            'userid' => $this->student1->id,
+            'timelastsent' => $lastsent,
+        ]);
+
+        $sink = $this->redirectMessages();
+        digest::cron();
+        $this->assertCount(0, $sink->get_messages());
+        $this->assertEquals($lastsent, $DB->get_field('block_socialcomments_subscrs', 'timelastsent', ['id' => $subscription->id]));
+
+        // A comment saved in the second the run started.
+        $now = time();
+        $plugingenerator->create_comment([
+            'contextid' => $this->coursecontext->id,
+            'userid' => $this->teacher->id,
+            'timecreated' => $now,
+        ]);
+        digest::get_instance(true)->send_digest_for_user($this->student1, $now);
+        $this->assertCount(0, $sink->get_messages());
+        digest::get_instance(true)->send_digest_for_user($this->student1, $now + 1);
+        $this->assertCount(1, $sink->get_messages());
+        $sink->close();
+    }
+
+    /**
      * Test visiblity and results on report page.
-     * @covers \report_helper::get_instance
      */
     public function test_report(): void {
         global $DB;

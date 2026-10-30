@@ -35,7 +35,7 @@ Feature: Social Comments block on a category page is inherited by courses
     And I am on the "SCCAT1" "category" page
     And I turn editing mode on
     When I add the "Social Comments" block
-    Then I should see "Content only available in course context." in the "Social Comments" "block"
+    Then I should see "not on the category page itself" in the "Social Comments" "block"
 
   Scenario: Block shows in own category courses only
     Given I log in as "admin"
@@ -79,9 +79,9 @@ Feature: Social Comments block on a category page is inherited by courses
     And I press "Save changes"
     And I turn editing mode off
     When I am on the "SCCAT1" "category" page
-    Then I should see "Content only available in course context." in the "Social Comments" "block"
+    Then I should see "not on the category page itself" in the "Social Comments" "block"
     When I am on the "SCCAT2" "category" page
-    Then I should see "Content only available in course context." in the "Social Comments" "block"
+    Then I should see "not on the category page itself" in the "Social Comments" "block"
     When I am on "SCC1" course homepage
     Then "Social Comments" "block" should exist
     When I am on "SCC4" course homepage
@@ -114,16 +114,16 @@ Feature: Social Comments block on a category page is inherited by courses
     And I log out
     When I log in as "student1"
     And I am on "SCC1" course homepage
-    And I set the field "Post a comment on this course..." to "Hello from student1"
+    And I set the field "Write a comment" to "Hello from student1"
     And I click on "Post" "button" in the "Social Comments" "block"
     Then I should see "Hello from student1" in the "Social Comments" "block"
     And I am on the "SCCAT1" "category" page
-    And I should see "Content only available in course context." in the "Social Comments" "block"
+    And I should see "not on the category page itself" in the "Social Comments" "block"
     And I log out
     When I log in as "student2"
     And I am on "SCC2" course homepage
     Then I should not see "Hello from student1" in the "Social Comments" "block"
-    When I set the field "Post a comment on this course..." to "Hello from student2"
+    When I set the field "Write a comment" to "Hello from student2"
     And I click on "Post" "button" in the "Social Comments" "block"
     Then I should see "Hello from student2" in the "Social Comments" "block"
     And I log out
@@ -147,7 +147,7 @@ Feature: Social Comments block on a category page is inherited by courses
     And I log out
     When I log in as "student1"
     And I am on "SCC1" course homepage
-    And I set the field "Post a comment on this course..." to "SCC1 comment from student1"
+    And I set the field "Write a comment" to "SCC1 comment from student1"
     And I click on "Post" "button" in the "Social Comments" "block"
     Then I should see "SCC1 comment from student1" in the "Social Comments" "block"
     And I log out
@@ -155,7 +155,7 @@ Feature: Social Comments block on a category page is inherited by courses
     And I am on "SCC4" course homepage
     Then "Social Comments" "block" should exist
     And I should not see "SCC1 comment from student1" in the "Social Comments" "block"
-    When I set the field "Post a comment on this course..." to "SCC4 comment from student4"
+    When I set the field "Write a comment" to "SCC4 comment from student4"
     And I click on "Post" "button" in the "Social Comments" "block"
     Then I should see "SCC4 comment from student4" in the "Social Comments" "block"
     And I log out

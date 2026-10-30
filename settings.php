@@ -73,6 +73,37 @@ if ($ADMIN->fulltree) {
         )
     );
 
+    $settings->add(
+        new admin_setting_configselect(
+            'block_socialcomments/dateformat',
+            new lang_string('dateformat', 'block_socialcomments'),
+            new lang_string('dateformat_desc', 'block_socialcomments'),
+            'relative',
+            [
+                'relative' => new lang_string('dateformatrelative', 'block_socialcomments'),
+                'absolute' => new lang_string('dateformatabsolute', 'block_socialcomments'),
+            ]
+        )
+    );
+
+    $deftsettings = new moodle_url('/admin/settings.php', ['section' => 'blocksettingdeft']);
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_socialcomments/realtime',
+            new lang_string('realtime', 'block_socialcomments'),
+            new lang_string(
+                'realtime_desc',
+                'block_socialcomments',
+                html_writer::link(
+                    file_exists($CFG->dirroot . '/blocks/deft/version.php')
+                        ? $deftsettings : new moodle_url('https://moodle.org/plugins/block_deft'),
+                    get_string('realtimeservice', 'block_socialcomments')
+                )
+            ),
+            1
+        )
+    );
+
     $url = new moodle_url('/admin/tool/task/scheduledtasks.php');
 
     $link = html_writer::link(

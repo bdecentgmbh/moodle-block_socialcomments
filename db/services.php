@@ -29,7 +29,7 @@ $functions = [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'save_comment',
         'description' => 'Create or update a comment',
-        'capabilities' => 'block/socialcomments:postcomment',
+        'capabilities' => 'block/socialcomments:postcomments',
         'type' => 'write',
         'ajax' => true,
     ],
@@ -69,7 +69,7 @@ $functions = [
         'classname' => 'block_socialcomments\external',
         'methodname' => 'save_reply',
         'description' => 'Create or update a reply',
-        'capabilities' => 'block/socialcomments:postcomment',
+        'capabilities' => 'block/socialcomments:postcomments',
         'type' => 'write',
         'ajax' => true,
     ],
@@ -89,5 +89,12 @@ $functions = [
         'type' => 'read',
         'ajax' => true,
     ],
-
+    'block_socialcomments_renew_token' => [
+        'classname' => 'block_socialcomments\external',
+        'methodname' => 'renew_token',
+        'description' => 'Get a new token to update the comments of a page in real time',
+        'capabilities' => 'block/socialcomments:view',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];

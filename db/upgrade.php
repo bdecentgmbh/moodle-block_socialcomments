@@ -58,29 +58,26 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
     }
 
     if ($oldversion < 2026030701) {
-        $DB->set_field(
-            'task_scheduled',
-            'minute',
-            '*',
-            [
-                'component' => 'block_socialcomments',
-                'classname' => '\block_socialcomments\task\process_digest_cron',
-                'customised' => 0,
-            ]
-        );
-
-        $DB->set_field(
-            'task_scheduled',
-            'hour',
-            '*',
-            [
-                'component' => 'block_socialcomments',
-                'classname' => '\block_socialcomments\task\process_digest_cron',
-                'customised' => 0,
-            ]
-        );
-
+        // The digest task runs every minute now: core applies the schedule of db/tasks.php after the upgrade.
         upgrade_plugin_savepoint(true, 2026030701, 'block', 'socialcomments');
+    }
+
+    if ($oldversion < 2026102900) {
+        // Comments of activities deleted before the block cleaned up after them.
+        $orphans = $DB->get_fieldset_sql("SELECT DISTINCT c.contextid
+                                            FROM {block_socialcomments_cmmnts} c
+                                       LEFT JOIN {context} ctx ON ctx.id = c.contextid
+                                           WHERE ctx.id IS NULL
+                                           UNION
+                                          SELECT DISTINCT s.contextid
+                                            FROM {block_socialcomments_subscrs} s
+                                       LEFT JOIN {context} ctx ON ctx.id = s.contextid
+                                           WHERE ctx.id IS NULL");
+        foreach ($orphans as $contextid) {
+            \block_socialcomments\local\comments_helper::delete_context_data($contextid);
+        }
+
+        upgrade_plugin_savepoint(true, 2026102900, 'block', 'socialcomments');
     }
 
     return true;

@@ -34,18 +34,17 @@ $courseid = required_param('courseid', PARAM_INT);
 
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
-require_login($courseid);
+require_login($course);
 $comment = new comment(['id' => $id], true, MUST_EXIST);
 
 $delete = optional_param('delete', '', PARAM_ALPHANUM);
 $context = context_helper::instance_by_id($comment->contextid);
 
-if (!comment::can_delete($comment->userid, $context)) {
-    // Can not delete frontpage or don't have permission to delete the course.
-    throw new moodle_exception('cannotdeletecourse');
+if ($comment->courseid != $course->id || !comment::can_delete($comment->userid, $context)) {
+    throw new required_capability_exception($context, 'block/socialcomments:deletecomments', 'nopermissions', '');
 }
 
-$PAGE->set_url('/blocks/socialcomments/delete_comment.php', ['id' => $id]);
+$PAGE->set_url('/blocks/socialcomments/report/delete_comment.php', ['id' => $id, 'courseid' => $course->id]);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
 
@@ -79,10 +78,9 @@ echo $OUTPUT->header();
 $message = get_string('deletecheck', 'block_socialcomments');
 
 $author = \core_user::get_user($comment->userid);
-$post = $renderer->render_post($author, $comment, []);
+$post = $renderer->render_post($author, $comment);
 
 $message .= html_writer::div($post, 'ccomment-post');
 
 echo $OUTPUT->confirm($message, $continuebutton, $redirecturl);
 echo $OUTPUT->footer();
-exit;

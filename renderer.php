@@ -22,7 +22,10 @@
  * @copyright based on work by 2017 Andreas Wagner, Synergy Learning
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 use block_socialcomments\local\comment;
+use block_socialcomments\local\comments_helper;
+use block_socialcomments\local\realtime;
 use block_socialcomments\local\reply;
 
 /**
@@ -35,484 +38,241 @@ use block_socialcomments\local\reply;
  */
 class block_socialcomments_renderer extends plugin_renderer_base {
     /**
-     * Renderer the post form.
-     * @param string $idtextarea
-     * @param string $idcancel
-     * @param string $idaction
-     * @param string $straction
-     * @param string $placeholder
-     * @param string $groupselector
-     */
-    protected function render_post_form($idtextarea, $idcancel, $idaction, $straction, $placeholder = '', $groupselector = '') {
-
-        $html = '';
-
-        // Print posting textarea.
-        $textareaattrs = [
-            'name' => $idtextarea,
-            'rows' => 4,
-            'id' => $idtextarea,
-            'placeholder' => $placeholder,
-            'data-commentid' => 0,
-        ];
-
-        $textareaattrs['class'] = 'fullwidth';
-
-        $html .= html_writer::start_tag('div', ['class' => 'ccomment-form-textarea-wrap']);
-        $html .= html_writer::start_tag('div', ['class' => '']);
-        $html .= html_writer::tag('textarea', '', $textareaattrs);
-        $html .= html_writer::end_tag('div');
-
-        $buttons = $groupselector;
-        $buttons .= html_writer::tag(
-            'button',
-            get_string('cancel'),
-            ['id' => $idcancel, 'class' => 'btn btn-link']
-        );
-        $buttons .= html_writer::tag(
-            'button',
-            get_string($straction, 'block_socialcomments'),
-            ['id' => $idaction, 'class' => 'btn btn-primary']
-        );
-
-        $html .= html_writer::div($buttons, 'ccomment-form-action-buttons');
-
-        $html .= html_writer::end_tag('div');
-
-        $html .= html_writer::tag('div', '', ['class' => 'clearer']);
-
-        return $html;
-    }
-
-    /**
-     * Render the slider checkbox.
-     * @param string $name
-     * @param string $value
-     * @param string $checked
-     * @param string $label
-     * @param array $attributes
-     */
-    protected function render_slider_checkbox($name, $value, $checked, $label, $attributes) {
-
-        $attributes = (array) $attributes;
-        $output = '';
-
-        if ($label !== '' && ! is_null($label)) {
-            if (empty($attributes['id'])) {
-                $attributes['id'] = self::random_id('checkbox_');
-            }
-        }
-        $attributes['type'] = 'checkbox';
-        $attributes['value'] = $value;
-        $attributes['name'] = $name;
-        $attributes['checked'] = $checked ? 'checked' : null;
-
-        $checkbox = html_writer::empty_tag('input', $attributes);
-
-        $yestag = html_writer::tag('div', get_string('yes'), ['class' => 'labelyes']);
-        $notag = html_writer::tag('div', get_string('no'), ['class' => 'labelno']);
-
-        if ($label !== '' && ! is_null($label)) {
-            $slider = html_writer::tag('div', $yestag . $notag, ['class' => 'slider']);
-            $output = html_writer::tag('div', $label, ['class' => 'cc-switch-label']);
-            $label = html_writer::tag('label', $checkbox . $slider, ['for' => $attributes['id']]);
-        }
-
-        $output .= html_writer::tag('div', $label, ['class' => 'cc-switch']);
-
-        return $output;
-    }
-
-    /**
-     * Render the group selector.
-     * @param array $groups
-     */
-    protected function render_group_selector($groups) {
-
-        if (count($groups) == 0) {
-            return html_writer::empty_tag('input', ['type' => 'hidden', 'value' => -1, 'id' => 'ccomments-groupid']);
-        }
-
-        if (count($groups) == 1) {
-            $group = reset($groups);
-            return html_writer::empty_tag('input', ['type' => 'hidden', 'value' => $group->id, 'id' => 'ccomments-groupid']);
-        }
-
-        $choices = [];
-        foreach ($groups as $group) {
-            $choices[$group->id] = $group->name;
-        }
-        return html_writer::select($choices, 'groupid', '', false, ['id' => 'ccomments-groupid']);
-    }
-
-    /**
-     * Render the post comment form.
-     * Please note that the form is not wrapped into a form tag, its based on
-     * AJAX submits.
+     * Render the whole content of the block: the form, the subscription and the first page of comments.
      *
-     * @param object $commentshelper
-     * @param object $contentdata
-     * @return string the HTML for the form
-     */
-    public function render_form_content($commentshelper, $contentdata) {
-        global $COURSE;
-
-        $context = $commentshelper->get_context();
-
-        $html = '';
-        $top = '';
-
-        if ($commentshelper->can_subscribe()) {
-            $url = new moodle_url('/blocks/socialcomments/report/newsfeed.php', ['courseid' => $COURSE->id]);
-            $params = ['title' => ''];
-            $text = $this->output->pix_icon(
-                'reportspage',
-                get_string('reportspage', 'block_socialcomments'),
-                'block_socialcomments',
-                $params,
-            );
-            $text .= html_writer::tag('span', get_string('reportspage', 'block_socialcomments'));
-            $link = html_writer::link($url, $text, ['class' => 'ccomment-form-navlink cctooltip']);
-            $top .= html_writer::div($link, 'ccomment-form-navlink-wrap');
-        }
-        if ($commentshelper->can_pin()) {
-            $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $COURSE->id]);
-            $text = $this->output->pix_icon(
-                'pinboard',
-                get_string('pinboard', 'block_socialcomments'),
-                'block_socialcomments',
-                $params
-            );
-            $text .= html_writer::tag('span', get_string('pinboard', 'block_socialcomments'));
-            $link = html_writer::link($url, $text, ['class' => 'ccomment-form-navlink cctooltip']);
-            $top .= html_writer::div($link, 'ccomment-form-navlink-wrap');
-        }
-        if ($commentshelper->can_pin()) {
-            $pagepinned = !empty($contentdata->formdata->pagepinned);
-
-            $params = [
-                'id' => 'ccomment-pinned-0',
-            ];
-
-            $cb = html_writer::checkbox('pagepinned', 1, !empty($pagepinned), '#', $params);
-            $tooltip = (!empty($pagepinned))
-                    ? get_string('unpinpage', 'block_socialcomments')
-                    : get_string('pinpage', 'block_socialcomments');
-            $cb .= html_writer::div($tooltip, 'ccomments-pin-tooltip');
-
-            $top .= html_writer::div($cb, 'ccomment-form-pagepinned-wrap');
-        }
-
-        $html .= html_writer::div($top, 'ccomment-form-top  clearfix');
-
-        $groups = comment::get_accessible_groups($context);
-
-        if (comment::can_create($context, $groups)) {
-            $groupselector = $this->render_group_selector($groups);
-
-            $strcourse = get_string('postcommentoncourse', 'block_socialcomments');
-
-            $placeholder = ($context->contextlevel == CONTEXT_COURSE)
-                    ? $strcourse
-                    : get_string('postcommentonmod', 'block_socialcomments');
-
-            $html .= $this->render_post_form(
-                'ccomment-form-textarea',
-                'ccomment-form-action-cancel',
-                'ccomment-form-action-post',
-                'post',
-                $placeholder,
-                $groupselector
-            );
-        }
-
-        // Render two additional forms, one for editing a comment/reply and one for posting a reply.
-        // Both are wrapped into a hidden container.
-        $editform = $this->render_post_form(
-            'ccomment-edit-textarea',
-            'ccomment-edit-action-cancel',
-            'ccomment-edit-action-save',
-            'save'
-        );
-        $editform = html_writer::div($editform, 'ccomment-editform', ['id' => 'ccomment-editform']);
-        $html .= html_writer::div($editform, 'ccomment-editform hidden', ['id' => 'ccomment-editform-wrap']);
-
-        $replyform = $this->render_post_form(
-            'ccomment-reply-textarea',
-            'ccomment-reply-action-cancel',
-            'ccomment-reply-action-save',
-            'reply'
-        );
-        $replyform = html_writer::div($replyform, 'ccomment-replyform', ['id' => 'ccomment-replyform']);
-        $html .= html_writer::div($replyform, 'ccomment-replyform hidden', ['id' => 'ccomment-replyform-wrap']);
-
-        return $html;
-    }
-
-    /**
-     * Render the part of block content, that is related to comments.
-     * - Information
-     * - Subscription
-     * - Comments list
-     *
-     * @param object $commentshelper
-     * @param object $contentdata
-     * @return string
-     */
-    public function render_comments_content($commentshelper, $contentdata) {
-
-        $commentscount = get_string('commentscount', 'block_socialcomments', $contentdata->comments->count);
-        $top = html_writer::div($commentscount, 'ccomment-comments-count');
-
-        $subscribed = !empty($contentdata->comments->subscribed);
-
-        $params = [
-            'id' => 'ccomment-comments-subscribed',
-        ];
-
-        if ($commentshelper->can_subscribe()) {
-            $cb = $this->render_slider_checkbox(
-                'subscribed',
-                1,
-                $subscribed,
-                get_string('subscribed', 'block_socialcomments'),
-                $params
-            );
-            $top .= html_writer::div($cb, 'ccomment-comments-subscribed-wrap');
-        }
-        $visibleclass = "";
-        if ((!$contentdata->comments->count) && ( $contentdata->comments->count == 0)) {
-            $visibleclass = "hidden";
-        }
-
-        $html = html_writer::div($top, "clearfix $visibleclass", ['id' => 'ccomment-comments-content-top']);
-
-        $commentspage = $this->render_comments_page($commentshelper, $contentdata);
-
-        $html .= html_writer::div($commentspage, 'ccomment-commentspage', ['id' => 'ccomment-commentspage-wrap']);
-
-        return $html;
-    }
-
-    /**
-     * Render the pagingbar.
-     *
-     * @param object $commentshelper
-     * @param object $contentdata
-     * @return string
-     */
-    protected function render_paging_bar($commentshelper, $contentdata) {
-
-        if ($contentdata->comments->maxpage == 0) {
-            return '';
-        }
-
-        $html = '';
-        for ($i = $contentdata->comments->minpage; $i < $contentdata->comments->maxpage; $i++) {
-            $class = ($i == $contentdata->comments->currentpage) ? 'ccomment-pagingbar-curpagelink' : 'ccomment-pagingbar-pagelink';
-            $html .= html_writer::link('#', $i + 1, ['id' => 'ccomment-pagelink-' . $i, 'class' => $class]);
-        }
-
-        return html_writer::div($html, 'ccomment-paging-bar');
-    }
-
-    /**
-     * Render the action menu for editing and deleting a comment or a reply.
-     *
-     * @param array $menulinks
-     * @return string
-     */
-    protected function render_action_menu($menulinks) {
-
-        if (!$menulinks) {
-            return '';
-        }
-
-        $am = new action_menu($menulinks, 10);
-
-        $am->set_menu_trigger(
-            $this->output->pix_icon('options', get_string('actions', 'block_socialcomments'), 'block_socialcomments')
-        );
-
-        return $this->output->render($am);
-    }
-
-    /**
-     * Render a post (a comment or a reply)
-     *
-     * @param object $author user object of author
-     * @param object $post
-     * @param array $menulinks for action buttons
-     * @return string
-     */
-    public function render_post($author, $post, $menulinks = []) {
-
-        $h = $this->render_action_menu($menulinks);
-
-        $up = $this->output->user_picture($author);
-        $h .= html_writer::div($up, 'ccomment-post-userpicture');
-
-        $h .= html_writer::div(fullname($author), 'ccomment-post-fullname');
-
-        $ud = userdate(
-            $post->timecreated,
-            get_string('strftimedatefullshort', 'langconfig') . ' ' . get_string('strftimetime', 'langconfig')
-        );
-        $h .= html_writer::div($ud, 'ccomment-post-timeposted small text-muted');
-
-        $p = html_writer::div($h, 'ccomment-post-header clearfix');
-
-        // Apply filters to content as done in block_comments.
-        $content = format_text($post->content, FORMAT_MOODLE, ['para' => false]);
-        $p .= html_writer::div($content, 'ccomment-post-content');
-
-        return $p;
-    }
-
-    /**
-     * Render the list of replies.
-     * @param object $context
-     * @param int $commentid
-     * @param array $replies
-     * @return string
-     */
-    protected function render_reply_list($context, $commentid, $replies) {
-
-        $listitems = '';
-
-        foreach ($replies as $post) {
-            $menulinks = [];
-            if (reply::can_edit($post->userid, $context)) {
-                $menulinks[] = html_writer::link(
-                    '#',
-                    get_string('edit'),
-                    ['id' => 'ccomment-reply-action-edit-' . $post->postid]
-                );
-            }
-            if (reply::can_delete($post->userid, $context)) {
-                $menulinks[] = html_writer::link(
-                    '#',
-                    get_string('delete'),
-                    ['id' => 'ccomment-reply-action-delete-' . $post->postid]
-                );
-            }
-
-            $p = $this->render_post($post, $post, $menulinks);
-            $p = html_writer::div($p, 'ccomment-reply-wrap');
-            $listitems .= html_writer::tag(
-                'li',
-                $p,
-                ['class' => 'ccomment-reply-item', 'id' => 'ccomment-reply-' . $post->postid]
-            );
-        }
-
-        return html_writer::tag(
-            'ul',
-            $listitems,
-            ['id' => 'ccomment-reply-list-' . $commentid, 'class' => 'ccomment-reply-list']
-        );
-    }
-
-    /**
-     * Render a comments page (= comments and pagingbar). This is used for AJAX-Requests too.
-     *
-     * @param object $commentshelper
-     * @param object $contentdata
-     * @return string
-     */
-    public function render_comments_page($commentshelper, $contentdata) {
-
-        if (empty($contentdata->comments->posts)) {
-            return '';
-        }
-
-        $context = $commentshelper->get_context();
-
-        $commentslistitems = '';
-        $canpin = $commentshelper->can_pin();
-        $canreply = reply::can_create($context);
-
-        foreach ($contentdata->comments->posts as $post) {
-            $menulinks = [];
-
-            if (comment::can_edit($post->userid, $context)) {
-                $menulinks[] = html_writer::link(
-                    '#',
-                    get_string('edit'),
-                    ['id' => 'ccomment-post-action-edit-' . $post->postid]
-                );
-            }
-            if (comment::can_delete($post->userid, $context)) {
-                $menulinks[] = html_writer::link(
-                    '#',
-                    get_string('delete'),
-                    ['id' => 'ccomment-post-action-delete-' . $post->postid]
-                );
-            }
-            $p = $this->render_post($post, $post, $menulinks);
-            $p = html_writer::div($p, 'ccomment-post', ['id' => 'ccomment-post-' . $post->postid]);
-
-            $f = '';
-            if ($canreply) {
-                $f = html_writer::link(
-                    '#',
-                    get_string('reply', 'block_socialcomments'),
-                    ['id' => 'ccomment-reply-' . $post->postid]
-                );
-            }
-
-            if ($canpin) {
-                $attr = ['id' => 'ccomment-pinned-' . $post->postid];
-                $cb = html_writer::checkbox('commentpinned-' . $post->postid, 1, !empty($post->pinned), '#', $attr);
-                $tooltip = (!empty($post->pinned))
-                        ? get_string('unpin', 'block_socialcomments')
-                        : get_string('pin', 'block_socialcomments');
-                $cb .= html_writer::div($tooltip, 'ccomments-pin-tooltip');
-                $f .= html_writer::div($cb, 'ccomment-post-pinned-wrap');
-            }
-
-            $p .= html_writer::div($f, 'comments-post-footer clearfix');
-
-            $p .= $this->render_reply_list($context, $post->postid, $post->replies);
-
-            $commentslistitems .= html_writer::tag('li', $p, ['id' => 'ccomment-comment-listitem-' . $post->postid]);
-        }
-
-        $html = html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
-        $html .= $this->render_paging_bar($commentshelper, $contentdata);
-
-        return $html;
-    }
-
-    /**
-     * Render the whole content area of the block, which means:
-     * - render the posting form
-     * - render the comments content (= commentsinfo, subscribe and commentpages)
-     *
-     * @param object $commentshelper
-     * @param object $contentdata
-     * @param object $config
+     * @param comments_helper $commentshelper
+     * @param stdClass $contentdata
+     * @param stdClass|null $config
      * @return string
      */
     public function render_block_content($commentshelper, $contentdata, $config) {
-        $html = html_writer::start_tag('div', ['id' => 'ccomment-form-content']);
-        $html .= $this->render_form_content($commentshelper, $contentdata);
-        $html .= html_writer::end_tag('div');
+        $context = $commentshelper->get_context();
+        $courseid = $this->page->course->id;
+        $groups = comment::get_accessible_groups($context);
+        $pagepinned = !empty($contentdata->formdata->pagepinned);
+        $uniqid = html_writer::random_id('block_socialcomments_');
 
-        // Wrap this in div element for AJAX use, so not change id!
-        $html .= html_writer::start_tag('div', ['id' => 'ccomment-comments-content']);
-        $html .= $this->render_comments_content($commentshelper, $contentdata);
-        $html .= html_writer::end_tag('div');
+        $data = [
+            'uniqid' => $uniqid,
+            'reporturl' => has_capability('block/socialcomments:viewreport', context_course::instance($courseid))
+                ? (new moodle_url('/blocks/socialcomments/report/newsfeed.php', ['courseid' => $courseid]))->out(false)
+                : null,
+            'pinboardurl' => $commentshelper->can_pin()
+                ? (new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $courseid]))->out(false)
+                : null,
+            'canpin' => $commentshelper->can_pin(),
+            'pagepinned' => $pagepinned,
+            'pinpagelabel' => get_string($pagepinned ? 'unpinpage' : 'pinpage', 'block_socialcomments'),
+            'form' => null,
+            'cansubscribe' => $commentshelper->can_subscribe(),
+            'subscribe' => [
+                'id' => $uniqid . '_subscribe',
+                'checked' => !empty($contentdata->comments->subscribed),
+                'label' => get_string('subscribe', 'block_socialcomments'),
+                'title' => get_string('subscribetitle', 'block_socialcomments'),
+                'dataattributes' => [['name' => 'action', 'value' => 'subscribe']],
+            ],
+            'countlabel' => self::count_label($contentdata->comments->count),
+            'commentspage' => $this->render_comments_page($commentshelper, $contentdata),
+        ];
+        $data['haslinks'] = $data['reporturl'] || $data['pinboardurl'] || $data['canpin'];
 
-        $args = [];
-        $args['contextid'] = $commentshelper->get_context()->id;
-        $args['subscribed'] = $contentdata->comments->subscribed;
-        $args['commentscount'] = $contentdata->comments->count;
-        $args['hidepins'] = isset($config->hidepins) ? $config->hidepins : 0;
+        if (comment::can_create($context, $groups)) {
+            $data['form'] = [
+                'type' => 'comment',
+                'label' => get_string('writecomment', 'block_socialcomments'),
+                'placeholder' => get_string(
+                    $context->contextlevel == CONTEXT_COURSE ? 'postcommentoncourse' : 'postcommentonmod',
+                    'block_socialcomments'
+                ),
+                'submitlabel' => get_string('post', 'block_socialcomments'),
+                'groups' => count($groups) > 1 ? array_values(array_map(fn($group) => [
+                    'id' => $group->id,
+                    'name' => format_string($group->name, true, ['context' => $context]),
+                ], $groups)) : [],
+                'groupid' => count($groups) == 1 ? reset($groups)->id : null,
+                'grouplabel' => get_string('group'),
+            ];
+        }
 
-        $this->page->requires->js_call_amd('block_socialcomments/comments', 'init', [$args]);
+        $this->page->requires->js_call_amd('block_socialcomments/comments', 'init', [
+            $uniqid, $context->id, (int) !empty($config->hidepins),
+        ]);
+        if ($token = realtime::get_token($context)) {
+            $this->page->requires->js_call_amd('block_socialcomments/realtime', 'init', [
+                $uniqid, $context->id, $token, (int) get_config('block_deft', 'throttle'),
+            ]);
+        }
 
-        return $html;
+        return $this->render_from_template('block_socialcomments/block', $data);
+    }
+
+    /**
+     * Render a page of comments with the paging bar. This is used for AJAX requests too.
+     *
+     * @param comments_helper $commentshelper
+     * @param stdClass $contentdata
+     * @return string
+     */
+    public function render_comments_page($commentshelper, $contentdata) {
+        $context = $commentshelper->get_context();
+        $canpin = $commentshelper->can_pin();
+        $canreply = reply::can_create($context);
+        $groupnames = $this->group_names($context);
+
+        $comments = [];
+        foreach ($contentdata->comments->posts ?? [] as $post) {
+            $actions = [];
+            if (comment::can_edit($post->userid, $context)) {
+                $actions['edit'] = ['i/edit', get_string('edit')];
+            }
+            if (comment::can_delete($post->userid, $context)) {
+                $actions['delete'] = ['i/delete', get_string('delete')];
+            }
+            // Only the newest replies are shown, the earlier ones behind a button.
+            $limit = (int) get_config('block_socialcomments', 'limitreplies');
+            $hidden = $limit > 0 ? max(0, count($post->replies) - $limit) : 0;
+            $replies = [];
+            foreach ($post->replies as $replypost) {
+                $replyactions = [];
+                if (reply::can_edit($replypost->userid, $context)) {
+                    $replyactions['edit'] = ['i/edit', get_string('edit')];
+                }
+                if (reply::can_delete($replypost->userid, $context)) {
+                    $replyactions['delete'] = ['i/delete', get_string('delete')];
+                }
+                $replies[] = [
+                    'id' => $replypost->postid,
+                    'post' => $this->export_post($replypost, $context, $replyactions),
+                    'hidden' => count($replies) < $hidden,
+                ];
+            }
+            $comments[] = [
+                'id' => $post->postid,
+                'post' => $this->export_post($post, $context, $actions) + [
+                    'groupname' => $groupnames[$post->groupid] ?? null,
+                ],
+                'canreply' => $canreply,
+                'canpin' => $canpin,
+                'pinned' => !empty($post->pinned),
+                'pinlabel' => get_string(empty($post->pinned) ? 'pin' : 'unpin', 'block_socialcomments'),
+                'replies' => $replies,
+                'earlierreplies' => $hidden ? get_string('earlierreplies', 'block_socialcomments', $hidden) : null,
+            ];
+        }
+
+        $pages = [];
+        if ($contentdata->comments->maxpage > 1) {
+            for ($page = 0; $page < $contentdata->comments->maxpage; $page++) {
+                $pages[] = [
+                    'page' => $page,
+                    'label' => $page + 1,
+                    'current' => $page == $contentdata->comments->currentpage,
+                ];
+            }
+        }
+
+        return $this->render_from_template('block_socialcomments/comments_page', [
+            'comments' => $comments,
+            'pages' => $pages,
+            'currentpage' => $contentdata->comments->currentpage,
+            'count' => $contentdata->comments->count,
+            'countlabel' => self::count_label($contentdata->comments->count),
+        ]);
+    }
+
+    /**
+     * "3 comments".
+     *
+     * @param int $count
+     * @return string
+     */
+    public static function count_label(int $count): string {
+        return $count == 1
+            ? get_string('onecomment', 'block_socialcomments')
+            : get_string('commentscount', 'block_socialcomments', $count);
+    }
+
+    /**
+     * Names of the groups of a context in separate groups mode, by id.
+     *
+     * @param \context $context
+     * @return string[]
+     */
+    protected function group_names(\context $context): array {
+        [$unused, $course, $cm] = get_context_info_array($context->id);
+        if (comment::get_group_mode($context, $course, $cm) != SEPARATEGROUPS) {
+            return [];
+        }
+        return array_map(
+            fn($group) => format_string($group->name, true, ['context' => $context]),
+            groups_get_all_groups($course->id)
+        );
+    }
+
+    /**
+     * Data of a comment or reply for the template block_socialcomments/post.
+     *
+     * @param stdClass $post with postid, userid, content, timecreated and the fields of the author
+     * @param \context $context
+     * @param array $actions [action => [icon, label]] for the menu of the post
+     * @param bool $email for the digest: no picture, no menu, always the date
+     * @return array
+     */
+    protected function export_post(stdClass $post, \context $context, array $actions = [], bool $email = false): array {
+        $author = clone $post;
+        $author->id = $post->userid;
+        $time = comments_helper::format_time($post->timecreated, $email ? false : null);
+        $courseid = $context->get_course_context()->instanceid;
+
+        return [
+            'fullname' => fullname($author, has_capability('moodle/site:viewfullnames', $context)),
+            'userpicture' => $email ? null : $this->output->user_picture($author, ['courseid' => $courseid, 'size' => 35]),
+            'time' => $time['display'],
+            'exacttime' => $time['exact'],
+            'datetime' => $time['iso'],
+            'content' => format_text($post->content, $post->format ?? FORMAT_MOODLE, ['context' => $context, 'para' => false]),
+            'raw' => isset($actions['edit']) ? $post->content : null,
+            'actions' => $actions ? $this->render_actions($actions) : null,
+        ];
+    }
+
+    /**
+     * Render the menu with the actions for a comment or a reply.
+     *
+     * @param array $actions [action => [icon, label]]
+     * @return string
+     */
+    protected function render_actions(array $actions): string {
+        $menu = new action_menu();
+        $menu->set_kebab_trigger(get_string('actions', 'block_socialcomments'));
+        $menu->set_additional_classes('sc-post-actions');
+        foreach ($actions as $action => [$icon, $label]) {
+            $menu->add(new action_menu_link_secondary(
+                new moodle_url('#'),
+                new pix_icon($icon, ''),
+                $label,
+                ['data-action' => $action, 'role' => 'button']
+            ));
+        }
+        return $this->output->render($menu);
+    }
+
+    /**
+     * Render a single post, e.g. to confirm its deletion.
+     *
+     * @param stdClass $author user record of the author
+     * @param stdClass $post the comment or reply
+     * @return string
+     */
+    public function render_post($author, $post) {
+        $data = (object) ((array) $post + (array) $author);
+        $data->userid = $author->id;
+        $context = context::instance_by_id($post->contextid);
+        return html_writer::div(
+            $this->render_from_template('block_socialcomments/post', $this->export_post($data, $context)),
+            'block_socialcomments'
+        );
     }
 
     /**
@@ -523,213 +283,148 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      * @return string HTML
      */
     public function render_activity($comment, $reporthelper) {
-
         if (empty($comment->activityid)) {
             return '';
         }
 
         $visiblemodinfo = $reporthelper->get_visible_modinfo();
-
         if (!isset($visiblemodinfo->modules[$comment->activityid])) {
-            return $comment->activity;
+            return s($comment->activity);
         }
 
         $mod = $visiblemodinfo->modules[$comment->activityid];
-
-        $icon = html_writer::empty_tag('img', ['src' => $mod->iconurl,
-                'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation']) .
-            html_writer::tag('span', $mod->name, ['class' => 'instancename']);
-
-        $link = html_writer::link($mod->url, $icon, ['target' => '_blank']);
-
-        return html_writer::div($link, 'activity');
+        $icon = html_writer::img($mod->iconurl, '', ['class' => 'icon activityicon']);
+        return html_writer::link($mod->url, $icon . html_writer::span($mod->name, 'instancename'));
     }
 
     /**
-     * Renderer the activity comments.
-     * @param object $course
-     * @param array $newcomments
+     * Data of the comments of a course, by page, for the template block_socialcomments/overview.
+     *
+     * @param stdClass $course
+     * @param array $commentsdata [contextid => [commentid => {comment, replies}]]
+     * @param bool $email for the digest
+     * @return array
      */
-    protected function render_new_activity_comments($course, $newcomments) {
-        global $CFG;
-
-        require_once($CFG->dirroot . '/course/format/lib.php');
-
-        $course = course_get_format($course)->get_course();
-
+    protected function export_overview(stdClass $course, array $commentsdata, bool $email = false): array {
         $modinfo = get_fast_modinfo($course);
-
-        $html = '';
-        foreach ($modinfo->get_section_info_all() as $section => $thissection) {
-            if ($section > course_get_format($course)->get_last_section_number()) {
-                continue;
-            }
-
-            if (!empty($modinfo->sections[$thissection->section])) {
-                $sectioncommenhtml = '';
-
-                foreach ($modinfo->sections[$thissection->section] as $modnumber) {
-                    $mod = $modinfo->cms[$modnumber];
-
-                    if (!isset($newcomments[$mod->context->id])) {
-                        continue;
-                    }
-
-                    // Print mod.
-                    $text = \html_writer::empty_tag('img', ['src' => $mod->get_icon_url(),
-                            'class' => 'iconlarge activityicon', 'alt' => ' ', 'role' => 'presentation']) .
-                        html_writer::tag('span', $mod->get_formatted_name(), ['class' => 'instancename']);
-
-                    $link = html_writer::link($mod->url, $text, ['target' => '_blank']);
-
-                    $sectioncommenhtml .= \html_writer::div($link, 'activity');
-
-                    $commentslistitems = '';
-                    // Print each comment.
-                    foreach ($newcomments[$mod->context->id] as $commentdata) {
-                        $post = $this->render_post($commentdata->comment, $commentdata->comment);
-                        $commenthtml = html_writer::div($post, 'ccomment-post');
-
-                        $listitems = '';
-                        foreach ($commentdata->replies as $reply) {
-                            $p = $this->render_post($reply, $reply);
-                            $p = html_writer::div($p, 'ccomment-reply-wrap');
-                            $listitems .= html_writer::tag('li', $p, ['class' => 'ccomment-reply-item']);
-                        }
-                        $commenthtml .= html_writer::tag('ul', $listitems, ['class' => 'ccomment-reply-list']);
-                        $commentslistitems .= html_writer::tag('li', $commenthtml);
-                    }
-                    $sectioncommenhtml .= html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
-                }
-
-                if (!empty($sectioncommenhtml)) {
-                    $sectionname = get_section_name($course, $thissection);
-                    $sectionurl = new moodle_url('/course/view.php', ['id' => $course->id, 'section' => $thissection->section]);
-                    $link = \html_writer::link($sectionurl, $sectionname);
-
-                    $sectioncommenhtml = \html_writer::tag('h3', $link) . $sectioncommenhtml;
-                }
-
-                $html .= $sectioncommenhtml;
-            }
-        }
-
-        return $html;
-    }
-
-    /**
-     * Renderer the comments overivew block
-     * @param object $course
-     * @param array $commentsdata
-     */
-    protected function render_comments_overview($course, $commentsdata) {
-
-        // Render activity comments.
-        $html = $this->render_new_activity_comments($course, $commentsdata);
-
+        $format = course_get_format($course);
         $coursecontext = context_course::instance($course->id);
 
-        // Render comment with course context.
-        if (isset($commentsdata[$coursecontext->id])) {
-            $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-            $courselink = \html_writer::link($url, $course->fullname);
-
-            $html .= \html_writer::tag('h3', $courselink);
-            $commentslistitems = '';
-
-            // Print each comment.
-            foreach ($commentsdata[$coursecontext->id] as $commentdata) {
-                $post = $this->render_post($commentdata->comment, $commentdata->comment);
-                $commenthtml = html_writer::div($post, 'ccomment-post');
-
-                $replylistitems = '';
-                foreach ($commentdata->replies as $reply) {
-                    $post = $this->render_post($reply, $reply);
-
-                    $p = html_writer::div($post, 'ccomment-reply-wrap');
-                    $replylistitems .= html_writer::tag('li', $p, ['class' => 'ccomment-reply-item']);
-                }
-                $commenthtml .= html_writer::tag('ul', $replylistitems, ['class' => 'ccomment-reply-list']);
-                $commentslistitems .= html_writer::tag('li', $commenthtml);
-            }
-            $html .= html_writer::tag('ul', $commentslistitems, ['class' => 'ccomment-post-wrap']);
+        $pages = [];
+        if (!empty($commentsdata[$coursecontext->id])) {
+            $pages[] = [
+                'name' => format_string($course->fullname, true, ['context' => $coursecontext]),
+                'url' => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
+                'iconurl' => null,
+                'sectionname' => null,
+                'comments' => $this->export_threads($commentsdata[$coursecontext->id], $coursecontext, $email),
+            ];
         }
+        foreach ($modinfo->get_section_info_all() as $section) {
+            foreach ($modinfo->sections[$section->section] ?? [] as $cmid) {
+                $cm = $modinfo->cms[$cmid];
+                if (empty($commentsdata[$cm->context->id])) {
+                    continue;
+                }
+                $pages[] = [
+                    'name' => $cm->get_formatted_name(),
+                    'url' => $cm->url ? $cm->url->out(false) : null,
+                    'iconurl' => $email ? null : $cm->get_icon_url()->out(false),
+                    'sectionname' => $format->get_section_name($section),
+                    'comments' => $this->export_threads($commentsdata[$cm->context->id], $cm->context, $email),
+                ];
+            }
+        }
+        return $pages;
+    }
 
-        return $html;
+    /**
+     * Data of comments with their replies, without actions.
+     *
+     * @param array $threads [commentid => {comment, replies}]
+     * @param \context $context
+     * @param bool $email
+     * @return array
+     */
+    protected function export_threads(array $threads, \context $context, bool $email): array {
+        $groupnames = $this->group_names($context);
+        $comments = [];
+        foreach ($threads as $thread) {
+            $comments[] = [
+                'id' => $thread->comment->postid,
+                'post' => $this->export_post($thread->comment, $context, [], $email) + [
+                    'groupname' => $groupnames[$thread->comment->groupid] ?? null,
+                ],
+                'replies' => array_values(array_map(fn($reply) => [
+                    'id' => $reply->postid,
+                    'post' => $this->export_post($reply, $context, [], $email),
+                ], $thread->replies)),
+            ];
+        }
+        return $comments;
     }
 
     /**
      * Render the content of the new comments tab.
+     *
      * @param object $course
      * @param array $newcommentsdata
      * @param int $timesince
      * @return string
      */
     public function render_new_comments_tab($course, $newcommentsdata, $timesince) {
-
-        $timesincestr = userdate($timesince, get_string('strftimedatetimeshort', 'langconfig'));
-
         if (empty($newcommentsdata)) {
-            return get_string('nonewcommentssince', 'block_socialcomments', $timesincestr);
+            $timesincestr = userdate($timesince, get_string('strftimedatetimeshort', 'langconfig'));
+            return $this->output->notification(
+                get_string('nonewcommentssince', 'block_socialcomments', $timesincestr),
+                \core\output\notification::NOTIFY_INFO,
+                false
+            );
         }
-
-        return $this->render_comments_overview($course, $newcommentsdata);
+        return $this->render_from_template('block_socialcomments/overview', [
+            'pages' => $this->export_overview($course, $newcommentsdata),
+        ]);
     }
 
     /**
-     * Renderer the pinboard
+     * Render the pinboard.
+     *
      * @param object $course
      * @param array $pinnedcommentsdata
+     * @return string
      */
     public function render_pinboard($course, $pinnedcommentsdata) {
-        global $COURSE;
-
-        $html = '';
-
-        $mycourses = enrol_get_my_courses('format');
-
-        $coursesmenu = [];
-
-        foreach ($mycourses as $mycourse) {
+        $courses = [];
+        foreach (enrol_get_my_courses() as $mycourse) {
             $coursecontext = context_course::instance($mycourse->id);
-
             if (has_capability('block/socialcomments:pinitems', $coursecontext)) {
                 $url = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $mycourse->id]);
-                $coursesmenu[$url->out()] = $mycourse->fullname;
+                $courses[$url->out(false)] = format_string($mycourse->fullname, true, ['context' => $coursecontext]);
             }
         }
+        $selected = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $course->id]);
+        $select = new url_select($courses, $selected->out(false), null, 'block_socialcomments_courses');
+        $select->set_label(get_string('course'));
 
-        $selectedurl = new moodle_url('/blocks/socialcomments/pinboard/index.php', ['courseid' => $COURSE->id]);
-
-        $selecthtml = html_writer::tag('span', get_string('course'));
-
-        $select = new url_select($coursesmenu, $selectedurl, null);
-        $select->class = 'jumpmenu';
-        $select->formid = 'coursesmenu';
-        $selecthtml .= $this->output->render($select);
-
-        $html .= html_writer::div($selecthtml, 'ccomments-courseselect');
-
-        if (empty($pinnedcommentsdata)) {
-            $html .= get_string('nopinnedcomments', 'block_socialcomments', $course->fullname);
-            return $html;
-        }
-
-        $html .= $this->render_comments_overview($course, $pinnedcommentsdata);
-
-        return $html;
+        $coursename = format_string($course->fullname, true, ['context' => context_course::instance($course->id)]);
+        return $this->render_from_template('block_socialcomments/pinboard', [
+            'courseselect' => count($courses) > 1 ? $this->output->render($select) : null,
+            'pages' => $pinnedcommentsdata ? $this->export_overview($course, $pinnedcommentsdata) : [],
+            'nopins' => get_string('nopinnedcomments', 'block_socialcomments', $coursename),
+        ]);
     }
 
     /**
-     * Renderer the digest block.
+     * Render the digest of a course.
+     *
      * @param object $course
      * @param array $newcommentsdata
      * @return string
      */
     public function render_digest($course, $newcommentsdata) {
-
-        $html = html_writer::tag('h2', $course->fullname, ['class' => 'ccomment-digest-courseheader']);
-        $html .= $this->render_comments_overview($course, $newcommentsdata);
-        return $html;
+        return $this->render_from_template('block_socialcomments/digest', [
+            'coursename' => format_string($course->fullname, true, ['context' => context_course::instance($course->id)]),
+            'pages' => $this->export_overview($course, $newcommentsdata, true),
+        ]);
     }
 }

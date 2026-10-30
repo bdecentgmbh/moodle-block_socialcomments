@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(__FILE__) . '/../../../config.php');
+require(__DIR__ . '/../../../config.php');
 
 global $CFG, $PAGE, $OUTPUT;
 
@@ -46,7 +46,7 @@ $PAGE->set_context($context);
 
 require_capability('block/socialcomments:pinitems', $context);
 
-$PAGE->set_heading(get_string('pluginname', 'block_socialcomments'));
+$PAGE->set_heading(format_string($course->fullname, true, ['context' => $context]));
 $PAGE->set_title(get_string('pinboard', 'block_socialcomments'));
 
 $reporthelper = \block_socialcomments\local\report_helper::get_instance();
@@ -54,8 +54,7 @@ $pinnedcommentsdata = $reporthelper->get_course_comments_pinned($course->id);
 
 $renderer = $PAGE->get_renderer('block_socialcomments');
 
-$heading = $OUTPUT->pix_icon('hpinboard', '', 'block_socialcomments');
-$heading .= get_string('pinboard', 'block_socialcomments');
+$heading = get_string('pinboard', 'block_socialcomments');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);

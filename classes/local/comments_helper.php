@@ -202,7 +202,7 @@ class comments_helper {
 
         $userfields = block_socialcomments_get_all_user_name_fields();
         $userpicturefields = block_socialcomments_get_userpicture_fields();
-        $sql = "SELECT bc.id as postid, bc.content, bc.timecreated, p.itemtype as pinned,
+        $sql = "SELECT bc.id as postid, bc.content, bc.format, bc.groupid, bc.timecreated, p.itemtype as pinned,
                 bc.userid, $userfields, $userpicturefields
                 FROM {block_socialcomments_cmmnts} bc
                 JOIN {user} u ON bc.userid = u.id
@@ -262,11 +262,9 @@ class comments_helper {
             return $posts;
         }
 
-        $limitreplies = get_config('block_socialcomments', 'limitreplies');
-
         $userfields = block_socialcomments_get_all_user_name_fields();
         $userpicturefields = block_socialcomments_get_userpicture_fields();
-        $sql = "SELECT r.id as postid, r.content, r.timecreated, r.userid,
+        $sql = "SELECT r.id as postid, r.content, r.format, r.timecreated, r.userid,
                 $userfields, $userpicturefields
                 FROM {block_socialcomments_replies} r
                 JOIN {user} u ON r.userid = u.id
@@ -276,7 +274,7 @@ class comments_helper {
         foreach ($posts as $post) {
             if (!empty($replycounts[$post->postid])) {
                 $post->countreplies = $replycounts[$post->postid];
-                $post->replies = $DB->get_records_sql($sql, [$post->postid], 0, $limitreplies);
+                $post->replies = $DB->get_records_sql($sql, [$post->postid]);
             }
         }
 
@@ -418,35 +416,67 @@ class comments_helper {
     }
 
     /**
+     * Delete comments with their replies and pins.
+     *
+     * @param int[] $commentids
+     */
+    public static function delete_comments(array $commentids) {
+        global $DB;
+
+        foreach (array_chunk($commentids, 1000) as $chunk) {
+            [$insql, $params] = $DB->get_in_or_equal($chunk, SQL_PARAMS_NAMED);
+            $DB->delete_records_select('block_socialcomments_replies', "commentid $insql", $params);
+            $DB->delete_records_select(
+                'block_socialcomments_pins',
+                "itemtype = :itemtype AND itemid $insql",
+                $params + ['itemtype' => self::PINNED_COMMENT]
+            );
+            $DB->delete_records_select('block_socialcomments_cmmnts', "id $insql", $params);
+        }
+    }
+
+    /**
+     * Delete everything of a page: comments, replies, pins and subscriptions.
+     *
+     * @param int $contextid context of the course or activity.
+     */
+    public static function delete_context_data(int $contextid) {
+        global $DB;
+
+        self::delete_comments($DB->get_fieldset_select('block_socialcomments_cmmnts', 'id', 'contextid = ?', [$contextid]));
+        $DB->delete_records('block_socialcomments_pins', ['itemtype' => self::PINNED_PAGE, 'itemid' => $contextid]);
+        $DB->delete_records('block_socialcomments_subscrs', ['contextid' => $contextid]);
+    }
+
+    /**
      * Delete the comments when deleted the course.
-     * @param course_deleted $event
+     * @param \core\event\course_deleted $event
      * @return void
      */
     public static function course_deleted(\core\event\course_deleted $event) {
         global $DB;
 
-        $eventdata = $event->get_data();
-        $courseid = $eventdata['objectid'];
-
-        $sql = "SELECT bc.id
-                FROM {block_socialcomments_cmmnts} bc
-                WHERE courseid = ? ";
-
-        $commentids = $DB->get_records_sql($sql, [$courseid]);
-
-        // Delete comments.
-        foreach ($commentids as $commentid => $unused) {
-            $comment = new comment(['id' => $commentid]);
-            $comment->delete();
+        $courseid = $event->objectid;
+        $contextids = $DB->get_fieldset_select('block_socialcomments_cmmnts', 'DISTINCT contextid', 'courseid = ?', [$courseid]);
+        foreach ($contextids as $contextid) {
+            self::delete_context_data($contextid);
         }
-
-        // Delete subscriptions.
+        self::delete_context_data($event->contextid);
         $DB->delete_records('block_socialcomments_subscrs', ['courseid' => $courseid]);
     }
 
     /**
+     * Delete the comments of an activity with the activity.
+     *
+     * @param \core\event\course_module_deleted $event
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+        self::delete_context_data($event->contextid);
+    }
+
+    /**
      * Delete the user subscribe and pins data.
-     * @param user_deleted $event
+     * @param \core\event\user_deleted $event
      * @return void
      */
     public static function user_deleted(\core\event\user_deleted $event) {
@@ -457,6 +487,72 @@ class comments_helper {
 
         $DB->delete_records('block_socialcomments_subscrs', ['userid' => $userid]);
         $DB->delete_records('block_socialcomments_pins', ['userid' => $userid]);
+    }
+
+    /**
+     * The date of a post as shown with it, and the exact date and time for its tooltip.
+     *
+     * @param int $time
+     * @param bool|null $relative "5 minutes ago" instead of the date; null for the site setting.
+     * @param int|null $now
+     * @return array display, exact (for the tooltip) and iso (for the datetime attribute)
+     */
+    public static function format_time(int $time, ?bool $relative = null, ?int $now = null): array {
+        $relative = $relative ?? get_config('block_socialcomments', 'dateformat') !== 'absolute';
+        $exact = userdate($time, get_string('strftimedatetime', 'langconfig'));
+        $display = $relative
+            ? self::format_relative_time($time, $now ?? time())
+            : userdate($time, get_string('strftimedatefullshort', 'langconfig') . ' ' . get_string('strftimetime', 'langconfig'));
+        return ['display' => $display, 'exact' => $exact, 'iso' => date(DATE_ATOM, $time)];
+    }
+
+    /**
+     * How long ago something happened: minutes and hours today, days, weeks, months or years before today.
+     *
+     * @param int $time
+     * @param int $now
+     * @return string
+     */
+    public static function format_relative_time(int $time, int $now): string {
+        $seconds = $now - $time;
+        if ($seconds < MINSECS) {
+            return get_string('timejustnow', 'block_socialcomments');
+        }
+        $today = usergetmidnight($now);
+        if ($time >= $today || $seconds < HOURSECS) {
+            if ($seconds < HOURSECS) {
+                return self::time_string('minute', intdiv($seconds, MINSECS));
+            }
+            return self::time_string('hour', intdiv($seconds, HOURSECS));
+        }
+        // Calendar days, so that last night is yesterday. Rounded, as days with a clock change are 23 or 25 hours.
+        $days = (int) round(($today - usergetmidnight($time)) / DAYSECS);
+        if ($days <= 1) {
+            return get_string('timeyesterday', 'block_socialcomments');
+        }
+        if ($days < 7) {
+            return self::time_string('day', $days);
+        }
+        if ($days < 30) {
+            return self::time_string('week', intdiv($days, 7));
+        }
+        if ($days < 365) {
+            return self::time_string('month', intdiv($days, 30));
+        }
+        return self::time_string('year', intdiv($days, 365));
+    }
+
+    /**
+     * "1 week ago" or "3 weeks ago".
+     *
+     * @param string $unit minute, hour, day, week, month or year
+     * @param int $count
+     * @return string
+     */
+    protected static function time_string(string $unit, int $count): string {
+        return $count == 1
+            ? get_string('time' . $unit . 'ago', 'block_socialcomments')
+            : get_string('time' . $unit . 'sago', 'block_socialcomments', $count);
     }
 
     /**

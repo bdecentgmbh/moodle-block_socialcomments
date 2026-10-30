@@ -130,6 +130,7 @@ class reply extends basepost {
     public function delete() {
         global $DB;
         $DB->delete_records('block_socialcomments_replies', ['id' => $this->id]);
+        realtime::notify($this->get_context());
     }
 
     /**
@@ -169,6 +170,7 @@ class reply extends basepost {
 
             $this->fire_event_created();
         }
+        realtime::notify($this->get_context());
         return $this;
     }
 }

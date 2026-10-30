@@ -32,6 +32,11 @@ $observers = [
         'internal' => true,
     ],
     [
+        'eventname' => '\core\event\course_module_deleted',
+        'callback' => '\block_socialcomments\local\comments_helper::course_module_deleted',
+        'internal' => true,
+    ],
+    [
         'eventname' => '\core\event\user_deleted',
         'callback' => '\block_socialcomments\local\comments_helper::user_deleted',
         'internal' => true,

@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(dirname(__FILE__) . '/../../../config.php');
+require(__DIR__ . '/../../../config.php');
 
 global $CFG, $PAGE, $OUTPUT;
 
@@ -73,7 +73,7 @@ $filterform->set_data($filterdata);
 $baseurl->params($tableurlparams);
 $baseurl->param('perpage', $perpage);
 
-$PAGE->set_heading(get_string('pluginname', 'block_socialcomments'));
+$PAGE->set_heading(format_string($course->fullname, true, ['context' => $context]));
 $PAGE->set_title(get_string('socialcommentsreport', 'block_socialcomments'));
 
 $table = new flexible_table('report-table');
@@ -125,8 +125,7 @@ $renderer = $PAGE->get_renderer('block_socialcomments');
 
 $tabs = $reporthelper->get_tab_tree($course->id);
 
-$heading = $OUTPUT->pix_icon('hreport', '', 'block_socialcomments');
-$heading .= get_string('reportspage', 'block_socialcomments');
+$heading = get_string('reportspage', 'block_socialcomments');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
@@ -168,10 +167,11 @@ foreach ($comments as $comment) {
     }
     $row[] = $author;
 
-    $row[] = $comment->content;
+    $context = context_helper::instance_by_id($comment->contextid);
+    $content = format_text($comment->content, $comment->format, ['context' => $context, 'para' => false]);
+    $row[] = $download ? content_to_text($content, FORMAT_HTML) : $content;
 
     $link = '';
-    $context = context_helper::instance_by_id($comment->contextid);
     if (comment::can_delete($comment->userid, $context)) {
         $linkparams = ['id' => $comment->id, 'courseid' => $course->id, 'sesskey' => sesskey()];
         $url = new moodle_url('/blocks/socialcomments/report/delete_comment.php', $linkparams);

@@ -102,19 +102,4 @@ class block_socialcomments extends block_base {
         $this->content->footer = '';
         return $this->content;
     }
-
-    /**
-     * Return the attributes to set for this block.
-     *
-     * @return array An array of HTML attributes.
-     */
-    public function html_attributes() {
-        $attributes = parent::html_attributes();
-
-        if (!empty($this->config->hidepins)) {
-            $attributes['class'] .= " ccomments-no-pins";
-        }
-
-        return $attributes;
-    }
 }

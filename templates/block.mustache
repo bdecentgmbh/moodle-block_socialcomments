@@ -1,0 +1,57 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_socialcomments/block
+
+    The content of the block: the form, the subscription, the comments of the page and the links to the reports.
+
+    Context variables required for this template:
+    * uniqid - Id of the block content, for the JavaScript
+    * countlabel - Number of comments, e.g. "3 comments"
+    * commentspage - The first page of comments (HTML)
+
+    Optional context variables:
+    * form - Context of block_socialcomments/form, when the user may comment
+    * cansubscribe, subscribe - Whether the user may subscribe, and the context of core/toggle for it
+    * canpin, pagepinned, pinpagelabel - Whether the user may pin the page, whether it is pinned, the label of the button
+    * haslinks, reporturl, pinboardurl - Whether there are links, the links to the comments report and the pinboard
+
+    Example context (json):
+    {
+        "uniqid": "block_socialcomments_1",
+        "form": {"type": "comment", "label": "Write a comment", "submitlabel": "Post"},
+        "countlabel": "3 comments",
+        "cansubscribe": false,
+        "subscribe": {"id": "block_socialcomments_1_subscribe", "checked": true, "label": "Subscribe"},
+        "canpin": true,
+        "pagepinned": false,
+        "pinpagelabel": "Pin all comments",
+        "commentspage": "",
+        "haslinks": true,
+        "reporturl": "#",
+        "pinboardurl": "#"
+    }
+}}
+<div id="{{uniqid}}" class="sc-block" data-region="socialcomments">
+    {{#form}}{{> block_socialcomments/form}}{{/form}}
+    <div class="sc-bar">
+        <span class="sc-count" data-region="count">{{countlabel}}</span>
+        {{#cansubscribe}}{{#subscribe}}{{> core/toggle}}{{/subscribe}}{{/cansubscribe}}
+    </div>
+    <div data-region="comments">{{{commentspage}}}</div>
+    {{#haslinks}}{{> block_socialcomments/links}}{{/haslinks}}
+</div>

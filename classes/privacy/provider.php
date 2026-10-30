@@ -19,33 +19,36 @@
  *
  * @package   block_socialcomments
  * @copyright 2019 Paul Steffen, EDU-Werkstatt GmbH
+ * @copyright 2026 bdecent gmbh <https://bdecent.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace block_socialcomments\privacy;
 
+use block_socialcomments\local\comments_helper;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
-use core_privacy\local\request\deletion_criteria;
-use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
-use block_socialcomments\local\comments_helper;
-use core_privacy\local\request\core_userlist_provider;
-use core_privacy\local\metadata\provider as core_privacy_provider;
-use core_privacy\local\request\plugin\provider as core_plugin_provider;
 
 /**
- * Privacy Subsystem for block block_socialcomments.
+ * Privacy Subsystem for block_socialcomments.
+ *
+ * Comments, subscriptions and page pins belong to the context of the page (course or activity) they were made on,
+ * replies and comment pins to the context of their comment.
  *
  * @package   block_socialcomments
  * @copyright 2019 Paul Steffen, EDU-Werkstatt GmbH
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 bdecent gmbh <https://bdecent.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements core_plugin_provider, core_privacy_provider, core_userlist_provider {
+class provider implements
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider {
     /**
      * Returns meta data about this system.
      *
@@ -53,48 +56,39 @@ class provider implements core_plugin_provider, core_privacy_provider, core_user
      * @return collection A listing of user data stored through this system.
      */
     public static function get_metadata(collection $collection): collection {
-        $collection->add_database_table(
-            'block_socialcomments_cmmnts',
-            [
-               'contextid' => 'privacy:metadata:block_socialcomments_cmmnts:contextid',
-               'content' => 'privacy:metadata:block_socialcomments_cmmnts:content',
-               'userid' => 'privacy:metadata:block_socialcomments_cmmnts:userid',
-               'groupid' => 'privacy:metadata:block_socialcomments_cmmnts:groupid',
-               'courseid' => 'privacy:metadata:block_socialcomments_cmmnts:courseid',
-               'timemodified' => 'privacy:metadata:block_socialcomments_cmmnts:timemodified',
-            ],
-            'privacy:metadata:block_socialcomments_cmmnts'
-        );
-        $collection->add_database_table(
-            'block_socialcomments_subscrs',
-            [
-               'courseid' => 'privacy:metadata:block_socialcomments_subscrs:courseid',
-               'contextid' => 'privacy:metadata:block_socialcomments_subscrs:contextid',
-               'userid' => 'privacy:metadata:block_socialcomments_subscrs:userid',
-               'timelastsent' => 'privacy:metadata:block_socialcomments_subscrs:timelastsent',
-               'timemodified' => 'privacy:metadata:block_socialcomments_subscrs:timemodified',
-            ],
-            'privacy:metadata:block_socialcomments_subscrs'
-        );
-        $collection->add_database_table(
-            'block_socialcomments_pins',
-            [
-               'itemtype' => 'privacy:metadata:block_socialcomments_pins:itemtype',
-               'itemid' => 'privacy:metadata:block_socialcomments_pins:itemid',
-               'userid' => 'privacy:metadata:block_socialcomments_pins:userid',
-            ],
-            'privacy:metadata:block_socialcomments_pins'
-        );
-        $collection->add_database_table(
-            'block_socialcomments_replies',
-            [
-               'commentid' => 'privacy:metadata:block_socialcomments_replies:commentid',
-               'content' => 'privacy:metadata:block_socialcomments_replies:content',
-               'userid' => 'privacy:metadata:block_socialcomments_replies:userid',
-               'timemodified' => 'privacy:metadata:block_socialcomments_replies:timemodified',
-            ],
-            'privacy:metadata:block_socialcomments_replies'
-        );
+        $collection->add_database_table('block_socialcomments_cmmnts', [
+            'contextid' => 'privacy:metadata:block_socialcomments_cmmnts:contextid',
+            'content' => 'privacy:metadata:block_socialcomments_cmmnts:content',
+            'userid' => 'privacy:metadata:block_socialcomments_cmmnts:userid',
+            'groupid' => 'privacy:metadata:block_socialcomments_cmmnts:groupid',
+            'courseid' => 'privacy:metadata:block_socialcomments_cmmnts:courseid',
+            'timecreated' => 'privacy:metadata:block_socialcomments_cmmnts:timecreated',
+            'timemodified' => 'privacy:metadata:block_socialcomments_cmmnts:timemodified',
+        ], 'privacy:metadata:block_socialcomments_cmmnts');
+        $collection->add_database_table('block_socialcomments_replies', [
+            'commentid' => 'privacy:metadata:block_socialcomments_replies:commentid',
+            'content' => 'privacy:metadata:block_socialcomments_replies:content',
+            'userid' => 'privacy:metadata:block_socialcomments_replies:userid',
+            'timecreated' => 'privacy:metadata:block_socialcomments_replies:timecreated',
+            'timemodified' => 'privacy:metadata:block_socialcomments_replies:timemodified',
+        ], 'privacy:metadata:block_socialcomments_replies');
+        $collection->add_database_table('block_socialcomments_subscrs', [
+            'courseid' => 'privacy:metadata:block_socialcomments_subscrs:courseid',
+            'contextid' => 'privacy:metadata:block_socialcomments_subscrs:contextid',
+            'userid' => 'privacy:metadata:block_socialcomments_subscrs:userid',
+            'timelastsent' => 'privacy:metadata:block_socialcomments_subscrs:timelastsent',
+            'timemodified' => 'privacy:metadata:block_socialcomments_subscrs:timemodified',
+        ], 'privacy:metadata:block_socialcomments_subscrs');
+        $collection->add_database_table('block_socialcomments_pins', [
+            'itemtype' => 'privacy:metadata:block_socialcomments_pins:itemtype',
+            'itemid' => 'privacy:metadata:block_socialcomments_pins:itemid',
+            'userid' => 'privacy:metadata:block_socialcomments_pins:userid',
+            'timecreated' => 'privacy:metadata:block_socialcomments_pins:timecreated',
+        ], 'privacy:metadata:block_socialcomments_pins');
+        $collection->add_subsystem_link('core_message', [], 'privacy:metadata:core_message');
+        $collection->add_external_location_link('deft', [
+            'contextid' => 'privacy:metadata:deft:contextid',
+        ], 'privacy:metadata:deft');
         return $collection;
     }
 
@@ -102,59 +96,28 @@ class provider implements core_plugin_provider, core_privacy_provider, core_user
      * Get the list of contexts that contain user information for the specified user.
      *
      * @param int $userid The user to search.
-     * @return contextlist $contextlist  The list of contexts used in this plugin.
+     * @return contextlist $contextlist The list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
         $params = [
             'userid' => $userid,
+            'page' => comments_helper::PINNED_PAGE,
+            'comment' => comments_helper::PINNED_COMMENT,
         ];
-
-        // Get context by comments.
-        $sql = "SELECT c.id
-                FROM {context} c
-                INNER JOIN {block_socialcomments_cmmnts} s ON s.contextid = c.id
-                WHERE (s.userid = :userid)
-                GROUP BY id";
-        $contextlist->add_from_sql($sql, $params);
-
-        // Get context by replies.
-        $sql = "SELECT c.id
-                FROM {context} c
-                INNER JOIN {block_socialcomments_cmmnts} s ON s.contextid = c.id
-                INNER JOIN {block_socialcomments_replies} r ON r.commentid = s.id
-                WHERE (r.userid = :userid)
-                GROUP BY id";
-        $contextlist->add_from_sql($sql, $params);
-
-        // Get context by subscriptions.
-        $sql = "SELECT c.id
-                FROM {context} c
-                INNER JOIN {block_socialcomments_subscrs} s ON s.contextid = c.id
-                WHERE (s.userid = :userid)
-                GROUP BY id";
-        $contextlist->add_from_sql($sql, $params);
-
-        // Get context by pins.
-        $sql = "SELECT c.id
-                FROM {context} c
-                INNER JOIN {block_socialcomments_cmmnts} s ON s.contextid = c.id
-                INNER JOIN {block_socialcomments_pins} p ON p.itemid = s.id
-                WHERE (p.userid = :userid_comment)
-                AND (p.itemtype = :pin_type_comment)
-                UNION
-                SELECT c.id
-                FROM {context} c
-                INNER JOIN  {block_socialcomments_pins} p ON p.itemid = c.id
-                WHERE (p.userid = :userid_page)
-                AND (p.itemtype = :pin_type_page)";
-        $params = [
-          'userid_comment' => $userid,
-          'pin_type_comment' => comments_helper::PINNED_COMMENT,
-          'userid_page' => $userid,
-          'pin_type_page' => comments_helper::PINNED_PAGE,
-        ];
-        $contextlist->add_from_sql($sql, $params);
+        $contextlist->add_from_sql("SELECT contextid FROM {block_socialcomments_cmmnts} WHERE userid = :userid", $params);
+        $contextlist->add_from_sql("SELECT c.contextid
+                                      FROM {block_socialcomments_replies} r
+                                      JOIN {block_socialcomments_cmmnts} c ON c.id = r.commentid
+                                     WHERE r.userid = :userid", $params);
+        $contextlist->add_from_sql("SELECT contextid FROM {block_socialcomments_subscrs} WHERE userid = :userid", $params);
+        $contextlist->add_from_sql("SELECT itemid
+                                      FROM {block_socialcomments_pins}
+                                     WHERE userid = :userid AND itemtype = :page", $params);
+        $contextlist->add_from_sql("SELECT c.contextid
+                                      FROM {block_socialcomments_pins} p
+                                      JOIN {block_socialcomments_cmmnts} c ON c.id = p.itemid
+                                     WHERE p.userid = :userid AND p.itemtype = :comment", $params);
         return $contextlist;
     }
 
@@ -164,240 +127,119 @@ class provider implements core_plugin_provider, core_privacy_provider, core_user
      * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
      */
     public static function get_users_in_context(userlist $userlist) {
-        $context = $userlist->get_context();
         $params = [
-            'contextid' => $context->id,
+            'contextid' => $userlist->get_context()->id,
+            'page' => comments_helper::PINNED_PAGE,
+            'comment' => comments_helper::PINNED_COMMENT,
         ];
-
-        // Get userlist by comments.
-        $sql = "SELECT userid
-            FROM {block_socialcomments_cmmnts}
-            WHERE contextid = :contextid";
-        $userlist->add_from_sql('userid', $sql, $params);
-
-        // Get userlist by replies.
-        $sql = "SELECT r.userid
-            FROM {block_socialcomments_replies} r
-            INNER JOIN {block_socialcomments_cmmnts} sc ON sc.id = r.commentid
-            WHERE contextid = :contextid";
-        $userlist->add_from_sql('userid', $sql, $params);
-
-        // Get userlist by subscriptions.
-        $sql = "SELECT userid
-            FROM {block_socialcomments_subscrs}
-            WHERE contextid = :contextid";
-        $userlist->add_from_sql('userid', $sql, $params);
-
-        // Get userlist by pins.
-        $params = [
-            'comment_contextid' => $context->id,
-            'page_contextid' => $context->id,
-            'pin_type_comment' => comments_helper::PINNED_COMMENT,
-            'pin_type_page' => comments_helper::PINNED_PAGE,
-        ];
-        $sql = "SELECT p.*
-            FROM {block_socialcomments_pins} p
-            JOIN {block_socialcomments_cmmnts} c
-            ON p.itemid = c.id
-            AND p.itemtype = :pin_type_comment
-            AND c.courseid = :comment_contextid
-            UNION
-            SELECT p.* FROM {block_socialcomments_pins} p
-            WHERE (p.itemid = :page_contextid)
-            AND (p.itemtype = :pin_type_page)";
-        $userlist->add_from_sql('userid', $sql, $params);
-        return $userlist;
+        $userlist->add_from_sql(
+            'userid',
+            "SELECT userid FROM {block_socialcomments_cmmnts} WHERE contextid = :contextid",
+            $params
+        );
+        $userlist->add_from_sql('userid', "SELECT r.userid
+                                             FROM {block_socialcomments_replies} r
+                                             JOIN {block_socialcomments_cmmnts} c ON c.id = r.commentid
+                                            WHERE c.contextid = :contextid", $params);
+        $userlist->add_from_sql(
+            'userid',
+            "SELECT userid FROM {block_socialcomments_subscrs} WHERE contextid = :contextid",
+            $params
+        );
+        $userlist->add_from_sql('userid', "SELECT userid
+                                             FROM {block_socialcomments_pins}
+                                            WHERE itemtype = :page AND itemid = :contextid", $params);
+        $userlist->add_from_sql('userid', "SELECT p.userid
+                                             FROM {block_socialcomments_pins} p
+                                             JOIN {block_socialcomments_cmmnts} c ON c.id = p.itemid
+                                            WHERE p.itemtype = :comment AND c.contextid = :contextid", $params);
     }
 
     /**
-     * Export all user data for the specified user, in the specified contexts, using the supplied exporter instance.
+     * Export all user data for the specified user, in the specified contexts.
      *
      * @param approved_contextlist $contextlist The approved contexts to export information for.
      */
     public static function export_user_data(approved_contextlist $contextlist) {
-        $context = $contextlist->current();
-        $user = \core_user::get_user($contextlist->get_user()->id);
-
-        static::export_comments($user->id, $context);
-        static::export_replies($user->id, $context);
-        static::export_pins($user->id, $context);
-        static::export_subscriptions($user->id, $context);
-    }
-
-    /**
-     * Export all socialcomments comments for the specified user.
-     *
-     * @param int $userid The user ID.
-     * @param \context $context The user context.
-     */
-    protected static function export_comments(int $userid, \context $context) {
         global $DB;
-        $sql = "SELECT sc.id, sc.content, sc.contextid, sc.userid,
-                  sc.timecreated, sc.timemodified
-                FROM {block_socialcomments_cmmnts} sc WHERE
-                  sc.userid = :userid";
-        $params = ['userid' => $userid];
-        $records = $DB->get_records_sql($sql, $params);
-        if (!empty($records)) {
-            $comments = (object) array_map(function ($record) use ($context) {
-                return [
-                        'content' => format_string($record->content),
-                        'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified),
-                ];
-            }, $records);
-            writer::with_context($context)->export_data(
-                [
-                    get_string(
-                        'privacy:commentspath',
-                        'block_socialcomments'
-                    ),
-                ],
-                $comments
-            );
-        }
-    }
 
-    /**
-     * Export all socialcomments replies for the specified user.
-     *
-     * @param int $userid The user ID.
-     * @param \context $context The user context.
-     */
-    protected static function export_replies(int $userid, \context $context) {
-        global $DB;
-        $sql = "SELECT r.id, r.content, r.userid, r.timecreated, r.timemodified, sc.contextid
-                FROM {block_socialcomments_replies} r
-                INNER JOIN {block_socialcomments_cmmnts} sc ON sc.id = r.commentid
-                WHERE (r.userid = :userid)";
-        $params = ['userid' => $userid];
-        $records = $DB->get_records_sql($sql, $params);
-        if (!empty($records)) {
-            $replies = (object) array_map(function ($record) use ($context) {
-                return [
-                        'content' => format_string($record->content),
-                        'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified),
-                ];
-            }, $records);
-            writer::with_context($context)->export_data(
-                [
-                    get_string(
-                        'privacy:repliespath',
-                        'block_socialcomments'
-                    ),
-                ],
-                $replies
-            );
-        }
-    }
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            $params = ['userid' => $userid, 'contextid' => $context->id];
+            $data = [];
 
-    /**
-     * Export all socialcomments subscriptions for the specified user.
-     *
-     * @param int $userid The user ID.
-     * @param \context $context The user context.
-     */
-    protected static function export_subscriptions(int $userid, \context $context) {
-        global $DB;
-        $sql = "SELECT s.courseid, s.timelastsent, s.timecreated, s.timemodified
-                FROM {block_socialcomments_subscrs} s
-                WHERE (s.userid = :userid)";
-        $params = ['userid' => $userid];
-        $records = $DB->get_records_sql($sql, $params);
-        if (!empty($records)) {
-            $subscriptions = (object) array_map(function ($record) use ($context) {
-                global $DB;
-                $course = $DB->get_record('course', ['id' => $record->courseid]);
-                return [
-                        'course' => format_string($course->fullname),
-                        'timelastsent' => transform::datetime($record->timelastsent),
-                        'timecreated' => transform::datetime($record->timecreated),
-                        'timemodified' => transform::datetime($record->timemodified),
-                ];
-            }, $records);
-            writer::with_context($context)->export_data(
-                [
-                    get_string(
-                        'privacy:subscriptionspath',
-                        'block_socialcomments'
-                    ),
-                ],
-                $subscriptions
-            );
-        }
-    }
+            $comments = $DB->get_records('block_socialcomments_cmmnts', $params, 'timecreated, id');
+            if ($comments) {
+                $data[get_string('privacy:commentspath', 'block_socialcomments')] = array_values(array_map(
+                    fn($comment) => self::export_post($comment, $context),
+                    $comments
+                ));
+            }
 
-    /**
-     * Export all socialcomments pins for the specified user.
-     *
-     * @param int $userid The user ID.
-     * @param \context $context The user context.
-     */
-    protected static function export_pins(int $userid, \context $context) {
-        global $DB;
-        $sql = "SELECT p.id, p.itemtype, p.itemid, p.timecreated, c.contextid
-                FROM {block_socialcomments_pins} p
-                JOIN {block_socialcomments_cmmnts} c
-                ON p.itemid = c.id
-                WHERE (p.userid = :userid_comment)
-                AND (p.itemtype = :pin_type_comment)
-                UNION
-                SELECT p.id, p.itemtype, p.itemid, p.timecreated, p.itemid AS contextid
-                FROM {block_socialcomments_pins} p
-                WHERE (p.userid = :userid_page)
-                AND (p.itemtype = :pin_type_page)";
-        $params = [
-            'userid_comment' => $userid,
-            'pin_type_comment' => comments_helper::PINNED_COMMENT,
-            'userid_page' => $userid,
-            'pin_type_page' => comments_helper::PINNED_PAGE,
-        ];
-        $records = $DB->get_records_sql($sql, $params);
-        if (!empty($records)) {
-            $pins = (object) array_map(function ($record) use ($context) {
-                return [
-                        'type' => format_string($record->itemtype),
-                        'timecreated' => transform::datetime($record->timecreated),
-                ];
-            }, $records);
-            writer::with_context($context)->export_data(
-                [
-                    get_string(
-                        'privacy:pinspath',
-                        'block_socialcomments'
-                    ),
-                ],
-                $pins
-            );
-        }
-    }
+            $replies = $DB->get_records_sql("SELECT r.*, c.content AS commentcontent, c.format AS commentformat
+                                               FROM {block_socialcomments_replies} r
+                                               JOIN {block_socialcomments_cmmnts} c ON c.id = r.commentid
+                                              WHERE r.userid = :userid AND c.contextid = :contextid
+                                           ORDER BY r.timecreated, r.id", $params);
+            if ($replies) {
+                $data[get_string('privacy:repliespath', 'block_socialcomments')] = array_values(array_map(
+                    fn($reply) => self::export_post($reply, $context) + [
+                        'inreplyto' => format_text($reply->commentcontent, $reply->commentformat, ['context' => $context]),
+                    ],
+                    $replies
+                ));
+            }
 
-    /**
-     * Delete all data depending on comments in the specified context.
-     * If a user ID is specified, delete only data depending on this user's comments.
-     *
-     * @param \context $context Course context.
-     * @param int|null $userid ID of the user, or null to delete data for all users.
-     */
-    protected static function delete_all_comment_dependant_data(\context $context, ?int $userid = null) {
-        global $DB;
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return;
-        }
-        $conditions = ['contextid' => $context->id];
-        if ($userid !== null) {
-            $conditions['userid'] = $userid;
-        }
-
-        $comments = $DB->get_records('block_socialcomments_cmmnts', $conditions);
-        foreach ($comments as $comment) {
-            $DB->delete_records('block_socialcomments_replies', ['commentid' => $comment->id]);
-            $DB->delete_records('block_socialcomments_pins', [
-                'itemid' => $comment->id,
-                'itemtype' => comments_helper::PINNED_COMMENT,
+            $pins = $DB->get_records_sql("SELECT p.id, p.itemtype, p.timecreated, c.content, c.format
+                                            FROM {block_socialcomments_pins} p
+                                       LEFT JOIN {block_socialcomments_cmmnts} c
+                                                 ON p.itemtype = :comment AND c.id = p.itemid
+                                           WHERE p.userid = :userid
+                                                 AND ((p.itemtype = :page AND p.itemid = :pagecontextid)
+                                                      OR c.contextid = :contextid)
+                                        ORDER BY p.timecreated, p.id", $params + [
+                'page' => comments_helper::PINNED_PAGE,
+                'comment' => comments_helper::PINNED_COMMENT,
+                'pagecontextid' => $context->id,
             ]);
+            if ($pins) {
+                $data[get_string('privacy:pinspath', 'block_socialcomments')] = array_values(array_map(fn($pin) => [
+                    'pinned' => $pin->itemtype == comments_helper::PINNED_PAGE
+                        ? get_string('privacy:pinnedpage', 'block_socialcomments')
+                        : format_text($pin->content, $pin->format, ['context' => $context]),
+                    'timecreated' => $pin->timecreated ? transform::datetime($pin->timecreated) : '-',
+                ], $pins));
+            }
+
+            if ($subscription = $DB->get_record('block_socialcomments_subscrs', $params)) {
+                $data[get_string('privacy:subscriptionspath', 'block_socialcomments')] = [
+                    'timecreated' => transform::datetime($subscription->timecreated),
+                    'timelastsent' => transform::datetime($subscription->timelastsent),
+                ];
+            }
+
+            if ($data) {
+                writer::with_context($context)->export_data(
+                    [get_string('pluginname', 'block_socialcomments')],
+                    (object) $data
+                );
+            }
         }
+    }
+
+    /**
+     * Prepare a comment or a reply for the export.
+     *
+     * @param \stdClass $post
+     * @param \context $context
+     * @return array
+     */
+    protected static function export_post(\stdClass $post, \context $context): array {
+        return [
+            'content' => format_text($post->content, $post->format, ['context' => $context]),
+            'timecreated' => transform::datetime($post->timecreated),
+            'timemodified' => transform::datetime($post->timemodified),
+        ];
     }
 
     /**
@@ -406,21 +248,18 @@ class provider implements core_plugin_provider, core_privacy_provider, core_user
      * @param \context $context The specific context to delete data for.
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
-        global $DB;
+        self::delete_data($context);
+    }
 
-        // Check thet this is a course context.
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return;
+    /**
+     * Delete all user data for the specified user, in the specified contexts.
+     *
+     * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
+        foreach ($contextlist->get_contexts() as $context) {
+            self::delete_data($context, [$contextlist->get_user()->id]);
         }
-
-        // Delete all replies and pins related to comments from the specified context.
-        self::delete_all_comment_dependant_data($context);
-        $DB->delete_records('block_socialcomments_cmmnts', ['contextid' => $context->id]);
-        $DB->delete_records('block_socialcomments_subscrs', ['contextid' => $context->id]);
-        $DB->delete_records('block_socialcomments_pins', [
-            'itemid' => $context->id,
-            'itemtype' => comments_helper::PINNED_PAGE,
-        ]);
     }
 
     /**
@@ -429,77 +268,49 @@ class provider implements core_plugin_provider, core_privacy_provider, core_user
      * @param approved_userlist $userlist The approved context and user information to delete information for.
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
-        // An approved_contextlist is given and user data related to that user should either be completely deleted,
-        // or overwritten if a structure needs to be maintained. This will be called when a user has requested the
-        // right to be forgotten. All attempts should be made to delete this data where practical while still
-        // allowing the plugin to be used by other users.
-        global $DB;
-        // Prepare SQL to gather all completed IDs.
-        $context = $userlist->get_context();
-
-        if ($context instanceof \context_course) {
-            $userids = $userlist->get_userids();
-            [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
-
-            foreach ($userids as $userid) {
-                self::delete_all_comment_dependant_data($context, $userid);
-            }
-            $DB->delete_records_select(
-                'block_socialcomments_cmmnts',
-                "userid $insql",
-                $inparams
-            );
-            $DB->delete_records_select(
-                'block_socialcomments_replies',
-                "userid $insql",
-                $inparams
-            );
-            $DB->delete_records_select(
-                'block_socialcomments_subscrs',
-                "userid $insql",
-                $inparams
-            );
-            $DB->delete_records_select(
-                'block_socialcomments_pins',
-                "userid $insql",
-                $inparams
-            );
+        if ($userids = $userlist->get_userids()) {
+            self::delete_data($userlist->get_context(), $userids);
         }
     }
 
     /**
-     * Delete all user data for the specified user.
+     * Delete the data of some or all users in a context.
      *
-     * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
+     * Comments are deleted with their replies, so the replies of other users to them go too.
+     *
+     * @param \context $context
+     * @param int[]|null $userids null for all users
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
+    protected static function delete_data(\context $context, ?array $userids = null) {
         global $DB;
-        $user = \core_user::get_user($contextlist->get_user()->id);
-        foreach ($contextlist as $context) {
-            if ($context->contextlevel == CONTEXT_COURSE) {
-                self::delete_all_comment_dependant_data($context, $user->id);
 
-                $conditions = ['contextid' => $context->id];
-                $comments = $DB->get_records('block_socialcomments_cmmnts', $conditions);
-                foreach ($comments as $comment) {
-                    $DB->delete_records('block_socialcomments_replies', [
-                      'commentid' => $comment->id,
-                      'userid' => $user->id,
-                    ]);
-                    $DB->delete_records('block_socialcomments_pins', [
-                        'itemid' => $comment->id,
-                        'itemtype' => comments_helper::PINNED_COMMENT,
-                        'userid' => $user->id,
-                    ]);
-                }
-
-                $DB->delete_records('block_socialcomments_cmmnts', ['contextid' => $context->id, 'userid' => $user->id]);
-                $DB->delete_records('block_socialcomments_subscrs', ['contextid' => $context->id, 'userid' => $user->id]);
-                $DB->delete_records('block_socialcomments_pins', [
-                    'itemid' => $context->id,
-                    'itemtype' => comments_helper::PINNED_PAGE,
-                ]);
-            }
+        $params = ['contextid' => $context->id];
+        $usersql = '';
+        if ($userids !== null) {
+            [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+            $usersql = " AND userid $insql";
+            $params += $inparams;
         }
+
+        // Comments with their replies and pins.
+        $commentids = $DB->get_fieldset_select('block_socialcomments_cmmnts', 'id', "contextid = :contextid $usersql", $params);
+        comments_helper::delete_comments($commentids);
+
+        // Own replies and comment pins on the other comments of this context.
+        $commentsql = "SELECT id FROM {block_socialcomments_cmmnts} WHERE contextid = :contextid";
+        $DB->delete_records_select('block_socialcomments_replies', "commentid IN ($commentsql) $usersql", $params);
+        $DB->delete_records_select(
+            'block_socialcomments_pins',
+            "itemtype = :comment AND itemid IN ($commentsql) $usersql",
+            $params + ['comment' => comments_helper::PINNED_COMMENT]
+        );
+
+        // Page pins and subscriptions.
+        $DB->delete_records_select(
+            'block_socialcomments_pins',
+            "itemtype = :page AND itemid = :contextid $usersql",
+            $params + ['page' => comments_helper::PINNED_PAGE]
+        );
+        $DB->delete_records_select('block_socialcomments_subscrs', "contextid = :contextid $usersql", $params);
     }
 }
