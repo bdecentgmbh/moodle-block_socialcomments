@@ -24,21 +24,21 @@
  */
 namespace block_socialcomments;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_socialcomments\local\comments_helper;
 use context_course;
 
-global $CFG;
-
-if ($CFG->branch <= 401) {
-    require_once($CFG->libdir . '/externallib.php');
-}
-
+#[\PHPUnit\Framework\Attributes\CoversClass(external::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(local\comments_helper::class)]
 /**
- * Test for social comments.
+ * Tests for the web services of the block: posting, replying, pinning and subscribing.
+ *
+ * @package   block_socialcomments
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \block_socialcomments\external
+ * @covers \block_socialcomments\local\comments_helper
  */
-final class block_socialcomments_comments_test extends \advanced_testcase {
+final class external_test extends \advanced_testcase {
     /**
      * @var \stdClass
      */
@@ -65,13 +65,11 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
     private $student2;
 
     /**
-     * @var \stdClass
+     * A course with a teacher and two students.
      */
-
-    /**
-     * Test, whether the plugin is properly installed.
-     */
-    public function setup(): void {
+    #[\Override]
+    protected function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest(true);
         $generator = $this->getDataGenerator();
         $this->course = $generator->create_course();
@@ -81,12 +79,11 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
         $this->student2 = $generator->create_user();
         $generator->enrol_user($this->teacher->id, $this->course->id, 'editingteacher');
         $generator->enrol_user($this->student1->id, $this->course->id, 'student');
-        $generator->enrol_user($this->student1->id, $this->course->id, 'student');
+        $generator->enrol_user($this->student2->id, $this->course->id, 'student');
     }
 
     /**
      * Test, whether the plugin is properly installed.
-     * @covers ::get_config
      */
     public function test_plugin_installed(): void {
 
@@ -97,7 +94,6 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
     /**
      * Test post (comments and replies) view, edit and delete actions
      * using the external functions.
-     * @covers \external_api::call_external_function
      */
     public function test_post_actions(): void {
         global $DB, $USER;
@@ -257,7 +253,6 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
 
     /**
      *  Test several external API - functions including events.
-     * @covers \external_api::call_external_function
      */
     public function test_external_functions(): void {
         global $USER, $DB;
@@ -400,5 +395,32 @@ final class block_socialcomments_comments_test extends \advanced_testcase {
         $this->assertEquals($this->coursecontext, $event->get_context());
         $url = new \moodle_url('/course/view.php', ['id' => $this->course->id]);
         $this->assertEquals($url, $event->get_url());
+    }
+
+    /**
+     * Of many replies, only the newest are shown; the earlier ones are behind a button.
+     */
+    public function test_earlier_replies(): void {
+        $this->resetAfterTest();
+        set_config('limitreplies', 2, 'block_socialcomments');
+        $generator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
+        $comment = $generator->create_comment(['contextid' => $this->coursecontext->id, 'userid' => $this->teacher->id]);
+        foreach (['First', 'Second', 'Third'] as $i => $text) {
+            $generator->create_reply([
+                'commentid' => $comment->id,
+                'userid' => $this->student1->id,
+                'content' => $text . ' reply',
+                'timecreated' => time() - 100 + $i,
+            ]);
+        }
+
+        $this->setUser($this->student1);
+        $result = external::get_commentspage($this->coursecontext->id, 0, 0);
+        $html = $result['commentspage'];
+        $this->assertStringContainsString('Show 1 earlier replies', $html);
+        // The replies in order: the first one hidden, the two newest shown.
+        preg_match_all('~<li class="sc-reply"[^>]*>~', $html, $tags);
+        $this->assertSame([true, false, false], array_map(fn($tag) => str_contains($tag, ' hidden'), $tags[0]));
+        $this->assertLessThan(strpos($html, 'Third reply'), strpos($html, 'First reply'));
     }
 }

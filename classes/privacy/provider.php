@@ -129,14 +129,20 @@ class provider implements
             'page' => comments_helper::PINNED_PAGE,
             'comment' => comments_helper::PINNED_COMMENT,
         ];
-        $userlist->add_from_sql('userid', "SELECT userid FROM {block_socialcomments_cmmnts} WHERE contextid = :contextid",
-            $params);
+        $userlist->add_from_sql(
+            'userid',
+            "SELECT userid FROM {block_socialcomments_cmmnts} WHERE contextid = :contextid",
+            $params
+        );
         $userlist->add_from_sql('userid', "SELECT r.userid
                                              FROM {block_socialcomments_replies} r
                                              JOIN {block_socialcomments_cmmnts} c ON c.id = r.commentid
                                             WHERE c.contextid = :contextid", $params);
-        $userlist->add_from_sql('userid', "SELECT userid FROM {block_socialcomments_subscrs} WHERE contextid = :contextid",
-            $params);
+        $userlist->add_from_sql(
+            'userid',
+            "SELECT userid FROM {block_socialcomments_subscrs} WHERE contextid = :contextid",
+            $params
+        );
         $userlist->add_from_sql('userid', "SELECT userid
                                              FROM {block_socialcomments_pins}
                                             WHERE itemtype = :page AND itemid = :contextid", $params);

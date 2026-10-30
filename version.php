@@ -26,8 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2026102900;
-$plugin->requires  = 2020061500;
+$plugin->requires  = 2024100700; // Moodle 4.5.
 $plugin->component = 'block_socialcomments';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->supported = [403, 501];
-$plugin->release = '1.4';
+$plugin->supported = [405, 503];
+$plugin->release   = '1.5';

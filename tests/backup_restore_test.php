@@ -47,8 +47,14 @@ final class backup_restore_test extends \advanced_testcase {
     private function backup_and_restore(\stdClass $course): int {
         global $CFG, $USER;
 
-        $bc = new \backup_controller(\backup::TYPE_1COURSE, $course->id, \backup::FORMAT_MOODLE, \backup::INTERACTIVE_NO,
-            \backup::MODE_GENERAL, $USER->id);
+        $bc = new \backup_controller(
+            \backup::TYPE_1COURSE,
+            $course->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->get_plan()->get_setting('users')->set_value(true);
         $bc->execute_plan();
         $file = $bc->get_results()['backup_destination'];
@@ -57,8 +63,14 @@ final class backup_restore_test extends \advanced_testcase {
         $dir = 'socialcomments_' . random_string(8);
         $file->extract_to_pathname(get_file_packer('application/vnd.moodle.backup'), $CFG->tempdir . '/backup/' . $dir);
         $newcourseid = \restore_dbops::create_new_course('Copy', 'copy', $course->category);
-        $rc = new \restore_controller($dir, $newcourseid, \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id,
-            \backup::TARGET_NEW_COURSE);
+        $rc = new \restore_controller(
+            $dir,
+            $newcourseid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id,
+            \backup::TARGET_NEW_COURSE
+        );
         $rc->get_plan()->get_setting('users')->set_value(true);
         $this->assertTrue($rc->execute_precheck());
         $rc->execute_plan();
@@ -92,7 +104,8 @@ final class backup_restore_test extends \advanced_testcase {
             'content' => 'On the reading']);
         $plugin->create_reply(['commentid' => $comment->id, 'userid' => $teacher->id]);
         $plugin->create_subscription(['contextid' => $modcontext->id, 'userid' => $student->id]);
-        foreach ([comments_helper::PINNED_PAGE => $modcontext->id, comments_helper::PINNED_COMMENT => $comment->id] as $type => $id) {
+        $pins = [comments_helper::PINNED_PAGE => $modcontext->id, comments_helper::PINNED_COMMENT => $comment->id];
+        foreach ($pins as $type => $id) {
             $DB->insert_record('block_socialcomments_pins', (object) [
                 'itemtype' => $type, 'itemid' => $id, 'userid' => $student->id, 'timecreated' => time(),
             ]);
@@ -108,12 +121,18 @@ final class backup_restore_test extends \advanced_testcase {
 
         $newcomment = $DB->get_record('block_socialcomments_cmmnts', ['contextid' => $newmodcontext->id]);
         $this->assertEquals(1, $DB->count_records('block_socialcomments_replies', ['commentid' => $newcomment->id]));
-        $this->assertTrue($DB->record_exists('block_socialcomments_subscrs',
-            ['contextid' => $newmodcontext->id, 'userid' => $student->id, 'courseid' => $newcourseid]));
-        $this->assertTrue($DB->record_exists('block_socialcomments_pins',
-            ['itemtype' => comments_helper::PINNED_PAGE, 'itemid' => $newmodcontext->id, 'userid' => $student->id]));
-        $this->assertTrue($DB->record_exists('block_socialcomments_pins',
-            ['itemtype' => comments_helper::PINNED_COMMENT, 'itemid' => $newcomment->id, 'userid' => $student->id]));
+        $this->assertTrue($DB->record_exists(
+            'block_socialcomments_subscrs',
+            ['contextid' => $newmodcontext->id, 'userid' => $student->id, 'courseid' => $newcourseid]
+        ));
+        $this->assertTrue($DB->record_exists(
+            'block_socialcomments_pins',
+            ['itemtype' => comments_helper::PINNED_PAGE, 'itemid' => $newmodcontext->id, 'userid' => $student->id]
+        ));
+        $this->assertTrue($DB->record_exists(
+            'block_socialcomments_pins',
+            ['itemtype' => comments_helper::PINNED_COMMENT, 'itemid' => $newcomment->id, 'userid' => $student->id]
+        ));
 
         // Nothing points to a page that was not restored.
         $this->assertFalse($DB->record_exists('block_socialcomments_cmmnts', ['contextid' => 0]));

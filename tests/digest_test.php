@@ -24,21 +24,21 @@
  */
 namespace block_socialcomments;
 
-defined('MOODLE_INTERNAL') || die();
-
 use block_socialcomments\local\digest;
 use context_course;
 
-global $CFG;
-
-if ($CFG->branch <= 401) {
-    require_once($CFG->libdir . '/externallib.php');
-}
-
+#[\PHPUnit\Framework\Attributes\CoversClass(local\digest::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(local\report_helper::class)]
 /**
- * Digest test cases.
+ * Tests for the digest and the report.
+ *
+ * @package   block_socialcomments
+ * @copyright 2022 bdecent gmbh <info@bdecent.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \block_socialcomments\local\digest
+ * @covers \block_socialcomments\local\report_helper
  */
-final class block_socialcomments_digest_test extends \advanced_testcase {
+final class digest_test extends \advanced_testcase {
     /**
      * @var \testing_data_generator
      */
@@ -90,13 +90,13 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
     public $group2;
 
     /**
-     * Set the config.
-     *
-     * @return void
+     * Two courses with groups, teachers and students.
      */
-    public function setup(): void {
+    #[\Override]
+    protected function setUp(): void {
         global $DB;
 
+        parent::setUp();
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
@@ -131,7 +131,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Test digest
-     * @covers ::test_digest
      */
     public function test_digest(): void {
         global $DB;
@@ -225,7 +224,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Test that setting users per cron.
-     * @covers \block_socialcomments\local\digest::cron
      */
     public function test_digest_userspercron(): void {
         set_config('digesttype', 1, 'block_socialcomments');
@@ -261,7 +259,6 @@ final class block_socialcomments_digest_test extends \advanced_testcase {
 
     /**
      * Test visiblity and results on report page.
-     * @covers \report_helper::get_instance
      */
     public function test_report(): void {
         global $DB;
