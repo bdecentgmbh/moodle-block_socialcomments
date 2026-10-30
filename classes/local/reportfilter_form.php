@@ -157,10 +157,6 @@ class reportfilter_form extends \moodleform {
             $params['content'] = $data->content;
         }
 
-        if (!empty($data->coursed)) {
-            $params['coursed'] = $data->coursed;
-        }
-
         return $params;
     }
 }

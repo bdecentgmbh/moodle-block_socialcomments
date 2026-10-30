@@ -16,7 +16,9 @@
 
 namespace block_socialcomments;
 
+use block_socialcomments\local\comment;
 use block_socialcomments\local\comments_helper;
+use block_socialcomments\local\reply;
 
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_socialcomments_block_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_socialcomments_block_structure_step::class)]
@@ -42,9 +44,10 @@ final class backup_restore_test extends \advanced_testcase {
      * Backs up a course with users and restores it into a new course.
      *
      * @param \stdClass $course
+     * @param bool $logs whether to include the logs
      * @return int id of the new course
      */
-    private function backup_and_restore(\stdClass $course): int {
+    private function backup_and_restore(\stdClass $course, bool $logs = false): int {
         global $CFG, $USER;
 
         $bc = new \backup_controller(
@@ -56,6 +59,7 @@ final class backup_restore_test extends \advanced_testcase {
             $USER->id
         );
         $bc->get_plan()->get_setting('users')->set_value(true);
+        $bc->get_plan()->get_setting('logs')->set_value($logs);
         $bc->execute_plan();
         $file = $bc->get_results()['backup_destination'];
         $bc->destroy();
@@ -72,6 +76,7 @@ final class backup_restore_test extends \advanced_testcase {
             \backup::TARGET_NEW_COURSE
         );
         $rc->get_plan()->get_setting('users')->set_value(true);
+        $rc->get_plan()->get_setting('logs')->set_value($logs);
         $this->assertTrue($rc->execute_precheck());
         $rc->execute_plan();
         $rc->destroy();
@@ -138,5 +143,49 @@ final class backup_restore_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('block_socialcomments_cmmnts', ['contextid' => 0]));
         $this->assertFalse($DB->record_exists('block_socialcomments_subscrs', ['contextid' => 0]));
         $this->assertFalse($DB->record_exists('block_socialcomments_pins', ['itemid' => 0]));
+    }
+
+    /**
+     * Restored logs point to the restored comments and replies.
+     */
+    public function test_restore_logs(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->preventResetByRollback();
+        set_config('enabled_stores', 'logstore_standard', 'tool_log');
+        set_config('buffersize', 0, 'logstore_standard');
+        get_log_manager(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $plugin = $generator->get_plugin_generator('block_socialcomments');
+
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $page = $generator->create_module('page', ['course' => $course->id]);
+        $plugin->create_instance(['parentcontextid' => \context_course::instance($course->id)->id, 'pagetypepattern' => '*']);
+        $context = \context_module::instance($page->cmid);
+        $comment = $plugin->create_comment(['contextid' => $context->id, 'userid' => $student->id]);
+        $reply = $plugin->create_reply(['commentid' => $comment->id, 'userid' => $student->id]);
+        // Logs of users who are not in the backup are not restored.
+        $this->setUser($student);
+        (new comment(['id' => $comment->id], true))->fire_event_created();
+        // A reply gets its page from the comment when saved.
+        (new reply((array) $reply + ['contextid' => $context->id]))->fire_event_created();
+        $this->setAdminUser();
+
+        $newcourseid = $this->backup_and_restore($course, true);
+
+        $newcommentid = $DB->get_field('block_socialcomments_cmmnts', 'id', ['courseid' => $newcourseid]);
+        $newreplyid = $DB->get_field('block_socialcomments_replies', 'id', ['commentid' => $newcommentid]);
+        $logs = $DB->get_records_menu(
+            'logstore_standard_log',
+            ['courseid' => $newcourseid, 'component' => 'block_socialcomments'],
+            '',
+            'eventname, objectid'
+        );
+        $this->assertEquals([
+            '\\block_socialcomments\\event\\comment_created' => $newcommentid,
+            '\\block_socialcomments\\event\\reply_created' => $newreplyid,
+        ], $logs);
     }
 }

@@ -22,7 +22,7 @@
 - Privacy: export and deletion work per page, for activity pages too, and no longer delete the data
   of other users or of other pages.
 - Backup and restore: comments are restored once and on their own page (they were restored once per
-  block and all on the course page).
+  block and all on the course page). Restored logs point to the restored comments and replies.
 - Comments, replies, pins and subscriptions of deleted activities are deleted with them; the upgrade
   removes those left by activities deleted before.
 - Editing a comment starts from the text as written (not from its HTML, which then got saved).

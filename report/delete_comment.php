@@ -78,7 +78,7 @@ echo $OUTPUT->header();
 $message = get_string('deletecheck', 'block_socialcomments');
 
 $author = \core_user::get_user($comment->userid);
-$post = $renderer->render_post($author, $comment, []);
+$post = $renderer->render_post($author, $comment);
 
 $message .= html_writer::div($post, 'ccomment-post');
 

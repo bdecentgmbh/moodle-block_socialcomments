@@ -60,8 +60,38 @@ class reply_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' added the reply with id '$this->objectid' to the '$this->component' " .
-            "with course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' added the reply with id '$this->objectid' to the page with context id " .
+            "'$this->contextid'.";
+    }
+
+    /**
+     * Validate the data of the event.
+     *
+     * @throws \coding_exception
+     */
+    protected function validate_data() {
+        parent::validate_data();
+        if (!isset($this->other['userid'])) {
+            throw new \coding_exception('The \'userid\' value must be set in other.');
+        }
+    }
+
+    /**
+     * Mapping of the reply to restore logs.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return ['db' => 'block_socialcomments_replies', 'restore' => 'block_socialcomments_replies'];
+    }
+
+    /**
+     * Mapping of the author to restore logs.
+     *
+     * @return array
+     */
+    public static function get_other_mapping() {
+        return ['userid' => ['db' => 'user', 'restore' => 'user']];
     }
 
     /**

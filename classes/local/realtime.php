@@ -45,7 +45,8 @@ class realtime {
         ) {
             return false;
         }
-        // The site must be registered with the service ("Activate" in the settings of block_deft).
+        // The site must be registered with the service ("Activate" in the settings of block_deft). block_deft has no API
+        // for this and reads the same record itself before sending (\block_deft\socket::execute()).
         $registered = $registered ?? (bool) $DB->get_field_select('lti_types', 'clientid', "tooldomain = 'deftly.us'");
         return $registered;
     }

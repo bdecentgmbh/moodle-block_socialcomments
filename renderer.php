@@ -266,7 +266,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
      * @return string
      */
     public function render_post($author, $post) {
-        $data = (object) ((array) $author + (array) $post);
+        $data = (object) ((array) $post + (array) $author);
         $data->userid = $author->id;
         $context = context::instance_by_id($post->contextid);
         return html_writer::div(

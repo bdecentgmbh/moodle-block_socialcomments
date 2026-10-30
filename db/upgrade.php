@@ -58,28 +58,7 @@ function xmldb_block_socialcomments_upgrade($oldversion) {
     }
 
     if ($oldversion < 2026030701) {
-        $DB->set_field(
-            'task_scheduled',
-            'minute',
-            '*',
-            [
-                'component' => 'block_socialcomments',
-                'classname' => '\block_socialcomments\task\process_digest_cron',
-                'customised' => 0,
-            ]
-        );
-
-        $DB->set_field(
-            'task_scheduled',
-            'hour',
-            '*',
-            [
-                'component' => 'block_socialcomments',
-                'classname' => '\block_socialcomments\task\process_digest_cron',
-                'customised' => 0,
-            ]
-        );
-
+        // The digest task runs every minute now: core applies the schedule of db/tasks.php after the upgrade.
         upgrade_plugin_savepoint(true, 2026030701, 'block', 'socialcomments');
     }
 

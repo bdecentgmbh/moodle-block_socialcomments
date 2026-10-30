@@ -78,7 +78,8 @@ class restore_socialcomments_block_structure_step extends restore_structure_step
             $reply = (object) $reply;
             if ($this->map_user($reply)) {
                 $reply->commentid = $newitemid;
-                $DB->insert_record('block_socialcomments_replies', $reply);
+                $newreplyid = $DB->insert_record('block_socialcomments_replies', $reply);
+                $this->set_mapping('block_socialcomments_replies', $reply->id, $newreplyid);
             }
         }
     }
