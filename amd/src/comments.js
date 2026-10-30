@@ -293,7 +293,7 @@ export const init = (uniqid, contextid, hidepins) => {
         const handlers = {
             cancel: () => close(action.closest('[data-region="form"]')),
             edit: () => edit(action),
-            delete: () => remove(action),
+            'delete': () => remove(action),
             reply: () => reply(action),
             pin: () => pin(action),
             page: () => load(Number(action.dataset.page)),
