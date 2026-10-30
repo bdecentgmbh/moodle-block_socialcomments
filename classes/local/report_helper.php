@@ -147,6 +147,27 @@ class report_helper {
     }
 
     /**
+     * Count the comments of a page that the user may see.
+     *
+     * @param \context $context the page
+     * @param int|null $count all comments of the page, if known
+     * @return int
+     */
+    protected function count_visible_comments(\context $context, ?int $count = null): int {
+        global $DB;
+
+        [$ingroupsql, $ingroupparam] = $this->get_group_restriction_sql($context);
+        if ($count !== null && !$ingroupsql) {
+            return $count;
+        }
+        return $DB->count_records_select(
+            'block_socialcomments_cmmnts',
+            'contextid = :contextid' . $ingroupsql,
+            ['contextid' => $context->id] + $ingroupparam
+        );
+    }
+
+    /**
      * Get a subselect for each context to retrieve the comments per course.
      * Each subselect would retrieve only a few item, but there might be as many
      * subselects, as commented contexts in course.
@@ -292,7 +313,10 @@ class report_helper {
                             'topicname' => $topicname,
                             'activity' => $module->name,
                             'activityid' => $modid,
-                            'commentscount' => $countpercontext[$module->contextid]->count,
+                            'commentscount' => $this->count_visible_comments(
+                                $modinfo->contexts[$module->contextid],
+                                $countpercontext[$module->contextid]->count
+                            ),
                             'context' => $modinfo->contexts[$module->contextid],
                     ];
 
@@ -307,14 +331,12 @@ class report_helper {
 
         $coursecontext = \context_course::instance($filterdata->courseid);
         if (empty($filterdata->sectionid) && empty($filterdata->activityid) && comment::can_view_context($coursecontext)) {
-            $commentscount = $DB->count_records('block_socialcomments_cmmnts', ['contextid' => $coursecontext->id]);
-
             $sqlvalues = (object) [
                     'usernamefields' => $usernamefields,
                     'topicname' => get_string('course'),
                     'activity' => '',
                     'activityid' => 0,
-                    'commentscount' => $commentscount,
+                    'commentscount' => $this->count_visible_comments($coursecontext),
                     'context' => $coursecontext,
             ];
 

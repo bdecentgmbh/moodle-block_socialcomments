@@ -17,7 +17,8 @@
 - Security: the comments report showed the HTML of comments unescaped; names of sections and
   activities went into the report query unescaped (an apostrophe broke the report); replies and
   pins did not check access to their comment; the newsfeed, pinboard and digest showed comments of
-  hidden activities, of other groups and of courses the user had left.
+  hidden activities, of other groups and of courses the user had left; in separate groups, the
+  report counted the comments of other groups.
 - Privacy: export and deletion work per page, for activity pages too, and no longer delete the data
   of other users or of other pages.
 - Backup and restore: comments are restored once and on their own page (they were restored once per

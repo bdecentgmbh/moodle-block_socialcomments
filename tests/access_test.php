@@ -142,6 +142,42 @@ final class access_test extends \advanced_testcase {
     }
 
     /**
+     * In separate groups, the report counts only the comments the user may see.
+     */
+    public function test_report_counts_in_separate_groups(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['groupmode' => SEPARATEGROUPS]);
+        $forum = $generator->create_module('forum', ['course' => $course->id, 'groupmode' => SEPARATEGROUPS]);
+        $forumcontext = \context_module::instance($forum->cmid);
+        $coursecontext = \context_course::instance($course->id);
+        $student = $generator->create_and_enrol($course, 'student');
+        $teacher = $generator->create_and_enrol($course, 'editingteacher');
+        $group1 = $generator->create_group(['courseid' => $course->id]);
+        $group2 = $generator->create_group(['courseid' => $course->id]);
+        $generator->create_group_member(['groupid' => $group1->id, 'userid' => $student->id]);
+        foreach ([$group1->id, $group1->id, $group2->id, $group2->id, $group2->id, 0] as $groupid) {
+            $this->create_comment($forumcontext, $teacher, ['groupid' => $groupid]);
+        }
+        foreach ([$group2->id, 0] as $groupid) {
+            $this->create_comment($coursecontext, $teacher, ['groupid' => $groupid]);
+        }
+        $PAGE->set_course($course);
+
+        foreach ([[$student, 3, 1], [$teacher, 6, 2]] as [$user, $inforum, $oncourse]) {
+            $this->setUser($user);
+            $comments = report_helper::get_instance(true)->get_course_comments((object) ['courseid' => $course->id]);
+            $bycontext = [];
+            foreach ($comments as $comment) {
+                $bycontext[$comment->contextid][] = $comment->commentscount;
+            }
+            $this->assertEquals(array_fill(0, $inforum, $inforum), $bycontext[$forumcontext->id]);
+            $this->assertEquals(array_fill(0, $oncourse, $oncourse), $bycontext[$coursecontext->id]);
+        }
+    }
+
+    /**
      * The newsfeed leaves out comments on activities the user cannot see.
      */
     public function test_newsfeed_without_hidden_activities(): void {
