@@ -114,9 +114,10 @@ class digest {
      * If a new reply is found, its comments is retrieved.
      *
      * @param object $user user
+     * @param int|null $now posts until (not including) this time, which is noted as the time of sending; null for all
      * @return array, the list of new comments/replies indexed by courseid, contextid, commentid.
      */
-    public function get_subscribed_new_comments_and_replies($user) {
+    public function get_subscribed_new_comments_and_replies($user, ?int $now = null) {
         global $DB, $CFG;
         require_once($CFG->dirroot . "/blocks/socialcomments/lib.php");
 
@@ -130,11 +131,16 @@ class digest {
                 JOIN {user} u ON r.userid = u.id
                 JOIN {block_socialcomments_cmmnts} bc ON bc.id = r.commentid
                 JOIN {block_socialcomments_subscrs} sub ON sub.contextid = bc.contextid AND r.timemodified >= sub.timelastsent
-                WHERE sub.userid = ? AND r.userid <> ? ";
+                WHERE sub.userid = :userid AND r.userid <> :authorid ";
+        $params = ['userid' => $user->id, 'authorid' => $user->id];
+        if ($now) {
+            $sql .= 'AND r.timemodified < :now ';
+            $params['now'] = $now;
+        }
 
         $orderby = 'ORDER BY r.timecreated DESC';
 
-        $replies = $DB->get_records_sql($sql . $orderby, [$user->id, $user->id]);
+        $replies = $DB->get_records_sql($sql . $orderby, $params);
 
         $neededcommentsid = [];
         $repliesgroupedbycomments = [];
@@ -159,7 +165,12 @@ class digest {
         $params = ['userid' => $user->id, 'authorid' => $user->id];
 
         // New comments of others, and the comments that got new replies.
-        $orcond = " (bc.timemodified >= sub.timelastsent AND bc.userid <> :authorid)";
+        $orcond = " (bc.timemodified >= sub.timelastsent AND bc.userid <> :authorid";
+        if ($now) {
+            $orcond .= ' AND bc.timemodified < :now';
+            $params['now'] = $now;
+        }
+        $orcond .= ')';
         // Add comments that are needed for replies.
         if (!empty($neededcommentsid)) {
             [$incommentids, $incommentidparam] = $DB->get_in_or_equal($neededcommentsid, SQL_PARAMS_NAMED);
@@ -208,7 +219,7 @@ class digest {
 
                 // Note the actual time for later use.
                 // Set this here to skip the time, during access is restricted by group.
-                $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = time();
+                $this->timelastsent[$cmt->courseid][$cmt->postcontextid] = $now ?? time();
             }
         }
 
@@ -267,15 +278,16 @@ class digest {
      * Send out a digest for a user.
      *
      * @param object $user
+     * @param int|null $now posts until (not including) this time; null for all
      * @return boolean true, when successfully sent.
      */
-    public function send_digest_for_user($user) {
+    public function send_digest_for_user($user, ?int $now = null) {
         global $DB, $PAGE;
 
-        $newcommentsdata = $this->get_subscribed_new_comments_and_replies($user);
+        $newcommentsdata = $this->get_subscribed_new_comments_and_replies($user, $now);
 
         if (empty($newcommentsdata)) {
-            $DB->set_field('block_socialcomments_subscrs', 'timelastsent', time(), ['userid' => $user->id]);
+            $DB->set_field('block_socialcomments_subscrs', 'timelastsent', $now ?? time(), ['userid' => $user->id]);
             return true;
         }
 
@@ -329,22 +341,26 @@ class digest {
         global $DB;
 
         $result = true;
+        // Posts saved while the digests are sent go into the next ones.
+        $now = time();
+        $limit = max(0, (int) get_config('block_socialcomments', 'userspercron'));
 
-        $limit = 0;
-        $userspercron = get_config('block_socialcomments', 'userspercron');
+        // The users with new posts of others on the pages they subscribed to, those waiting longest first.
+        $sql = "SELECT s.userid, MIN(s.timelastsent) AS mintime
+                  FROM {block_socialcomments_subscrs} s
+                 WHERE EXISTS (SELECT 1
+                                 FROM {block_socialcomments_cmmnts} c
+                                WHERE c.contextid = s.contextid AND c.userid <> s.userid
+                                      AND c.timemodified >= s.timelastsent AND c.timemodified < :now1)
+                       OR EXISTS (SELECT 1
+                                    FROM {block_socialcomments_replies} r
+                                    JOIN {block_socialcomments_cmmnts} c ON c.id = r.commentid
+                                   WHERE c.contextid = s.contextid AND r.userid <> s.userid
+                                         AND r.timemodified >= s.timelastsent AND r.timemodified < :now2)
+              GROUP BY s.userid
+              ORDER BY mintime ASC";
 
-        if ($userspercron > 0) {
-            $limit = $userspercron;
-        }
-
-        // Get the users, that have subscriptions
-        // (ordered by timelastent ASC to process the long waiting users first.
-        $sql = "SELECT s.userid, MIN(s.timelastsent) as mintime
-                FROM {block_socialcomments_subscrs} s
-                GROUP BY s.userid
-                ORDER BY mintime ASC ";
-
-        $userids = $DB->get_records_sql($sql, [], 0, $limit);
+        $userids = $DB->get_records_sql($sql, ['now1' => $now, 'now2' => $now], 0, $limit);
         if (!$userids) {
             return $result;
         }
@@ -361,7 +377,7 @@ class digest {
             \core\cron::setup_user($user);
 
             $digest = self::get_instance(true);
-            $result = ($result && $digest->send_digest_for_user($user));
+            $result = ($result && $digest->send_digest_for_user($user, $now));
         }
 
         \core\cron::setup_user();

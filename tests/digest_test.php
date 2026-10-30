@@ -258,6 +258,39 @@ final class digest_test extends \advanced_testcase {
     }
 
     /**
+     * A run without new posts writes nothing; a post saved while the digests are sent goes into the next digest.
+     */
+    public function test_digest_timing(): void {
+        global $DB;
+        set_config('digesttype', 1, 'block_socialcomments');
+        $plugingenerator = $this->getDataGenerator()->get_plugin_generator('block_socialcomments');
+        $lastsent = time() - HOURSECS;
+        $subscription = $plugingenerator->create_subscription([
+            'contextid' => $this->coursecontext->id,
+            'userid' => $this->student1->id,
+            'timelastsent' => $lastsent,
+        ]);
+
+        $sink = $this->redirectMessages();
+        digest::cron();
+        $this->assertCount(0, $sink->get_messages());
+        $this->assertEquals($lastsent, $DB->get_field('block_socialcomments_subscrs', 'timelastsent', ['id' => $subscription->id]));
+
+        // A comment saved in the second the run started.
+        $now = time();
+        $plugingenerator->create_comment([
+            'contextid' => $this->coursecontext->id,
+            'userid' => $this->teacher->id,
+            'timecreated' => $now,
+        ]);
+        digest::get_instance(true)->send_digest_for_user($this->student1, $now);
+        $this->assertCount(0, $sink->get_messages());
+        digest::get_instance(true)->send_digest_for_user($this->student1, $now + 1);
+        $this->assertCount(1, $sink->get_messages());
+        $sink->close();
+    }
+
+    /**
      * Test visiblity and results on report page.
      */
     public function test_report(): void {

@@ -1,6 +1,6 @@
 # Changes
 
-## 1.5 (2026102900)
+## 1.5 (2026103000)
 
 - Moodle 4.5 to 5.3; Moodle 4.5 is now the minimum.
 - New look: comments and replies with picture, name and date above the text, replies indented by a
@@ -32,6 +32,9 @@
   off without a way to see them.
 - The report includes activities in subsections (Moodle 5).
 - The digest leaves out the user's own posts and is plain HTML for email clients.
+- The digest task runs every 15 minutes (every minute since 1.4), unless its schedule was changed.
+  Runs without new posts no longer write to the database, and a post saved while the digests were
+  being sent can no longer be left out.
 - New installations allow non-editing teachers what students may do.
 - The JavaScript is an ES module without jQuery; the views are Mustache templates.
 - Clearer setting texts; the report and pinboard pages show the course name as heading; removed the

@@ -30,6 +30,8 @@ optional.
 - Comments of activities that were deleted earlier are removed by the upgrade; from now on they are
   deleted with their activity.
 - Two new settings: **Date of comments** and **Update in real time** (see below).
+- The task **Process digests** runs every 15 minutes instead of every minute, unless its schedule
+  was changed on the site.
 - New installations allow non-editing teachers what students may do. On existing sites, allow it
   for the *Non-editing teacher* role if they should take part.
 - Security and privacy fixes; see `CHANGES.md`.
@@ -56,9 +58,9 @@ subscribed to*. Users choose in their notification preferences whether it comes 
 or in the app.
 
 The scheduled task **Process digests** (`\block_socialcomments\task\process_digest_cron`) sends them,
-by default every minute, so a digest usually holds a single new comment. To send real digests, run
-the task less often, e.g. hourly or daily, under *Site administration > Server > Tasks > Scheduled
-tasks*. On large sites, limit **Users per cron**.
+by default every 15 minutes. For fewer, fuller digests, run the task less often, e.g. hourly or
+daily; for quicker ones, more often, under *Site administration > Server > Tasks > Scheduled
+tasks*. A run without new posts costs a single query. On large sites, limit **Users per cron**.
 
 A digest leaves out pages the user can no longer see: courses they left, hidden or restricted
 activities, other groups in separate groups mode.

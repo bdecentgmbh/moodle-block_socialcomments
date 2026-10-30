@@ -101,7 +101,7 @@ block looks the same on Moodle 4.5 and 5.x. The digest email uses inline styles 
 ## Releases
 
 `version.php` holds `$plugin->release` (e.g. `1.5`). To release: merge `dev` into `main` with a
-section `## 1.5 (2026102900)` in `CHANGES.md`, then push the tag `v1.5` (or `v1.5-r1`, `v1.5-r2` for
+section `## 1.5 (2026103000)` in `CHANGES.md`, then push the tag `v1.5` (or `v1.5-r1`, `v1.5-r2` for
 re-releases) on `main`. `.github/workflows/moodle-release.yml` checks the tag against `version.php`
 and `CHANGES.md`, waits for CI on the tagged commit, publishes to the Moodle Marketplace and creates
 the GitHub release with the ZIP. It needs the repository secret `MOODLE_MARKETPLACE_TOKEN`.
