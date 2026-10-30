@@ -81,6 +81,33 @@ final class access_test extends \advanced_testcase {
     }
 
     /**
+     * Comments, pins and subscriptions belong to course and activity pages only.
+     */
+    public function test_only_course_and_activity_pages(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $context = \context_coursecat::instance($this->getDataGenerator()->create_category()->id);
+        $calls = [
+            fn() => external::save_comment($context->id, 'Hello', 0, 0),
+            fn() => external::set_pinned($context->id, true, 0),
+            fn() => external::set_subscribed($context->id, true),
+            fn() => external::get_commentspage($context->id, 0, 0),
+            fn() => external::renew_token($context->id),
+        ];
+        foreach ($calls as $call) {
+            try {
+                $call();
+                $this->fail('Accepted a category page');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidcontext', $e->errorcode);
+            }
+        }
+        $this->assertSame(0, $DB->count_records('block_socialcomments_pins'));
+        $this->assertSame(0, $DB->count_records('block_socialcomments_subscrs'));
+    }
+
+    /**
      * In separate groups, students can neither reply to nor pin comments of other groups.
      */
     public function test_separate_groups(): void {

@@ -22,6 +22,11 @@ Comments belong to the page they are written on, not to the block. A block on th
 collects comments about the course; a block on an activity page collects comments about that
 activity. Add the block to every page where you want a conversation.
 
+Removing the block hides the conversation, but does not end it: the comments stay in the comments
+report and on the pinboards. To stop comments on a page, prevent **Post comments**
+(`block/socialcomments:postcomments`) in the permissions of the activity or the course. To remove
+comments, delete them in the report.
+
 To show the block on every page of the course, add it to the course page, configure it and set
 **Display on page types** to *Any page*. Every page then has its own comments.
 

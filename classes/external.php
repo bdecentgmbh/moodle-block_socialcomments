@@ -45,6 +45,21 @@ use moodle_exception;
  */
 class external extends external_api {
     /**
+     * The page the comments belong to: a course or an activity.
+     *
+     * @param int $contextid
+     * @return \context
+     * @throws moodle_exception for other contexts
+     */
+    protected static function get_page_context(int $contextid): \context {
+        $context = \context::instance_by_id($contextid);
+        if (!in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE])) {
+            throw new moodle_exception('invalidcontext');
+        }
+        return $context;
+    }
+
+    /**
      * Returns description of method parameters.
      *
      * content text is outputted in the block by format_text, so we do not need to clean
@@ -90,10 +105,7 @@ class external extends external_api {
         $comment = new \block_socialcomments\local\comment($params, true, $params['id'] ? MUST_EXIST : IGNORE_MISSING);
 
         if ($params['id'] == 0) {
-            $context = \context::instance_by_id($params['contextid']);
-            if (!in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE])) {
-                throw new moodle_exception('invalidcontext');
-            }
+            $context = self::get_page_context($params['contextid']);
         } else {
             $context = $comment->get_context();
         }
@@ -245,7 +257,7 @@ class external extends external_api {
         $params = self::validate_parameters(self::set_pinned_parameters(), $arrayparams);
 
         if ($params['commentid'] == 0) {
-            $context = self::get_context_from_params($params);
+            $context = self::get_page_context($params['contextid']);
         } else {
             $comment = new \block_socialcomments\local\comment(['id' => $params['commentid']], true, MUST_EXIST);
             $context = $comment->get_context();
@@ -326,7 +338,7 @@ class external extends external_api {
         ];
         $params = self::validate_parameters(self::set_subscribed_parameters(), $arrayparams);
 
-        $context = self::get_context_from_params($params);
+        $context = self::get_page_context($params['contextid']);
         self::validate_context($context);
 
         require_capability('block/socialcomments:subscribe', $context);
@@ -394,7 +406,7 @@ class external extends external_api {
         ];
         $params = self::validate_parameters(self::get_commentspage_parameters(), $arrayparams);
 
-        $context = self::get_context_from_params($params);
+        $context = self::get_page_context($params['contextid']);
         self::validate_context($context);
 
         require_capability('block/socialcomments:view', $context);
@@ -584,7 +596,7 @@ class external extends external_api {
      */
     public static function renew_token($contextid) {
         $params = self::validate_parameters(self::renew_token_parameters(), ['contextid' => $contextid]);
-        $context = \context::instance_by_id($params['contextid']);
+        $context = self::get_page_context($params['contextid']);
         self::validate_context($context);
         require_capability('block/socialcomments:view', $context);
 

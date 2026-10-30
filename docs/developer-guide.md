@@ -69,6 +69,12 @@ which dispatches an update for the page context (component `block_socialcomments
 `block_socialcomments:changed` on the block; `comments.js` then reloads the current page of comments
 unless a reply or edit form is open (it waits until it is closed).
 
+What leaves the site: block_deft's `socket::execute()` sends deftly.us the context id of the page,
+the component `block_socialcomments`, the area `main` and the action (`token` when a page asks for a
+token, `update` when its comments changed), signed with the site's LTI key. The browsers connect to
+`wss://deftly.us` with the token of the page. No comments, names or user ids are sent; the privacy
+provider declares the service as the external location `deft`.
+
 ## Backup and restore
 
 The block's backup holds the comments of its page; a block on the course page those of the whole

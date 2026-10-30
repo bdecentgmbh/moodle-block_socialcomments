@@ -47,7 +47,14 @@ class realtime {
         }
         // The site must be registered with the service ("Activate" in the settings of block_deft). block_deft has no API
         // for this and reads the same record itself before sending (\block_deft\socket::execute()).
-        $registered = $registered ?? (bool) $DB->get_field_select('lti_types', 'clientid', "tooldomain = 'deftly.us'");
+        if ($registered === null) {
+            try {
+                $registered = (bool) $DB->get_field_select('lti_types', 'clientid', "tooldomain = 'deftly.us'");
+            } catch (\dml_exception $e) {
+                // Without the table of External tools, there is no registration: the comments work without updates.
+                $registered = false;
+            }
+        }
         return $registered;
     }
 

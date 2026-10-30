@@ -147,7 +147,15 @@ final class provider_test extends provider_testcase {
 
     public function test_get_metadata(): void {
         $collection = provider::get_metadata(new \core_privacy\local\metadata\collection('block_socialcomments'));
-        $this->assertCount(5, $collection->get_collection());
+        $names = array_map(fn($item) => $item->get_name(), $collection->get_collection());
+        $this->assertEquals([
+            'block_socialcomments_cmmnts',
+            'block_socialcomments_replies',
+            'block_socialcomments_subscrs',
+            'block_socialcomments_pins',
+            'core_message',
+            'deft',
+        ], array_values($names));
     }
 
     public function test_get_contexts_for_userid(): void {

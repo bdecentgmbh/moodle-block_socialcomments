@@ -86,6 +86,9 @@ class provider implements
             'timecreated' => 'privacy:metadata:block_socialcomments_pins:timecreated',
         ], 'privacy:metadata:block_socialcomments_pins');
         $collection->add_subsystem_link('core_message', [], 'privacy:metadata:core_message');
+        $collection->add_external_location_link('deft', [
+            'contextid' => 'privacy:metadata:deft:contextid',
+        ], 'privacy:metadata:deft');
         return $collection;
     }
 

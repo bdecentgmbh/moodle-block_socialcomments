@@ -13,12 +13,14 @@
   when pointing at it. Digests always show the date.
 - New setting "Update in real time": with the updating service of the Deft response block
   (block_deft), new, edited and deleted comments appear for everybody who has the page open (#3).
-  Forms being written are not interrupted. block_deft stays optional.
+  Forms being written are not interrupted. block_deft stays optional. The service gets the id of
+  the page only, no comments and no user data.
 - Security: the comments report showed the HTML of comments unescaped; names of sections and
   activities went into the report query unescaped (an apostrophe broke the report); replies and
   pins did not check access to their comment; the newsfeed, pinboard and digest showed comments of
   hidden activities, of other groups and of courses the user had left; in separate groups, the
-  report counted the comments of other groups.
+  report counted the comments of other groups; pins and subscriptions were accepted for pages other
+  than courses and activities.
 - Privacy: export and deletion work per page, for activity pages too, and no longer delete the data
   of other users or of other pages.
 - Backup and restore: comments are restored once and on their own page (they were restored once per
