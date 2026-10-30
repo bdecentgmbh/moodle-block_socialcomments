@@ -129,6 +129,9 @@ class block_socialcomments_renderer extends plugin_renderer_base {
             if (comment::can_delete($post->userid, $context)) {
                 $actions['delete'] = ['i/delete', get_string('delete')];
             }
+            // Only the newest replies are shown, the earlier ones behind a button.
+            $limit = (int) get_config('block_socialcomments', 'limitreplies');
+            $hidden = $limit > 0 ? max(0, count($post->replies) - $limit) : 0;
             $replies = [];
             foreach ($post->replies as $replypost) {
                 $replyactions = [];
@@ -141,6 +144,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                 $replies[] = [
                     'id' => $replypost->postid,
                     'post' => $this->export_post($replypost, $context, $replyactions),
+                    'hidden' => count($replies) < $hidden,
                 ];
             }
             $comments[] = [
@@ -153,9 +157,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
                 'pinned' => !empty($post->pinned),
                 'pinlabel' => get_string(empty($post->pinned) ? 'pin' : 'unpin', 'block_socialcomments'),
                 'replies' => $replies,
-                'morereplies' => $post->countreplies > count($replies)
-                    ? get_string('morereplies', 'block_socialcomments', $post->countreplies - count($replies))
-                    : null,
+                'earlierreplies' => $hidden ? get_string('earlierreplies', 'block_socialcomments', $hidden) : null,
             ];
         }
 

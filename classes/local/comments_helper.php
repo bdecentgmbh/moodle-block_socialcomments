@@ -262,8 +262,6 @@ class comments_helper {
             return $posts;
         }
 
-        $limitreplies = get_config('block_socialcomments', 'limitreplies');
-
         $userfields = block_socialcomments_get_all_user_name_fields();
         $userpicturefields = block_socialcomments_get_userpicture_fields();
         $sql = "SELECT r.id as postid, r.content, r.format, r.timecreated, r.userid,
@@ -276,7 +274,7 @@ class comments_helper {
         foreach ($posts as $post) {
             if (!empty($replycounts[$post->postid])) {
                 $post->countreplies = $replycounts[$post->postid];
-                $post->replies = $DB->get_records_sql($sql, [$post->postid], 0, $limitreplies);
+                $post->replies = $DB->get_records_sql($sql, [$post->postid]);
             }
         }
 

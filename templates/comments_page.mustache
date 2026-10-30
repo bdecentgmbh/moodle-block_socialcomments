@@ -21,7 +21,7 @@
 
     Context variables required for this template:
     * comments - The comments: id, post (context of block_socialcomments/post), canreply, canpin, pinned, pinlabel,
-      replies (id, post) and morereplies (text when not all replies are shown)
+      replies (id, post, hidden) and earlierreplies (label of the button that shows the hidden replies)
     * pages - The pages: page (number from 0), label, current
     * currentpage - The number of this page
     * count - The number of comments
@@ -63,12 +63,14 @@
             </button>
             {{/canpin}}
         </div>
+        {{#earlierreplies}}
+        <button type="button" class="btn btn-link btn-sm sc-earlier" data-action="earlierreplies">{{earlierreplies}}</button>
+        {{/earlierreplies}}
         <ul class="sc-replies" data-region="replies">
             {{#replies}}
-            <li class="sc-reply" data-region="reply" data-replyid="{{id}}">{{#post}}{{> block_socialcomments/post}}{{/post}}</li>
+            <li class="sc-reply" data-region="reply" data-replyid="{{id}}"{{#hidden}} hidden{{/hidden}}>{{#post}}{{> block_socialcomments/post}}{{/post}}</li>
             {{/replies}}
         </ul>
-        {{#morereplies}}<p class="sc-more">{{morereplies}}</p>{{/morereplies}}
     </li>
     {{/comments}}
 </ul>

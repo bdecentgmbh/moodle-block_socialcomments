@@ -84,10 +84,8 @@ class report_helper {
         $visiblemodules = [];
         $visiblecontexts = [];
 
+        // All sections, including the subsections of Moodle 5.
         foreach ($modinfo->get_section_info_all() as $section => $thissection) {
-            if ($section > course_get_format($course)->get_last_section_number()) {
-                continue;
-            }
             $showsection = $thissection->uservisible ||
                 ($thissection->visible && !$thissection->available &&
                 !empty($thissection->availableinfo));

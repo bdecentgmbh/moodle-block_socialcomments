@@ -191,10 +191,9 @@
     display: none;
 }
 
-.block_socialcomments .sc-more {
-    margin: .5rem 0 0 1rem;
-    font-size: .8125rem;
-    color: var(--bs-secondary-color, #6a737b);
+.block_socialcomments .sc-earlier {
+    padding-top: 0;
+    padding-left: .875rem;
 }
 
 /* Pins: upright when pinned. */

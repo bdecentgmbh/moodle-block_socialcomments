@@ -297,6 +297,12 @@ export const init = (uniqid, contextid, hidepins) => {
             reply: () => reply(action),
             pin: () => pin(action),
             page: () => load(Number(action.dataset.page)),
+            earlierreplies: () => {
+                action.closest('[data-region="comment"]').querySelectorAll('[data-region="reply"][hidden]').forEach((reply) => {
+                    reply.hidden = false;
+                });
+                action.remove();
+            },
         };
         if (handlers[action.dataset.action]) {
             e.preventDefault();
