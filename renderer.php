@@ -293,7 +293,7 @@ class block_socialcomments_renderer extends plugin_renderer_base {
         }
 
         $mod = $visiblemodinfo->modules[$comment->activityid];
-        $icon = html_writer::img($mod->iconurl, '', ['class' => 'icon activityicon', 'role' => 'presentation']);
+        $icon = html_writer::img($mod->iconurl, '', ['class' => 'icon activityicon']);
         return html_writer::link($mod->url, $icon . html_writer::span($mod->name, 'instancename'));
     }
 

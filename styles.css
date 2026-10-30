@@ -8,6 +8,15 @@
 }
 
 /* Forms to comment, reply and edit. */
+.block_socialcomments .sc-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
 .block_socialcomments .sc-form textarea {
     resize: vertical;
 }

@@ -42,8 +42,9 @@
     }
 }}
 <form class="sc-form" data-region="form" data-type="{{type}}">
-    <textarea class="form-control" rows="{{#text}}3{{/text}}{{^text}}2{{/text}}" aria-label="{{label}}" placeholder="{{placeholder}}"
-        data-region="text">{{text}}</textarea>
+    <label class="sc-label" for="sc-text-{{uniqid}}">{{label}}</label>
+    <textarea id="sc-text-{{uniqid}}" name="content" class="form-control" rows="{{#text}}3{{/text}}{{^text}}2{{/text}}"
+        placeholder="{{placeholder}}" data-region="text">{{text}}</textarea>
     <div class="sc-form-actions">
         {{#groups.0}}
         <select class="custom-select form-select form-select-sm sc-form-group" data-region="group" aria-label="{{grouplabel}}">
